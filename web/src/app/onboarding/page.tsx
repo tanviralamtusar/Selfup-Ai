@@ -120,39 +120,81 @@ export default function OnboardingPage() {
       <div className="w-full max-w-xl relative z-10">
         {/* Progress header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, idx) => (
-              <div key={step.id} className="flex flex-col items-center gap-2 flex-1">
-                <div className="flex items-center w-full relative">
-                  {/* Line before */}
-                  {idx > 0 && (
-                    <div className="absolute top-1/2 left-0 right-1/2 h-0.5 bg-border -translate-y-1/2 -z-10" />
-                  )}
-                  {/* Line after */}
-                  {idx < steps.length - 1 && (
-                    <div className="absolute top-1/2 left-1/2 right-0 h-0.5 bg-border -translate-y-1/2 -z-10" />
-                  )}
-                  
-                  {/* Icon Node */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto transition-all duration-300 border-2 bg-background
-                    ${idx <= stepIndex ? 'border-accent text-accent shadow-[0_0_15px_rgba(124,106,240,0.3)]' : 'border-border text-foreground-muted'}
-                  `}>
-                    {idx < stepIndex ? <CheckCircle2 size={18} /> : <step.icon size={18} />}
+          <div className="flex items-center justify-between">
+            {steps.map((step, idx) => {
+              const isCompleted = idx < stepIndex
+              const isActive = idx === stepIndex
+              
+              return (
+              <div key={step.id} className="relative flex flex-col items-center gap-2 flex-1">
+                {/* Line before */}
+                {idx > 0 && (
+                  <div className="absolute top-5 left-0 right-[calc(50%+20px)] h-[3px] bg-border -translate-y-1/2 -z-10 overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-green-500"
+                      initial={{ width: 0 }}
+                      animate={{ width: isCompleted || isActive ? '100%' : '0%' }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    />
                   </div>
-                </div>
-                <span className={`text-xs font-medium ${idx <= stepIndex ? 'text-foreground' : 'text-foreground-muted'}`}>
+                )}
+                {/* Line after */}
+                {idx < steps.length - 1 && (
+                  <div className="absolute top-5 left-[calc(50%+20px)] right-0 h-[3px] bg-border -translate-y-1/2 -z-10 overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-green-500"
+                      initial={{ width: 0 }}
+                      animate={{ width: isCompleted ? '100%' : '0%' }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    />
+                  </div>
+                )}
+                
+                {/* Icon Node */}
+                <motion.div 
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: isActive ? 1.1 : 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto transition-all duration-500 border-2 bg-background relative z-10
+                  ${isCompleted 
+                      ? 'border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]' 
+                      : isActive 
+                        ? 'border-accent text-accent shadow-[0_0_15px_rgba(124,106,240,0.4)]' 
+                        : 'border-border text-foreground-muted'}
+                `}>
+                  {/* Tint overlay to keep line from passing behind */}
+                  {isCompleted && <div className="absolute inset-0 bg-green-500/10 rounded-full pointer-events-none" />}
+                  
+                  <AnimatePresence mode="wait">
+                    {isCompleted ? (
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0, rotate: -90 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 90 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                        <CheckCircle2 size={18} />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="icon"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      >
+                        <step.icon size={18} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                <span className={`text-xs font-medium transition-colors duration-300 ${isCompleted ? 'text-green-500' : isActive ? 'text-foreground' : 'text-foreground-muted'}`}>
                   {step.label}
                 </span>
               </div>
-            ))}
-          </div>
-          <div className="xp-bar h-1.5 bg-border">
-            <motion.div
-              className="xp-bar-fill bg-accent"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.3 }}
-            />
+            )})}
           </div>
         </div>
 
@@ -202,13 +244,13 @@ export default function OnboardingPage() {
                         <select
                           value={formData.gender}
                           onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                          className={`${inputClasses} appearance-none`}
+                          className={`${inputClasses} appearance-none cursor-pointer`}
                         >
-                          <option value="prefer_not_to_say">Prefer not to say</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="non_binary">Non-binary</option>
-                          <option value="other">Other</option>
+                          <option value="prefer_not_to_say" className="bg-background text-foreground">Prefer not to say</option>
+                          <option value="male" className="bg-background text-foreground">Male</option>
+                          <option value="female" className="bg-background text-foreground">Female</option>
+                          <option value="non_binary" className="bg-background text-foreground">Non-binary</option>
+                          <option value="other" className="bg-background text-foreground">Other</option>
                         </select>
                       </div>
                     </div>
@@ -240,11 +282,11 @@ export default function OnboardingPage() {
                           onClick={() => toggleGoal(goal.id)}
                           className={`p-4 rounded-sm border text-left transition-all ${
                             isSelected 
-                              ? 'border-accent bg-accent/10 border-2 shadow-[0_0_10px_rgba(124,106,240,0.15)]' 
+                              ? 'border-green-500 bg-green-500/10 border-2 shadow-[0_0_15px_rgba(34,197,94,0.25)]' 
                               : 'border-border bg-input hover:border-border-strong hover:bg-elevated'
                           }`}
                         >
-                          <span className={isSelected ? 'font-semibold text-accent text-sm' : 'font-medium text-foreground text-sm'}>
+                          <span className={isSelected ? 'font-semibold text-green-400 text-sm' : 'font-medium text-foreground text-sm'}>
                             {goal.label}
                           </span>
                         </button>
@@ -274,19 +316,19 @@ export default function OnboardingPage() {
                         <button
                           key={persona.id}
                           onClick={() => setFormData({ ...formData, persona: persona.id })}
-                          className={`w-full p-4 rounded-sm border text-left flex gap-4 transition-all ${
+                          className={`w-full p-4 rounded-sm border text-left flex gap-4 transition-all duration-300 ${
                             isSelected 
-                              ? 'border-accent bg-accent/10 shadow-[0_0_10px_rgba(124,106,240,0.15)]' 
+                              ? 'border-pink-500 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.35)] scale-[1.02]' 
                               : 'border-border bg-input hover:border-border-strong hover:bg-elevated'
                           }`}
                         >
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                            isSelected ? 'border-accent' : 'border-foreground-muted'
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                            isSelected ? 'border-pink-500' : 'border-foreground-muted'
                           }`}>
-                            {isSelected && <div className="w-2.5 h-2.5 bg-accent rounded-full" />}
+                            {isSelected && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
                           </div>
                           <div>
-                            <p className={isSelected ? 'font-semibold text-accent mb-1 text-sm' : 'font-medium text-foreground mb-1 text-sm'}>
+                            <p className={isSelected ? 'font-semibold text-pink-400 mb-1 text-sm transition-colors' : 'font-medium text-foreground mb-1 text-sm transition-colors'}>
                               {persona.title}
                             </p>
                             <p className="text-xs text-foreground-secondary">

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { generateResponse, SYSTEM_PROMPT } from '@/lib/gemma'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,12 +13,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
 
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const authSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+
     const { searchParams } = new URL(req.url)
     const conversationId = searchParams.get('conversationId')
 
     if (conversationId) {
       // Fetch messages for a specific conversation
-      const { data: messages, error } = await supabase
+      const { data: messages, error } = await authSupabase
         .from('ai_messages')
         .select('*')
         .eq('conversation_id', conversationId)
@@ -25,7 +33,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(messages)
     } else {
       // Fetch all conversations for the user
-      const { data: conversations, error } = await supabase
+      const { data: conversations, error } = await authSupabase
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
@@ -49,6 +57,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
 
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const authSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+
     const { content, conversationId } = await req.json()
 
     if (!content) {
@@ -58,7 +71,7 @@ export async function POST(req: NextRequest) {
     // 2. Manage Conversation
     let activeConversationId = conversationId
     if (!activeConversationId) {
-      const { data: newConv, error: convError } = await supabase
+      const { data: newConv, error: convError } = await authSupabase
         .from('ai_conversations')
         .insert({ user_id: user.id, title: content.substring(0, 50) })
         .select()
@@ -69,7 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Fetch History (last 10 messages for context)
-    const { data: messages, error: msgError } = await supabase
+    const { data: messages, error: msgError } = await authSupabase
       .from('ai_messages')
       .select('role, content')
       .eq('conversation_id', activeConversationId)
@@ -84,7 +97,7 @@ export async function POST(req: NextRequest) {
     })) || []
 
     // 4. Fetch User Profile for Coins and Stats
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await authSupabase
       .from('user_profiles')
       .select('ai_coins, level, xp, display_name')
       .eq('id', user.id)
@@ -112,7 +125,7 @@ Last User Message: ${content}
     const aiResponse = await generateResponse(contextualPrompt, history as any)
 
     // 7. Save Messages & Deduct Coin in background (or here for simplicity)
-    const { error: saveUserMsgError } = await supabase.from('ai_messages').insert({
+    const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
       conversation_id: activeConversationId,
       user_id: user.id,
       role: 'user',
@@ -120,7 +133,7 @@ Last User Message: ${content}
       coins_spent: 1
     })
 
-    const { error: saveAiMsgError } = await supabase.from('ai_messages').insert({
+    const { error: saveAiMsgError } = await authSupabase.from('ai_messages').insert({
       conversation_id: activeConversationId,
       user_id: user.id,
       role: 'assistant',
@@ -129,7 +142,7 @@ Last User Message: ${content}
     })
 
     // Deduct Coin
-    await supabase
+    await authSupabase
       .from('user_profiles')
       .update({ ai_coins: profile.ai_coins - 1 })
       .eq('id', user.id)

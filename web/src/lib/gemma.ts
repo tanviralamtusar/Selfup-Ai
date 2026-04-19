@@ -1,29 +1,37 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 
 const apiKey = process.env.GOOGLE_AI_API_KEY || ''
-const genAI = new GoogleGenerativeAI(apiKey)
-
-export const model = genAI.getGenerativeModel({ 
-  model: 'gemma-2-9b-it',
-  generationConfig: {
-    temperature: 0.7,
-    topP: 0.95,
-    maxOutputTokens: 2048,
-  }
-})
+const ai = new GoogleGenAI({ apiKey })
 
 export async function generateResponse(prompt: string, history: { role: 'user' | 'model', parts: { text: string }[] }[] = []) {
   if (!apiKey) {
     throw new Error('GOOGLE_AI_API_KEY is not set')
   }
 
-  const chat = model.startChat({
-    history: history,
+  const contents = [
+    ...history,
+    {
+      role: 'user',
+      parts: [
+        {
+          text: prompt,
+        },
+      ],
+    },
+  ];
+
+  const response = await ai.models.generateContent({
+    model: 'gemma-4-31b-it',
+    contents,
+    config: {
+      temperature: 0.7,
+      topP: 0.95,
+      maxOutputTokens: 2048,
+    }
   })
 
-  const result = await chat.sendMessage(prompt)
-  const response = await result.response
-  return response.text()
+  // @google/genai exposes `.text` as a property getter
+  return response.text
 }
 
 export const SYSTEM_PROMPT = `

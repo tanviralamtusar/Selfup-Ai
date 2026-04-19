@@ -22,8 +22,31 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { isAuthenticated, isLoading, profile } = useAuthStore()
+  const { isAuthenticated, isLoading, profile, setProfile, session } = useAuthStore()
   const router = useRouter()
+
+  useEffect(() => {
+    // Sync profile with database on mount
+    const syncProfile = async () => {
+      if (session?.access_token) {
+        try {
+          const res = await fetch('/api/user', {
+            headers: { 'Authorization': `Bearer ${session.access_token}` }
+          })
+          if (res.ok) {
+            const data = await res.json()
+            setProfile(data)
+          }
+        } catch (err) {
+          console.error('Failed to sync profile', err)
+        }
+      }
+    }
+
+    if (isAuthenticated && !isLoading) {
+      syncProfile()
+    }
+  }, [isAuthenticated, isLoading, session, setProfile])
 
   useEffect(() => {
     if (!isLoading) {
@@ -35,7 +58,21 @@ export default function ProtectedLayout({
     }
   }, [isLoading, isAuthenticated, profile, router])
 
-  if (isLoading || !isAuthenticated || (profile && !profile.onboarding_done)) {
+  // Loading Guard: Wait for auth to resolve AND profile to sync before rendering
+  const isProfileRequired = isAuthenticated && !profile
+  
+  if (isLoading || isProfileRequired) {
+    return <LoadingScreen />
+  }
+
+  // Redirects
+  if (!isAuthenticated) {
+    router.replace(ROUTES.LOGIN)
+    return <LoadingScreen />
+  }
+
+  if (profile && !profile.onboarding_done) {
+    router.replace(ROUTES.ONBOARDING)
     return <LoadingScreen />
   }
 

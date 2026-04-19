@@ -1,0 +1,120 @@
+@theme {
+  --color-on-secondary: #260069;
+  --color-on-secondary-fixed-variant: #593ca6;
+  --color-error: #ff6e84;
+  --color-primary-fixed-dim: #9282ff;
+  --color-on-primary-fixed-variant: #280092;
+  --color-surface-variant: #25252d;
+  --color-surface-container: #19191f;
+  --color-inverse-primary: #5c48ce;
+  --color-tertiary-fixed: #6bffc1;
+  --color-tertiary: #cdffe3;
+  --color-surface-container-lowest: #000000;
+  --color-surface-container-low: #131319;
+  --color-on-tertiary-fixed: #004b33;
+  --color-tertiary-container: #6bffc1;
+  --color-secondary: #a88cfb;
+  --color-primary: #aea2ff;
+  --color-background: #0e0e13;
+  --color-surface: #0e0e13;
+  --color-on-secondary-container: #d7c8ff;
+  --color-secondary-fixed: #d8caff;
+  --color-on-tertiary-fixed-variant: #006b4a;
+  --color-surface-container-highest: #25252d;
+  --color-tertiary-fixed-dim: #5af0b4;
+  --color-tertiary-dim: #5af0b4;
+  --color-on-surface: #f9f5fd;
+  --color-outline: #76747b;
+  --color-inverse-surface: #fcf8ff;
+  --color-primary-fixed: #a092ff;
+  --color-surface-tint: #aea2ff;
+  --color-on-primary-container: #1f0078;
+  --color-secondary-fixed-dim: #ccbaff;
+  --color-secondary-container: #4f319c;
+  --color-on-background: #f9f5fd;
+  --color-surface-container-high: #1f1f26;
+  --color-on-tertiary-container: #006042;
+  --color-surface-dim: #0e0e13;
+  --color-on-primary: #2a0098;
+  --color-inverse-on-surface: #55545b;
+  --color-error-container: #a70138;
+  --color-primary-dim: #9d8fff;
+  --color-on-secondary-fixed: #3c1989;
+  --color-error-dim: #d73357;
+  --color-secondary-dim: #a88cfb;
+  --color-surface-bright: #2c2b33;
+  --color-on-primary-fixed: #000000;
+  --color-primary-container: #a092ff;
+  --color-on-error-container: #ffb2b9;
+  --color-on-surface-variant: #acaab1;
+  --color-on-error: #490013;
+  --color-on-tertiary: #006948;
+  --color-outline-variant: #48474d;
+
+  /* Legacy Compat */
+  --color-xp-purple: #aea2ff;
+  --color-coin-gold: #FFD700;
+
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(124, 106, 240, 0.15);
+}
+
+@import "tailwindcss";
+
+/* ─── BASE STYLES ─── */
+@layer base {
+  * {
+    @apply border-outline-variant/10;
+  }
+  body {
+    @apply bg-background text-on-surface antialiased selection:bg-primary/30;
+    font-family: var(--font-sans);
+  }
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-container-highest rounded-full hover:bg-on-surface-variant/20 transition-colors;
+}
+
+/* ─── UTILITIES ─── */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-primary to-secondary;
+  }
+  
+  .glass {
+    @apply bg-surface/60 backdrop-blur-xl border border-outline-variant/10;
+  }
+
+  .btn-press:active {
+    @apply scale-95;
+  }
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}

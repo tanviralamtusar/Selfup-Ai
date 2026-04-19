@@ -1,0 +1,147 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { verifyAuth } from '@/lib/api-auth'
+import { generateResponse, SYSTEM_PROMPT } from '@/lib/gemma'
+import { supabase } from '@/lib/supabase'
+
+export async function GET(req: NextRequest) {
+  try {
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const conversationId = searchParams.get('conversationId')
+
+    if (conversationId) {
+      // Fetch messages for a specific conversation
+      const { data: messages, error } = await supabase
+        .from('ai_messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return NextResponse.json(messages)
+    } else {
+      // Fetch all conversations for the user
+      const { data: conversations, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+      return NextResponse.json(conversations)
+    }
+
+  } catch (err: any) {
+    console.error('[AI Chat Fetch Error]:', err)
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    // 1. Verify Auth
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
+    const { content, conversationId } = await req.json()
+
+    if (!content) {
+      return NextResponse.json({ error: 'Message content is required' }, { status: 400 })
+    }
+
+    // 2. Manage Conversation
+    let activeConversationId = conversationId
+    if (!activeConversationId) {
+      const { data: newConv, error: convError } = await supabase
+        .from('ai_conversations')
+        .insert({ user_id: user.id, title: content.substring(0, 50) })
+        .select()
+        .single()
+      
+      if (convError) throw convError
+      activeConversationId = newConv.id
+    }
+
+    // 3. Fetch History (last 10 messages for context)
+    const { data: messages, error: msgError } = await supabase
+      .from('ai_messages')
+      .select('role, content')
+      .eq('conversation_id', activeConversationId)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (msgError) throw msgError
+
+    const history = messages?.reverse().map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
+    })) || []
+
+    // 4. Fetch User Profile for Coins and Stats
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('ai_coins, level, xp, display_name')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) throw profileError
+
+    if (profile.ai_coins < 1) {
+      return NextResponse.json({ error: 'Insufficient AiCoins. Need at least 1 coin per message.' }, { status: 403 })
+    }
+
+    // 5. Build System Prompt with Profile Context
+    const contextualPrompt = `
+${SYSTEM_PROMPT}
+
+User Profile Context:
+- Name: ${profile.display_name}
+- Level: ${profile.level}
+- Current XP: ${profile.xp}
+
+Last User Message: ${content}
+`
+
+    // 6. Generate Response
+    const aiResponse = await generateResponse(contextualPrompt, history as any)
+
+    // 7. Save Messages & Deduct Coin in background (or here for simplicity)
+    const { error: saveUserMsgError } = await supabase.from('ai_messages').insert({
+      conversation_id: activeConversationId,
+      user_id: user.id,
+      role: 'user',
+      content: content,
+      coins_spent: 1
+    })
+
+    const { error: saveAiMsgError } = await supabase.from('ai_messages').insert({
+      conversation_id: activeConversationId,
+      user_id: user.id,
+      role: 'assistant',
+      content: aiResponse,
+      coins_spent: 0
+    })
+
+    // Deduct Coin
+    await supabase
+      .from('user_profiles')
+      .update({ ai_coins: profile.ai_coins - 1 })
+      .eq('id', user.id)
+
+    return NextResponse.json({ 
+      content: aiResponse, 
+      conversationId: activeConversationId,
+      coinsRemaining: profile.ai_coins - 1
+    })
+
+  } catch (err: any) {
+    console.error('[AI Chat Error]:', err)
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+  }
+}

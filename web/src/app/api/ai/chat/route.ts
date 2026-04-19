@@ -124,28 +124,31 @@ Last User Message: ${content}
     // 6. Generate Response
     const aiResponse = await generateResponse(contextualPrompt, history as any)
 
-    // 7. Save Messages & Deduct Coin in background (or here for simplicity)
+    // 7. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
       conversation_id: activeConversationId,
       user_id: user.id,
       role: 'user',
       content: content,
-      coins_spent: 1
+      coin_cost: 1
     })
+    if (saveUserMsgError) throw saveUserMsgError
 
     const { error: saveAiMsgError } = await authSupabase.from('ai_messages').insert({
       conversation_id: activeConversationId,
       user_id: user.id,
       role: 'assistant',
       content: aiResponse,
-      coins_spent: 0
+      coin_cost: 0
     })
+    if (saveAiMsgError) throw saveAiMsgError
 
     // Deduct Coin
-    await authSupabase
+    const { error: updateProfileError } = await authSupabase
       .from('user_profiles')
       .update({ ai_coins: profile.ai_coins - 1 })
       .eq('id', user.id)
+    if (updateProfileError) throw updateProfileError
 
     return NextResponse.json({ 
       content: aiResponse, 

@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq'
-import { redis } from './redis'
+import { redis } from '@/lib/redis'
 
 export type AiJobType = 'roadmap' | 'fitness_plan' | 'nutrition_plan' | 'style_advice' | 'chat_analysis'
 
@@ -28,6 +28,10 @@ export const aiQueue = globalForQueue.aiQueue ?? new Queue(AI_QUEUE_NAME, {
 })
 
 if (process.env.NODE_ENV !== 'production') globalForQueue.aiQueue = aiQueue
+
+aiQueue.on('error', (err) => {
+  // Silent - let the redis singleton handle the throttled logging
+})
 
 /**
  * Helper to add a job to the AI queue

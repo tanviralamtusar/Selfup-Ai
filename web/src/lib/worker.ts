@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq'
-import { redis } from './redis'
+import { redis } from '@/lib/redis'
 import { AiJobData } from './queue'
 import { generateResponse } from './gemma'
 import { supabase } from './supabase'
@@ -78,6 +78,10 @@ export function setupAiWorker() {
 
   worker.on('failed', (job, err) => {
     console.error(`[AI Worker] Job ${job?.id} failed with error: ${err.message}`)
+  })
+
+  worker.on('error', (err) => {
+    // Silent - the redis instance already handles logging a throttled warning
   })
 
   return worker

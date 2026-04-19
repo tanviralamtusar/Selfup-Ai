@@ -3,6 +3,7 @@ export async function register() {
     const { setupAiWorker } = await import('./lib/worker')
     
     console.log('[SelfUp] Booting Background AI Intelligence Queue...')
-    setupAiWorker()
+    // setupAiWorker()
+    console.log('[SelfUp] Background AI Queue is currently DISABLED.')
   }
 }

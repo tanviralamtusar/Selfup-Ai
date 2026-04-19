@@ -7,6 +7,7 @@ let hasLoggedError = false;
 
 export const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
+  lazyConnect: true, // Only connect when a command is sent
   retryStrategy(times) {
     const delay = Math.min(times * 100, 3000);
     return delay;

@@ -5,7 +5,9 @@ import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
 import { cn, formatNumber } from '@/lib/utils'
 import { xpToNextLevel } from '@/constants/gamification'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
 import { 
   PlusCircle, 
   Bolt, 
@@ -19,7 +21,9 @@ import {
   Gamepad2,
   Shield,
   Filter,
-  Sparkles
+  Sparkles,
+  Flame,
+  Loader2
 } from 'lucide-react'
 
 const containerAnim = {
@@ -78,8 +82,16 @@ function Gauge({ percent, colorClass, label, title }: { percent: number, colorCl
   )
 }
 
+interface Habit {
+  id: string
+  name: string
+  pillar: string
+  streak: number
+  completed_today: boolean
+}
+
 export default function DashboardPage() {
-  const profile = useAuthStore((s) => s.profile)
+  const { profile, session } = useAuthStore()
 
   const level = profile?.level ?? 1
   const xp = profile?.xp ?? 0
@@ -91,6 +103,43 @@ export default function DashboardPage() {
   // Dummy values for Health and Mana to match visual requirements
   const health = 27; const maxHealth = 50; const healthPct = (health / maxHealth) * 100;
   const mana = 82; const maxMana = 100; const manaPct = (mana / maxMana) * 100;
+
+  // Live habits
+  const [habits, setHabits] = useState<Habit[]>([])
+  const [loggingHabit, setLoggingHabit] = useState<string | null>(null)
+
+  const headers = useCallback(() => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${session?.access_token}`
+  }), [session])
+
+  useEffect(() => {
+    if (session?.access_token) fetchHabits()
+  }, [session])
+
+  const fetchHabits = async () => {
+    try {
+      const res = await fetch('/api/habits', { headers: headers() })
+      if (res.ok) setHabits(await res.json())
+    } catch { /* silently fail — habits are non-critical */ }
+  }
+
+  const handleLogHabit = async (habitId: string) => {
+    setLoggingHabit(habitId)
+    try {
+      const res = await fetch(`/api/habits/${habitId}/log`, {
+        method: 'POST', headers: headers()
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success(`+${data.xpEarned} XP — Habit logged! 🔥`)
+        fetchHabits()
+      } else if (res.status === 409) {
+        toast.info('Already logged today!')
+      }
+    } catch { toast.error('Failed to log habit') }
+    finally { setLoggingHabit(null) }
+  }
 
   return (
     <motion.div
@@ -200,27 +249,47 @@ export default function DashboardPage() {
             <h2 className="text-[11px] font-black tracking-[3px] flex items-center gap-3 font-headline uppercase text-on-surface">
               <Bolt className="text-primary" size={16} /> Habits
             </h2>
-            <button className="text-on-surface-variant/40 hover:text-primary transition-all hover:scale-110 active:scale-90">
+            <Link href={ROUTES.TIME} className="text-on-surface-variant/40 hover:text-primary transition-all hover:scale-110 active:scale-90">
               <PlusCircle size={20} />
-            </button>
+            </Link>
           </div>
           <div className="space-y-4">
-            {[
-              { title: 'Morning Exercise', xp: '+2.5 XP', color: 'primary' },
-              { title: 'Healthy Eating', xp: '+1.2 XP', color: 'primary' }
-            ].map(habit => (
-              <div key={habit.title} className="group bg-surface-container-low hover:bg-surface-container-high p-2 rounded-[1.5rem] transition-all border border-outline-variant/10 shadow-lg hover:-translate-y-1">
+            {habits.length === 0 ? (
+              <div className="p-6 rounded-[1.5rem] border border-dashed border-outline-variant/10 text-center">
+                <p className="text-xs text-on-surface-variant/30 font-black uppercase tracking-widest">No habits yet</p>
+                <Link href={ROUTES.TIME} className="text-[10px] text-primary font-black uppercase tracking-widest mt-2 block hover:underline">
+                  Create one →
+                </Link>
+              </div>
+            ) : habits.slice(0, 3).map(habit => (
+              <div key={habit.id} className={cn(
+                "group bg-surface-container-low hover:bg-surface-container-high p-2 rounded-[1.5rem] transition-all border shadow-lg hover:-translate-y-1",
+                habit.completed_today ? 'border-tertiary-fixed-dim/20 opacity-70' : 'border-outline-variant/10'
+              )}>
                 <div className="flex items-center gap-2">
-                  <button className="w-11 h-11 flex items-center justify-center bg-primary/10 text-primary rounded-xl group-hover:bg-primary group-hover:text-on-primary transition-all active:scale-90">
-                    <Plus size={18} />
+                  <button
+                    onClick={() => !habit.completed_today && handleLogHabit(habit.id)}
+                    disabled={habit.completed_today || loggingHabit === habit.id}
+                    className={cn(
+                      "w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90",
+                      habit.completed_today
+                        ? 'bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim cursor-default'
+                        : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-on-primary'
+                    )}
+                  >
+                    {loggingHabit === habit.id ? <Loader2 size={16} className="animate-spin" /> :
+                     habit.completed_today ? <Check size={18} /> : <Plus size={18} />}
                   </button>
                   <div className="flex-1 px-2">
-                    <p className="text-sm font-black tracking-tight text-on-surface">{habit.title}</p>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">{habit.xp}</p>
+                    <p className="text-sm font-black tracking-tight text-on-surface">{habit.name}</p>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">+10 XP per log</p>
                   </div>
-                  <button className="w-11 h-11 flex items-center justify-center bg-error/5 text-error/40 rounded-xl hover:bg-error hover:text-on-error transition-all active:scale-90 opacity-0 group-hover:opacity-100">
-                    <Minus size={18} />
-                  </button>
+                  {habit.streak > 0 && (
+                    <div className="flex items-center gap-1 pr-2">
+                      <Flame size={14} className="text-orange-400" />
+                      <span className="text-xs font-black text-orange-400">{habit.streak}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

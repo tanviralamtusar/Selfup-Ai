@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker": "tsx watch src/worker-runner.ts"
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
@@ -44,6 +45,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.15",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

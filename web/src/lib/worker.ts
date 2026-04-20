@@ -78,9 +78,140 @@ export function setupAiWorker() {
             result = `Success: Generated roadmap with ${milestones.length} milestones.`
             break
           }
-          case 'fitness_plan':
-            result = await generateResponse(`Generate a workout plan for a ${payload.goal} goal. Days per week: ${payload.days}.`)
+          case 'style_advice': {
+            const prompt = `You are an elite fashion AI stylist.
+            The user needs an outfit for this occasion: "${payload.occasion}".
+            Their body type: "${payload.body_type}".
+            Style preferences: "${(payload.style_preferences || []).join(', ')}".
+            Budget: "${payload.budget_range}".
+            
+            Create a coordinated look with 4 items: Top, Bottom, Shoes, Accessory.
+            Return ONLY a valid JSON array of objects, where each object has:
+            "type" (e.g. "top", "bottom", "shoes", "accessory"),
+            "name" (specific name of the item),
+            "description" (why it works),
+            "color",
+            "estimated_price" (a number matching the budget).
+            No markdown blocks, no intro, no outro, strictly JSON.`
+
+            const rawResponse = await generateResponse(prompt)
+            const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
+            let items = []
+            try {
+              items = JSON.parse(cleanJson)
+            } catch (pErr) {
+              console.error('[AI Worker] Style JSON Parse Error:', pErr, cleanJson)
+              throw new Error('Failed to parse style AI response')
+            }
+
+            const { error: styleError } = await supabase
+              .from('style_recommendations')
+              .insert({
+                user_id: userId,
+                occasion: payload.occasion,
+                items: items,
+                is_ai_generated: true,
+                rating: null
+              })
+
+            if (styleError) throw styleError
+
+            result = `Success: Generated style with ${items.length} items.`
             break
+          }
+          case 'fitness_plan': {
+            const prompt = `You are a world-class personal trainer.
+            Create a structured workout plan.
+            Target goal: "${payload.goal}".
+            Days per week: ${payload.days}.
+
+            Return ONLY a valid JSON object with the following structure:
+            {
+              "name": "Title of the plan",
+              "description": "Short explanation",
+              "workouts": [
+                {
+                  "day_number": 1,
+                  "name": "E.g., Upper Body Focus",
+                  "muscle_groups": ["Chest", "Back"],
+                  "exercises": [
+                    { "name": "Bench Press", "sets": 3, "reps": "8-12", "rest_seconds": 90, "notes": "Keep core tight" }
+                  ]
+                }
+              ]
+            }
+            No markdown blocks, no text outside JSON.`
+            
+            const rawResponse = await generateResponse(prompt)
+            const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
+            let planData = null
+            try {
+              planData = JSON.parse(cleanJson)
+            } catch (err) {
+              console.error('[AI Worker] Fitness JSON Parse Error:', err, cleanJson)
+              throw new Error('Failed to parse fitness AI response')
+            }
+
+            // 1. Insert Workout Plan
+            const { data: planRow, error: planError } = await supabase
+              .from('workout_plans')
+              .insert({
+                user_id: userId,
+                name: planData.name,
+                description: planData.description,
+                goal: payload.goal,
+                days_per_week: payload.days,
+                difficulty: 'intermediate',
+                is_ai_generated: true,
+                is_active: true
+              })
+              .select().single()
+
+            if (planError) throw planError
+
+            // 2. Insert Workout Days
+            for (const d of planData.workouts) {
+              const { data: dayRow, error: dayError } = await supabase
+                .from('workout_days')
+                .insert({
+                  plan_id: planRow.id,
+                  day_number: d.day_number,
+                  name: d.name,
+                  muscle_groups: d.muscle_groups || []
+                })
+                .select().single()
+
+              if (dayError) throw dayError
+
+              // We'll skip exercise relational mapping for now if "exercises" table is strict,
+              // or just upsert the exercises. Since we auto-generated schema, let's upsert the exercises.
+              for (const ex of d.exercises) {
+                // Upsert exercise
+                const { data: exRow, error: exError } = await supabase
+                  .from('exercises')
+                  .upsert({
+                    name: ex.name,
+                    muscle_group: (d.muscle_groups || ['general'])[0],
+                    difficulty: 'intermediate'
+                  }, { onConflict: 'name' })
+                  .select().single()
+
+                if (!exError && exRow) {
+                  await supabase.from('workout_day_exercises').insert({
+                    workout_day_id: dayRow.id,
+                    exercise_id: exRow.id,
+                    sets: ex.sets || 3,
+                    reps: ex.reps || "10",
+                    rest_seconds: ex.rest_seconds || 60,
+                    notes: ex.notes || ""
+                  })
+                }
+              }
+            }
+
+            result = `Success: Generated fitness plan ${planData.name}.`
+            break
+          }
           default:
             result = await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`)
         }

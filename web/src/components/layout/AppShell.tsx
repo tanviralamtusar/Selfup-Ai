@@ -21,7 +21,8 @@ import {
   LogOut,
   Sparkles,
   Search,
-  Settings
+  Settings,
+  Flame
 } from 'lucide-react'
 
 const navItems = [
@@ -30,6 +31,7 @@ const navItems = [
   { icon: Dumbbell, label: 'Fitness', href: ROUTES.FITNESS },
   { icon: Brain, label: 'Skills', href: ROUTES.SKILLS },
   { icon: Clock, label: 'Time', href: ROUTES.TIME },
+  { icon: Flame, label: 'Habits', href: '/time?tab=habits' },
   { icon: Palette, label: 'Style', href: ROUTES.STYLE },
   { icon: Sword, label: 'Quests', href: ROUTES.QUESTS },
   { icon: Users, label: 'Social', href: ROUTES.LEADERBOARD },
@@ -60,50 +62,50 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-background text-on-surface min-h-screen">
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 h-16 z-50 flex items-center justify-between px-6 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high shadow-[0_40px_40px_rgba(174,162,255,0.08)]">
-        <div className="flex items-center gap-8">
+      <header className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 md:px-6 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high shadow-[0_40px_40px_rgba(174,162,255,0.08)]">
+        <div className="flex items-center gap-6">
           <Link href={ROUTES.DASHBOARD} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="text-on-primary" size={20} />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
+              <Sparkles className="text-on-primary" size={16} />
             </div>
-            <span className="text-2xl font-black font-headline tracking-tighter text-on-surface">SelfUp</span>
+            <span className="text-xl font-black font-headline tracking-tighter text-on-surface">SelfUp</span>
           </Link>
 
           {/* Desktop Search */}
           <div className="hidden md:flex items-center relative group">
-            <Search className="absolute left-3 text-on-surface-variant/40 group-focus-within:text-primary transition-colors" size={16} />
+            <Search className="absolute left-3 text-on-surface-variant/40 group-focus-within:text-primary transition-colors" size={14} />
             <input 
               type="text" 
               placeholder="Search..."
-              className="bg-surface-container-highest/20 border border-outline-variant/10 rounded-xl h-10 pl-10 pr-4 w-64 text-xs font-medium focus:outline-none focus:border-primary/30 focus:bg-surface-container-highest/40 transition-all"
+              className="bg-surface-container-highest/20 border border-outline-variant/10 rounded-lg h-8 pl-9 pr-4 w-56 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary/30 focus:bg-surface-container-highest/40 transition-all"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="p-2.5 rounded-xl bg-surface-container-highest/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all relative">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface" />
+          <button className="p-2 rounded-lg bg-surface-container-highest/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all relative">
+            <Bell size={18} />
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-error rounded-full border border-surface" />
           </button>
           
           <button 
             onClick={() => router.push(ROUTES.SETTINGS)}
-            className="p-2.5 rounded-xl bg-surface-container-highest/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all"
+            className="p-2 rounded-lg bg-surface-container-highest/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all"
           >
-            <Settings size={20} />
+            <Settings size={18} />
           </button>
 
-          <div className="h-8 w-px bg-surface-container-high mx-2" />
+          <div className="h-6 w-px bg-surface-container-high mx-1" />
 
-          <div className="flex items-center gap-3 pl-2">
+          <div className="flex items-center gap-3 pl-1">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-black text-on-surface truncate max-w-[120px] uppercase tracking-wider">{username}</p>
-              <div className="flex items-center justify-end gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_8px_rgba(107,255,193,0.4)]" />
-                <p className="text-[10px] font-black uppercase text-tertiary-fixed-dim/80 tracking-widest">Level {level}</p>
+              <p className="text-[10px] font-black text-on-surface truncate max-w-[100px] uppercase tracking-wider">{username}</p>
+              <div className="flex items-center justify-end gap-1 mt-0.5">
+                <span className="w-1 h-1 rounded-full bg-tertiary shadow-[0_0_8px_rgba(107,255,193,0.4)]" />
+                <p className="text-[8px] font-black uppercase text-tertiary-fixed-dim/80 tracking-[0.2em]">Level {level}</p>
               </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-surface-container-high border-2 border-outline-variant/10 flex items-center justify-center text-primary font-black shadow-inner overflow-hidden">
+            <div className="w-8 h-8 rounded-lg bg-surface-container-high border-2 border-outline-variant/10 flex items-center justify-center text-primary font-black shadow-inner overflow-hidden text-xs">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
               ) : (
@@ -115,12 +117,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ─── Sidebar ─── */}
-      <aside className="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-low border-r border-surface-container-high hidden lg:flex flex-col z-40">
-        <div className="flex-1 py-10 px-4 space-y-12">
+      <aside className="fixed left-0 top-14 bottom-0 w-56 bg-surface-container-low border-r border-surface-container-high hidden lg:flex flex-col z-40">
+        <div className="flex-1 py-6 px-3 space-y-8">
           {/* Section: Main */}
           <div>
-            <p className="px-4 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Core Pillars</p>
-            <div className="space-y-1.5">
+            <p className="px-3 text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Core Pillars</p>
+            <div className="space-y-1">
               {navItems.slice(0, 4).map((item) => {
                 const isActive = pathname === item.href
                 const Icon = item.icon
@@ -129,13 +131,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all group",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all group",
                       isActive 
-                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20" 
+                        ? "bg-primary text-on-primary shadow-md shadow-primary/20" 
                         : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/50"
                     )}
                   >
-                    <Icon size={20} className={cn(isActive ? "text-on-primary" : "text-on-surface-variant group-hover:text-on-surface")} />
+                    <Icon size={16} className={cn(isActive ? "text-on-primary" : "text-on-surface-variant group-hover:text-on-surface")} />
                     {item.label}
                   </Link>
                 )
@@ -145,8 +147,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Section: Social */}
           <div>
-            <p className="px-4 text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Social & Skills</p>
-            <div className="space-y-1.5">
+            <p className="px-3 text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Social & Skills</p>
+            <div className="space-y-1">
               {navItems.slice(4).map((item) => {
                 const isActive = pathname === item.href
                 const Icon = item.icon
@@ -155,13 +157,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all group",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all group",
                       isActive 
-                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20" 
+                        ? "bg-primary text-on-primary shadow-md shadow-primary/20" 
                         : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/50"
                     )}
                   >
-                    <Icon size={20} className={cn(isActive ? "text-on-primary" : "text-on-surface-variant group-hover:text-on-surface")} />
+                    <Icon size={16} className={cn(isActive ? "text-on-primary" : "text-on-surface-variant group-hover:text-on-surface")} />
                     {item.label}
                   </Link>
                 )
@@ -171,13 +173,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 mt-auto border-t border-surface-container-high bg-surface-container-lowest/30">
-          <div className="bg-surface-container-high/40 rounded-2xl p-4 border border-outline-variant/10">
+        <div className="p-3 mt-auto border-t border-surface-container-high bg-surface-container-lowest/30">
+          <div className="bg-surface-container-high/40 rounded-xl p-3 border border-outline-variant/10">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black uppercase text-on-surface-variant/60 tracking-widest">Progress</span>
-              <span className="text-[10px] font-black text-primary">{progress.toFixed(0)}%</span>
+              <span className="text-[9px] font-black uppercase text-on-surface-variant/60 tracking-widest">Progress</span>
+              <span className="text-[9px] font-black text-primary">{progress.toFixed(0)}%</span>
             </div>
-            <div className="h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+            <div className="h-1 bg-surface-container-lowest rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500" 
                 style={{ width: `${progress}%` }}
@@ -186,17 +188,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3.5 px-4 py-3.5 mt-4 rounded-2xl text-xs font-black uppercase tracking-widest text-error/60 hover:text-error hover:bg-error/10 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2.5 mt-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-error/60 hover:text-error hover:bg-error/10 transition-all"
           >
-            <LogOut size={20} />
+            <LogOut size={16} />
             Sign Out
           </button>
         </div>
       </aside>
 
       {/* ─── Main Content ─── */}
-      <main className="lg:pl-64 pt-16 min-h-screen">
-        <div className="p-6 md:p-10 max-w-7xl mx-auto">
+      <main className="lg:pl-56 pt-14 min-h-screen border-l border-surface-container-high">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

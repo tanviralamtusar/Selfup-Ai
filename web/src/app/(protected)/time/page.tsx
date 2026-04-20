@@ -10,6 +10,8 @@ import {
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { HabitsView } from '@/components/time/HabitsView'
+import { ScheduleView } from '@/components/time/ScheduleView'
 
 type TimerState = 'idle' | 'active' | 'break' | 'paused'
 type TaskStatus = 'todo' | 'in_progress' | 'done'
@@ -108,6 +110,7 @@ export default function TimePage() {
   const { session } = useAuthStore()
 
   // ── Timer State ──
+  const [activeTab, setActiveTab] = useState<'focus' | 'habits' | 'schedule'>('focus')
   const [timerState, setTimerState] = useState<TimerState>('idle')
   const [workMinutes, setWorkMinutes] = useState(25)
   const [breakMinutes, setBreakMinutes] = useState(5)
@@ -135,6 +138,13 @@ export default function TimePage() {
       fetchAll()
     }
   }, [session])
+
+  useEffect(() => {
+    const tabParam = new URLSearchParams(window.location.search).get('tab')
+    if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus') {
+      setActiveTab(tabParam)
+    }
+  }, [])
 
   const fetchAll = async () => {
     setIsLoading(true)
@@ -281,6 +291,25 @@ export default function TimePage() {
         </div>
       </div>
 
+      <div className="flex border-b border-outline-variant/10 mb-6 overflow-x-auto">
+        {(['focus', 'habits', 'schedule'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "flex-1 md:flex-none min-w-[120px] py-4 text-[11px] font-black uppercase tracking-widest transition-all relative",
+              activeTab === tab ? 'text-primary' : 'text-on-surface-variant/50 hover:text-on-surface-variant'
+            )}
+          >
+            {tab}
+            {activeTab === tab && (
+              <motion.div layoutId="timePageTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'focus' && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* ── Left: Pomodoro Timer ── */}
         <div className="lg:col-span-5 space-y-6">
@@ -583,6 +612,10 @@ export default function TimePage() {
           </div>
         </div>
       </div>
+      )}
+
+      {activeTab === 'habits' && <HabitsView />}
+      {activeTab === 'schedule' && <ScheduleView />}
     </div>
   )
 }

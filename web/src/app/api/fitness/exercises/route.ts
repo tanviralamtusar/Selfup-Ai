@@ -1,9 +1,15 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/api-auth';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
+export async function GET(request: NextRequest) {
+  const { user, error: authError } = await verifyAuth(request);
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const token = request.headers.get('authorization')?.replace('Bearer ', '');
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
   const muscleGroup = searchParams.get('muscle_group');

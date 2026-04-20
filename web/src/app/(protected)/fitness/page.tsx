@@ -23,8 +23,8 @@ export default function FitnessPage() {
         plansRes.json(),
         logsRes.json()
       ]);
-      setPlans(plansData || []);
-      setLogs(logsData || []);
+      setPlans(Array.isArray(plansData) ? plansData : []);
+      setLogs(Array.isArray(logsData) ? logsData : []);
     } catch (err) {
       toast.error('Failed to load fitness data');
     } finally {

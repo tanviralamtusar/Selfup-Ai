@@ -34,6 +34,7 @@ export function setupAiWorker() {
             Do not include any intro or outro text.`
             
             const rawResponse = await generateResponse(prompt)
+            if (!rawResponse) throw new Error('No response from AI');
             
             // Clean and parse JSON
             const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
@@ -95,6 +96,7 @@ export function setupAiWorker() {
             No markdown blocks, no intro, no outro, strictly JSON.`
 
             const rawResponse = await generateResponse(prompt)
+            if (!rawResponse) throw new Error('No response from AI');
             const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
             let items = []
             try {
@@ -143,6 +145,7 @@ export function setupAiWorker() {
             No markdown blocks, no text outside JSON.`
             
             const rawResponse = await generateResponse(prompt)
+            if (!rawResponse) throw new Error('No response from AI');
             const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
             let planData = null
             try {
@@ -213,7 +216,7 @@ export function setupAiWorker() {
             break
           }
           default:
-            result = await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`)
+            result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`)) || 'No response';
         }
 
         // 3. Update status to 'done' and store result

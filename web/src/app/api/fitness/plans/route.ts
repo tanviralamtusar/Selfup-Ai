@@ -1,14 +1,15 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAuth } from '@/lib/api-auth';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+export async function GET(request: NextRequest) {
+  const { user, error: authError } = await verifyAuth(request);
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const token = request.headers.get('authorization')?.replace('Bearer ', '');
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
 
   const { data, error } = await supabase
     .from('workout_plans')
@@ -32,13 +33,14 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-export async function POST(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+export async function POST(request: NextRequest) {
+  const { user, error: authError } = await verifyAuth(request);
+  if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const token = request.headers.get('authorization')?.replace('Bearer ', '');
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
 
   const body = await request.json();
   const { name, description, difficulty, goal, days_per_week, days } = body;

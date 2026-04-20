@@ -275,6 +275,7 @@ export default function SkillsPage() {
                     </div>
                   ) : (
                     <RoadmapTimeline 
+                      skillName={activeSkill.name}
                       milestones={activeRoadmap?.skill_milestones || []} 
                       onToggleMilestone={handleToggleMilestone}
                     />

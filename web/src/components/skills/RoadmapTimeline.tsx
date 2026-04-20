@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Circle, Clock, Info } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Info, ExternalLink, Play, ChevronDown, Loader2 } from 'lucide-react'
+import { useAuthStore } from '@/store/authStore'
 import { cn } from '@/lib/utils'
 
 interface Milestone {
@@ -14,12 +16,54 @@ interface Milestone {
 }
 
 interface RoadmapTimelineProps {
+  skillName: string
   milestones: Milestone[]
   onToggleMilestone: (id: string, isCompleted: boolean) => void
   isLoading?: string | null // ID of milestone being toggled
 }
 
-export function RoadmapTimeline({ milestones, onToggleMilestone, isLoading }: RoadmapTimelineProps) {
+export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLoading }: RoadmapTimelineProps) {
+  const { session } = useAuthStore()
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [resources, setResources] = useState<Record<string, any[]>>({})
+  const [isFetchingResources, setIsFetchingResources] = useState<string | null>(null)
+
+  const handleFetchResources = async (e: React.MouseEvent, milestone: Milestone) => {
+    e.stopPropagation() // prevent bubbling if we click a button
+    
+    // Toggle expand/collapse
+    if (expandedId === milestone.id) {
+      setExpandedId(null)
+      return
+    }
+    
+    setExpandedId(milestone.id)
+
+    // If we already have resources for this milestone, don't refetch
+    if (resources[milestone.id] && resources[milestone.id].length > 0) return
+
+    setIsFetchingResources(milestone.id)
+    try {
+      const res = await fetch('/api/youtube/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        // We use the skill name to provide context (e.g. "Python: Variables" instead of just "Variables")
+        body: JSON.stringify({ query: `${skillName} ${milestone.title}` })
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setResources(prev => ({ ...prev, [milestone.id]: data }))
+      }
+    } catch (err) {
+      console.error('Failed to fetch resources:', err)
+    } finally {
+      setIsFetchingResources(null)
+    }
+  }
   if (milestones.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
@@ -118,6 +162,69 @@ export function RoadmapTimeline({ milestones, onToggleMilestone, isLoading }: Ro
                   <Clock size={10} />
                   <span>~{milestone.estimated_hours}h</span>
                 </div>
+              </div>
+
+              {/* Find Resources Action */}
+              <div className="mt-4 pt-4 border-t border-outline-variant/10">
+                <button
+                  onClick={(e) => handleFetchResources(e, milestone)}
+                  disabled={isLocked}
+                  className={cn(
+                    "flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-colors",
+                    isLocked ? "opacity-50 cursor-not-allowed text-on-surface-variant/40" : "text-primary hover:text-primary/80"
+                  )}
+                >
+                  <Play size={14} />
+                  <span>Find Resources</span>
+                  <ChevronDown size={14} className={cn(
+                    "ml-auto transition-transform duration-300", 
+                    expandedId === milestone.id ? "rotate-180" : ""
+                  )} />
+                </button>
+
+                {/* Sub-content dropdown: YouTube Links */}
+                <AnimatePresence>
+                  {expandedId === milestone.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mt-4 space-y-3"
+                    >
+                      {isFetchingResources === milestone.id ? (
+                        <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium py-2">
+                           <Loader2 size={14} className="animate-spin text-primary" />
+                           Running deep search...
+                        </div>
+                      ) : resources[milestone.id] && resources[milestone.id].length > 0 ? (
+                        <div className="grid grid-cols-1 gap-3">
+                          {resources[milestone.id].map((vid: any) => (
+                            <a 
+                              key={vid.id}
+                              href={vid.link} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="group flex gap-3 p-2 rounded-xl hover:bg-surface-container border border-transparent hover:border-outline-variant/10 transition-all"
+                            >
+                              <div className="w-24 h-16 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 relative">
+                                <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <ExternalLink size={16} className="text-white" />
+                                </div>
+                              </div>
+                              <div className="py-1">
+                                <h5 className="text-xs font-bold text-on-surface line-clamp-2 leading-tight group-hover:text-primary transition-colors">{vid.title}</h5>
+                                <p className="text-[10px] text-on-surface-variant mt-1 font-medium">{vid.channelTitle}</p>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ) : resources[milestone.id] ? (
+                         <div className="text-xs text-on-surface-variant/40 italic py-2">No videos found.</div>
+                      ) : null}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>

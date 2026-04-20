@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Sparkles, History, Dumbbell, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import WorkoutCard from '@/components/fitness/WorkoutCard';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import WorkoutView from '@/components/fitness/WorkoutView';
+import NutritionView from '@/components/fitness/NutritionView';
+import BodyView from '@/components/fitness/BodyView';
 import { toast } from 'sonner';
 
 export default function FitnessPage() {
@@ -11,6 +15,7 @@ export default function FitnessPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -99,87 +104,63 @@ export default function FitnessPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Active & Available Plans */}
-        <div className="lg:col-span-2 space-y-8">
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Dumbbell size={20} className="text-indigo-500" />
-              <h2 className="text-xl font-bold">Current Protocol</h2>
-            </div>
-
-            {loading ? (
-              <div className="h-48 rounded-xl bg-zinc-900/50 animate-pulse border border-zinc-800" />
-            ) : activePlan ? (
-              <div className="space-y-4">
-                <WorkoutCard plan={activePlan} isActive={true} />
-                
-                {/* Day Overview */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {activePlan.workout_days?.map((day: any) => (
-                    <div key={day.id} className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-lg text-center">
-                      <span className="block text-[10px] text-zinc-500 uppercase font-bold mb-1">Day {day.day_number}</span>
-                      <span className="block text-sm font-semibold">{day.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
-                <Dumbbell size={40} className="text-zinc-700 mb-4" />
-                <h3 className="text-lg font-bold text-zinc-400 mb-1">No Active Protocol</h3>
-                <p className="text-zinc-500 text-sm mb-6">Start by building a custom plan or let Nova generate one.</p>
-                <button 
-                  onClick={handleGeneratePlan}
-                  className="flex items-center gap-2 text-indigo-400 font-bold hover:text-indigo-300 transition-colors"
-                >
-                  Generate Plan with Nova <ArrowRight size={16} />
-                </button>
-              </div>
+      {/* ── Tabs Menu ── */}
+      <div className="flex border-b border-zinc-800/50 mb-8 overflow-x-auto scrollbar-hide">
+        {(['workout', 'nutrition', 'body'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "flex-1 md:flex-none min-w-[120px] py-4 text-[11px] font-black uppercase tracking-widest transition-all relative",
+              activeTab === tab ? 'text-indigo-400' : 'text-zinc-500 hover:text-zinc-300'
             )}
-          </section>
+          >
+            {tab}
+            {activeTab === tab && (
+              <motion.div layoutId="fitnessTabIndicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-t-full" />
+            )}
+          </button>
+        ))}
+      </div>
 
-          {plans.length > 1 && (
+      {activeTab === 'workout' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <WorkoutView plans={plans} loading={loading} handleGeneratePlan={handleGeneratePlan} />
+          </div>
+
+          <div className="space-y-8">
             <section>
-              <h2 className="text-lg font-bold mb-4 text-zinc-400 uppercase tracking-widest text-xs">Other Plans</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {plans.filter(p => !p.is_active).map(plan => (
-                  <WorkoutCard key={plan.id} plan={plan} />
-                ))}
+              <div className="flex items-center gap-2 mb-4">
+                <History size={20} className="text-indigo-500" />
+                <h2 className="text-xl font-bold">Recent Output</h2>
+              </div>
+              
+              <div className="space-y-3">
+                {logs.length > 0 ? (
+                  logs.slice(0, 5).map((log) => (
+                    <div key={log.id} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs font-bold text-green-400">+{log.xp_earned} XP</span>
+                        <span className="text-[10px] text-zinc-600">{new Date(log.completed_at).toLocaleDateString()}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white mb-1">Workout Session</h4>
+                      <p className="text-xs text-zinc-500 line-clamp-1 italic">"{log.notes || 'No notes'}"</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-zinc-600 italic text-sm">
+                    No activities logged yet.
+                  </div>
+                )}
               </div>
             </section>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* Sidebar Activity */}
-        <div className="space-y-8">
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <History size={20} className="text-indigo-500" />
-              <h2 className="text-xl font-bold">Recent Output</h2>
-            </div>
-            
-            <div className="space-y-3">
-              {logs.length > 0 ? (
-                logs.slice(0, 5).map((log) => (
-                  <div key={log.id} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold text-emerald-400">+{log.xp_earned} XP</span>
-                      <span className="text-[10px] text-zinc-600">{new Date(log.completed_at).toLocaleDateString()}</span>
-                    </div>
-                    <h4 className="text-sm font-bold text-white mb-1">Workout Session</h4>
-                    <p className="text-xs text-zinc-500 line-clamp-1 italic">"{log.notes || 'No notes'}"</p>
-                  </div>
-                ))
-              ) : (
-                <div className="py-12 text-center text-zinc-600 italic text-sm">
-                  No activities logged yet.
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </div>
+      {activeTab === 'nutrition' && <NutritionView />}
+      {activeTab === 'body' && <BodyView />}
     </div>
   );
 }

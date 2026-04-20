@@ -26,9 +26,58 @@ export function setupAiWorker() {
         // 2. Perform AI Task
         let result = ''
         switch (type) {
-          case 'roadmap':
-            result = await generateResponse(`Generate a detailed skill roadmap for: ${payload.skillName}. Target level: ${payload.targetLevel || 'Intermediate'}.`)
+          case 'roadmap': {
+            const prompt = `You are a world-class mentor. Generate a structured learning roadmap for the skill: "${payload.skillName}" in the category: "${payload.category || 'General'}". 
+            Target level: ${payload.targetLevel || 'Mastery'}.
+            The roadmap should consist of 8-10 specific, actionable milestones.
+            Respond ONLY with a valid JSON array of objects, each with these exact keys: "title", "description", "estimated_hours".
+            Do not include any intro or outro text.`
+            
+            const rawResponse = await generateResponse(prompt)
+            
+            // Clean and parse JSON
+            const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
+            let milestones = []
+            try {
+              milestones = JSON.parse(cleanJson)
+            } catch (pErr) {
+              console.error('[AI Worker] JSON Parse Error:', pErr, cleanJson)
+              throw new Error('Failed to parse AI roadmap response')
+            }
+
+            // 1. Create Roadmap
+            const { data: roadmap, error: roadmapError } = await supabase
+              .from('skill_roadmaps')
+              .insert({
+                skill_id: payload.skillId,
+                title: `${payload.skillName} Growth Path`,
+                description: `AI-generated roadmap to master ${payload.skillName}.`,
+                is_ai_generated: true
+              })
+              .select()
+              .single()
+            
+            if (roadmapError) throw roadmapError
+
+            // 2. Create Milestones
+            const milestoneEntries = milestones.map((m: any, idx: number) => ({
+              roadmap_id: roadmap.id,
+              title: m.title,
+              description: m.description,
+              order_index: idx + 1,
+              estimated_hours: m.estimated_hours || 1,
+              is_completed: false
+            }))
+
+            const { error: milestoneError } = await supabase
+              .from('skill_milestones')
+              .insert(milestoneEntries)
+            
+            if (milestoneError) throw milestoneError
+
+            result = `Success: Generated roadmap with ${milestones.length} milestones.`
             break
+          }
           case 'fitness_plan':
             result = await generateResponse(`Generate a workout plan for a ${payload.goal} goal. Days per week: ${payload.days}.`)
             break

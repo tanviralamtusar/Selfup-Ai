@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import WorkoutView from '@/components/fitness/WorkoutView';
 import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
-import { toast } from 'sonner';
+import { LevelUpModal } from '@/components/gamification/LevelUpModal';
 
 export default function FitnessPage() {
   const [plans, setPlans] = useState<any[]>([]);
@@ -16,6 +16,10 @@ export default function FitnessPage() {
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
+
+  // Level up state
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsReward: 50 });
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -161,6 +165,14 @@ export default function FitnessPage() {
 
       {activeTab === 'nutrition' && <NutritionView />}
       {activeTab === 'body' && <BodyView />}
+
+      <LevelUpModal
+        isOpen={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        newLevel={levelUpData.newLevel}
+        totalXp={levelUpData.totalXp}
+        coinsReward={levelUpData.coinsReward}
+      />
     </div>
   );
 }

@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Sword, Trophy, Star, Zap, Coins, Clock, CheckCircle2,
-  Loader2, Shield, BookOpen, Timer, Dumbbell, Palette, Globe
+  Sword, Trophy, Star, Coins, Clock, CheckCircle2,
+  Loader2, Shield, BookOpen, Timer, Dumbbell, Palette, Globe, Medal
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { BadgeGrid, Badge } from '@/components/gamification/BadgeGrid'
+import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 
 type QuestType = 'daily' | 'weekly' | 'special'
 type UserQuestStatus = 'active' | 'completed' | 'expired' | null
@@ -153,9 +155,16 @@ function QuestCard({ quest, onAccept, onComplete, isActioning }: {
 export default function QuestsPage() {
   const { session } = useAuthStore()
   const [quests, setQuests] = useState<Quest[]>([])
+  const [badges, setBadges] = useState<Badge[]>([])
+  const [activeMajorTab, setActiveMajorTab] = useState<'quests' | 'badges'>('quests')
   const [activeTab, setActiveTab] = useState<QuestType>('daily')
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true)
   const [actioning, setActioning] = useState<string | null>(null)
+  
+  // Level up state
+  const [showLevelUp, setShowLevelUp] = useState(false)
+  const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50 })
 
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
@@ -163,8 +172,21 @@ export default function QuestsPage() {
   }), [session])
 
   useEffect(() => {
-    if (session?.access_token) fetchQuests()
+    if (session?.access_token) {
+      fetchQuests()
+      fetchBadges()
+    }
   }, [session])
+
+  const fetchBadges = async () => {
+    setIsLoadingBadges(true)
+    try {
+      const res = await fetch('/api/gamification/badges', { headers: headers() })
+      const data = await res.json()
+      if (res.ok) setBadges(data.badges || [])
+    } catch { console.error('Failed to load badges') }
+    finally { setIsLoadingBadges(false) }
+  }
 
   const fetchQuests = async () => {
     setIsLoading(true)
@@ -202,6 +224,12 @@ export default function QuestsPage() {
       const data = await res.json()
       if (res.ok) {
         toast.success(`Quest complete! +${data.xpReward} XP${data.coinReward > 0 ? ` & +${data.coinReward} AiCoins` : ''}`)
+        
+        if (data.leveledUp && data.levelUpDetails) {
+          setLevelUpData(data.levelUpDetails)
+          setShowLevelUp(true)
+        }
+        
         fetchQuests()
       } else {
         toast.error(data.error || 'Failed to complete quest')
@@ -236,12 +264,36 @@ export default function QuestsPage() {
           </div>
           <div className="px-5 py-3 rounded-2xl bg-surface-container-low border border-outline-variant/10 text-center">
             <p className="text-xl font-black font-headline text-tertiary-fixed-dim">{completedQuestCount}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Completed</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Done</p>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Major Tabs */}
+      <div className="flex gap-2 p-1.5 bg-surface-container-low border border-outline-variant/10 rounded-2xl w-fit">
+        <button
+          onClick={() => setActiveMajorTab('quests')}
+          className={cn(
+            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            activeMajorTab === 'quests' ? 'bg-primary/10 text-primary shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+          )}
+        >
+          <Sword size={14} className="inline mr-2" /> Quests
+        </button>
+        <button
+          onClick={() => setActiveMajorTab('badges')}
+          className={cn(
+            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            activeMajorTab === 'badges' ? 'bg-amber-500/10 text-amber-400 shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+          )}
+        >
+          <Medal size={14} className="inline mr-2" /> Badges
+        </button>
+      </div>
+
+      {activeMajorTab === 'quests' && (
+        <>
+          {/* Tabs */}
       <div className="flex gap-2 p-1.5 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 w-fit">
         {(['daily', 'weekly', 'special'] as QuestType[]).map(tab => {
           const conf = TYPE_CONFIG[tab]
@@ -289,8 +341,14 @@ export default function QuestsPage() {
                 isActioning={actioning}
               />
             ))}
-          </AnimatePresence>
-        </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        )}
+        </>
+      )}
+
+      {activeMajorTab === 'badges' && (
+        <BadgeGrid badges={badges} isLoading={isLoadingBadges} />
       )}
 
       {/* Active Quest Banner */}
@@ -308,6 +366,14 @@ export default function QuestsPage() {
           </motion.div>
         </div>
       )}
+
+      <LevelUpModal
+        isOpen={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        newLevel={levelUpData.newLevel}
+        totalXp={levelUpData.totalXp}
+        coinsReward={levelUpData.coinsRewarded}
+      />
     </div>
   )
 }

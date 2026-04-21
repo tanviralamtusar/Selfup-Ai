@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase as adminClient } from '@/lib/supabase'
+import { GamificationService } from '@/lib/gamification.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,13 +32,15 @@ export async function POST(
   if (userQuest.status === 'completed') return NextResponse.json({ error: 'Quest already completed' }, { status: 409 })
 
   // Mark complete
-  await db
+  const { error: markErr } = await db
     .from('user_quests')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', userQuest.id)
 
-  // Get quest rewards (use admin client since quests are public)
-  const { data: quest } = await supabase
+  if (markErr) return NextResponse.json({ error: markErr.message }, { status: 500 })
+
+  // Get quest rewards (use admin client since quests table might have restricted RLS)
+  const { data: quest } = await adminClient
     .from('quests')
     .select('xp_reward, coin_reward')
     .eq('id', questId)
@@ -46,14 +49,20 @@ export async function POST(
   const xpReward = quest?.xp_reward || 50
   const coinReward = quest?.coin_reward || 0
 
-  // Award XP and coins
-  const { data: profile } = await db.from('user_profiles').select('xp, ai_coins').eq('id', user.id).single()
-  if (profile) {
-    await db.from('user_profiles').update({
-      xp: profile.xp + xpReward,
-      ai_coins: profile.ai_coins + coinReward
-    }).eq('id', user.id)
+  // Use GamificationService for rewards
+  const gService = new GamificationService(db)
+  const { leveledUp, details: levelUpDetails } = await gService.addXp(user.id, xpReward)
+  
+  // If coins are rewarded by the quest itself (separate from level up bonus)
+  if (coinReward > 0) {
+    await gService.addCoins(user.id, coinReward, `Completed quest: ${questId}`)
   }
 
-  return NextResponse.json({ success: true, xpReward, coinReward })
+  return NextResponse.json({ 
+    success: true, 
+    xpReward, 
+    coinReward,
+    leveledUp,
+    levelUpDetails
+  })
 }

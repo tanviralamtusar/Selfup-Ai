@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Palette, Sparkles, Loader2, Plus, Star, ShoppingBag,
-  Tag, Shirt, ChevronDown, RefreshCw, Heart
+  Tag, Shirt, ChevronDown, RefreshCw, Heart, Camera, Image as ImageIcon
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { OutfitLogCard } from '@/components/style/OutfitLogCard'
+import { Moodboard } from '@/components/style/Moodboard'
 
 type BudgetRange = 'budget' | 'medium' | 'premium' | 'luxury'
 
@@ -113,6 +115,9 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
 export default function StylePage() {
   const { session } = useAuthStore()
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
+  const [outfitLogs, setOutfitLogs] = useState<any[]>([])
+  const [moodboardItems, setMoodboardItems] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<'nova' | 'moodboard' | 'log'>('nova')
   const [styleProfile, setStyleProfile] = useState<StyleProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -127,8 +132,50 @@ export default function StylePage() {
   }), [session])
 
   useEffect(() => {
-    if (session?.access_token) fetchData()
+    if (session?.access_token) {
+      fetchData()
+      fetchOutfits()
+      fetchMoodboard()
+    }
   }, [session])
+
+  const fetchOutfits = async () => {
+    try {
+      const res = await fetch('/api/style/outfits', { headers: headers() })
+      if (res.ok) setOutfitLogs(await res.json())
+    } catch { console.error('Failed to load outfits') }
+  }
+
+  const fetchMoodboard = async () => {
+    try {
+      const res = await fetch('/api/style/moodboard', { headers: headers() })
+      if (res.ok) setMoodboardItems(await res.json())
+    } catch { console.error('Failed to load moodboard') }
+  }
+
+  const handleAddOutfit = async (data: any) => {
+    try {
+      const res = await fetch('/api/style/outfits', {
+        method: 'POST', headers: headers(), body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        toast.success('Outfit logged!')
+        fetchOutfits()
+      } else throw new Error()
+    } catch { toast.error('Failed to log outfit') }
+  }
+
+  const handleAddMoodboard = async (data: any) => {
+    try {
+      const res = await fetch('/api/style/moodboard', {
+        method: 'POST', headers: headers(), body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        toast.success('Added to moodboard!')
+        fetchMoodboard()
+      } else throw new Error()
+    } catch { toast.error('Failed to add to moodboard') }
+  }
 
   const fetchData = async () => {
     setIsLoading(true)
@@ -239,7 +286,40 @@ export default function StylePage() {
         )}
       </AnimatePresence>
 
-      {/* Generate Strip */}
+      {/* Tabs */}
+      <div className="flex gap-2 p-1.5 bg-surface-container-low border border-outline-variant/10 rounded-2xl w-fit">
+        <button
+          onClick={() => setActiveTab('nova')}
+          className={cn(
+            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            activeTab === 'nova' ? 'bg-primary/10 text-primary shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+          )}
+        >
+          <Sparkles size={14} className="inline mr-2" /> Nova Picks
+        </button>
+        <button
+          onClick={() => setActiveTab('moodboard')}
+          className={cn(
+            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            activeTab === 'moodboard' ? 'bg-pink-500/10 text-pink-400 shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+          )}
+        >
+          <ImageIcon size={14} className="inline mr-2" /> Moodboard
+        </button>
+        <button
+          onClick={() => setActiveTab('log')}
+          className={cn(
+            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+            activeTab === 'log' ? 'bg-amber-500/10 text-amber-400 shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+          )}
+        >
+          <Camera size={14} className="inline mr-2" /> Outfit Log
+        </button>
+      </div>
+
+      {activeTab === 'nova' && (
+        <div className="space-y-8">
+          {/* Generate Strip */}
       <div className="bg-gradient-to-r from-surface-container-low to-surface-container-medium border border-outline-variant/10 rounded-3xl p-6">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex-1 min-w-0">
@@ -270,17 +350,26 @@ export default function StylePage() {
         </div>
       </div>
 
-      {/* Recommendations Grid */}
-      {isLoading ? (
-        <div className="py-24 flex items-center justify-center">
-          <Loader2 className="animate-spin text-primary" size={32} />
+          {isLoading ? (
+            <div className="py-24 flex items-center justify-center">
+              <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {recommendations.map(rec => (
+                <RecommendationCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {recommendations.map(rec => (
-            <RecommendationCard key={rec.id} rec={rec} />
-          ))}
-        </div>
+      )}
+
+      {activeTab === 'moodboard' && (
+        <Moodboard items={moodboardItems} onAdd={handleAddMoodboard} />
+      )}
+
+      {activeTab === 'log' && (
+        <OutfitLogCard logs={outfitLogs} onAdd={handleAddOutfit} />
       )}
     </div>
   )

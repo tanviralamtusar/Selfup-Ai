@@ -25,6 +25,7 @@ import {
   Flame,
   Loader2
 } from 'lucide-react'
+import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -108,6 +109,10 @@ export default function DashboardPage() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [loggingHabit, setLoggingHabit] = useState<string | null>(null)
 
+  // Level up state
+  const [showLevelUp, setShowLevelUp] = useState(false)
+  const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50 })
+
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${session?.access_token}`
@@ -133,6 +138,12 @@ export default function DashboardPage() {
       const data = await res.json()
       if (res.ok) {
         toast.success(`+${data.xpEarned} XP — Habit logged! 🔥`)
+        
+        if (data.leveledUp && data.levelUpDetails) {
+          setLevelUpData(data.levelUpDetails)
+          setShowLevelUp(true)
+        }
+        
         fetchHabits()
       } else if (res.status === 409) {
         toast.info('Already logged today!')
@@ -410,6 +421,14 @@ export default function DashboardPage() {
           <Gauge percent={30} colorClass="text-error" label="Charm" title="Social Impact" />
         </div>
       </motion.section>
+
+      <LevelUpModal
+        isOpen={showLevelUp}
+        onClose={() => setShowLevelUp(false)}
+        newLevel={levelUpData.newLevel}
+        totalXp={levelUpData.totalXp}
+        coinsReward={levelUpData.coinsRewarded}
+      />
     </motion.div>
   )
 }

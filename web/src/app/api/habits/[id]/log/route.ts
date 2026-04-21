@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { GamificationService } from '@/lib/gamification.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -53,10 +54,14 @@ export async function POST(
   }
 
   // Award XP: 10 per habit log
-  const { data: profile } = await db.from('user_profiles').select('xp').eq('id', user.id).single()
-  if (profile) {
-    await db.from('user_profiles').update({ xp: profile.xp + 10 }).eq('id', user.id)
-  }
+  const xpAward = 10
+  const gService = new GamificationService(db)
+  const { leveledUp, details: levelUpDetails } = await gService.addXp(user.id, xpAward)
 
-  return NextResponse.json({ log, xpEarned: 10 })
+  return NextResponse.json({ 
+    log, 
+    xpEarned: xpAward,
+    leveledUp,
+    levelUpDetails
+  })
 }

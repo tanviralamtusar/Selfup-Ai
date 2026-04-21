@@ -58,10 +58,15 @@ export async function POST(
   const gService = new GamificationService(db)
   const { leveledUp, details: levelUpDetails } = await gService.addXp(user.id, xpAward)
 
+  // Update overall streak
+  const { streak: newOverallStreak, freezeUsed } = await gService.updateOverallStreak(user.id)
+
   return NextResponse.json({ 
     log, 
     xpEarned: xpAward,
     leveledUp,
-    levelUpDetails
+    levelUpDetails,
+    streak: newOverallStreak,
+    freezeUsed,
   })
 }

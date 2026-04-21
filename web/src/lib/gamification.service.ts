@@ -7,6 +7,8 @@ interface LevelUpInfo {
   coinsRewarded: number
 }
 
+const STREAK_FREEZE_COST = 100 // AiCoins per freeze
+
 export class GamificationService {
   private supabase: SupabaseClient
 
@@ -90,6 +92,119 @@ export class GamificationService {
       leveledUp,
       details: leveledUp ? { newLevel: level, totalXp: total_xp, coinsRewarded } : undefined
     }
+  }
+
+  /**
+   * Updates the user's overall streak.
+   * - If streak_last_date == today: no change (already counted).
+   * - If streak_last_date == yesterday: increment streak.
+   * - If older: check for streak freeze, otherwise reset to 1.
+   * Returns the new streak value and whether a freeze was consumed.
+   */
+  async updateOverallStreak(userId: string): Promise<{ streak: number, freezeUsed: boolean }> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('streak_overall, streak_best, streak_last_date, streak_freeze_count')
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) {
+      console.error('Failed to fetch profile for streak update:', error)
+      return { streak: 0, freezeUsed: false }
+    }
+
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0]
+
+    // Already counted today
+    if (profile.streak_last_date === todayStr) {
+      return { streak: profile.streak_overall ?? 0, freezeUsed: false }
+    }
+
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+
+    let newStreak = 1
+    let freezeUsed = false
+    let freezeCount = profile.streak_freeze_count ?? 0
+
+    if (profile.streak_last_date === yesterdayStr) {
+      // Consecutive day — extend streak
+      newStreak = (profile.streak_overall ?? 0) + 1
+    } else if (profile.streak_last_date && freezeCount > 0) {
+      // Missed a day but have a freeze — consume it and extend
+      const lastDate = new Date(profile.streak_last_date)
+      const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+
+      if (daysDiff <= 2) {
+        // Only allow freeze for a single missed day
+        newStreak = (profile.streak_overall ?? 0) + 1
+        freezeCount -= 1
+        freezeUsed = true
+      }
+      // If more than 2 days missed, reset regardless
+    }
+
+    const newBest = Math.max(newStreak, profile.streak_best ?? 0)
+
+    const { error: updateError } = await this.supabase
+      .from('user_profiles')
+      .update({
+        streak_overall: newStreak,
+        streak_best: newBest,
+        streak_last_date: todayStr,
+        streak_freeze_count: freezeCount,
+      })
+      .eq('id', userId)
+
+    if (updateError) {
+      console.error('Failed to update streak:', updateError)
+    }
+
+    return { streak: newStreak, freezeUsed }
+  }
+
+  /**
+   * Purchase a streak freeze using AiCoins.
+   * Returns true if purchase was successful.
+   */
+  async purchaseStreakFreeze(userId: string): Promise<{ success: boolean, newBalance?: number, newFreezeCount?: number }> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('ai_coins, streak_freeze_count')
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) return { success: false }
+
+    if (profile.ai_coins < STREAK_FREEZE_COST) {
+      return { success: false } // Insufficient funds
+    }
+
+    const newBalance = profile.ai_coins - STREAK_FREEZE_COST
+    const newFreezeCount = (profile.streak_freeze_count ?? 0) + 1
+
+    const { error: updateErr } = await this.supabase
+      .from('user_profiles')
+      .update({
+        ai_coins: newBalance,
+        streak_freeze_count: newFreezeCount,
+      })
+      .eq('id', userId)
+
+    if (updateErr) return { success: false }
+
+    // Record transaction
+    await this.supabase.from('ai_coin_transactions').insert({
+      user_id: userId,
+      amount: -STREAK_FREEZE_COST,
+      type: 'spend',
+      reason: 'Purchased Streak Freeze',
+      balance_after: newBalance,
+    })
+
+    return { success: true, newBalance, newFreezeCount }
   }
 
   /**

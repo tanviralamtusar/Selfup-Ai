@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { GamificationService } from '@/lib/gamification.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -22,10 +23,25 @@ export async function GET(req: NextRequest) {
       .from('user_profiles')
       .select('*')
       .eq('id', user.id)
-      .maybeSingle() // Use maybeSingle to avoid 406/116 error if 0 rows
+      .maybeSingle()
 
-    // 2. If profile exists, return it
+    // 2. If profile exists, check/update streak and return it
     if (profile) {
+      // Trigger streak update if not already updated today
+      const today = new Date().toISOString().split('T')[0]
+      if (profile.streak_last_date !== today) {
+        const gamification = new GamificationService(authSupabase)
+        await gamification.updateOverallStreak(user.id)
+        
+        // Re-fetch profile to get updated streak data
+        const { data: updatedProfile } = await authSupabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+        
+        if (updatedProfile) return NextResponse.json(updatedProfile)
+      }
       return NextResponse.json(profile)
     }
 

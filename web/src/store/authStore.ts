@@ -19,7 +19,9 @@ export interface UserProfile {
   total_xp: number
   ai_coins: number
   streak_overall: number
+  streak_best: number
   streak_last_date: string | null
+  streak_freeze_count: number
   is_pro: boolean
   onboarding_done: boolean
   ai_persona_name: string

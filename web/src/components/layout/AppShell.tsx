@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
@@ -22,7 +22,6 @@ import {
   Sparkles,
   Search,
   Settings,
-  Flame
 } from 'lucide-react'
 
 const navItems = [
@@ -31,7 +30,6 @@ const navItems = [
   { icon: Dumbbell, label: 'Fitness', href: ROUTES.FITNESS },
   { icon: Brain, label: 'Skills', href: ROUTES.SKILLS },
   { icon: Clock, label: 'Time', href: ROUTES.TIME },
-  { icon: Flame, label: 'Habits', href: '/time?tab=habits' },
   { icon: Palette, label: 'Style', href: ROUTES.STYLE },
   { icon: Sword, label: 'Quests', href: ROUTES.QUESTS },
   { icon: Users, label: 'Social', href: ROUTES.LEADERBOARD },
@@ -39,8 +37,20 @@ const navItems = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const router = useRouter()
   const { profile, logout: logoutStore } = useAuthStore()
+
+  const getIsActive = (href: string) => {
+    if (href.includes('?')) {
+      // Handle query params (like /time?tab=habits)
+      const [path, query] = href.split('?')
+      if (pathname !== path) return false
+      const [paramKey, paramValue] = query.split('=')
+      return searchParams.get(paramKey) === paramValue
+    }
+    return pathname === href
+  }
 
   const handleSignOut = async () => {
     try {
@@ -124,7 +134,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <p className="px-3 text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Core Pillars</p>
             <div className="space-y-1">
               {navItems.slice(0, 4).map((item) => {
-                const isActive = pathname === item.href
+                const isActive = getIsActive(item.href)
                 const Icon = item.icon
                 return (
                   <Link
@@ -150,7 +160,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <p className="px-3 text-[9px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-3">Social & Skills</p>
             <div className="space-y-1">
               {navItems.slice(4).map((item) => {
-                const isActive = pathname === item.href
+                const isActive = getIsActive(item.href)
                 const Icon = item.icon
                 return (
                   <Link
@@ -216,7 +226,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* ─── Mobile Bottom Nav ─── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-surface/80 backdrop-blur-xl border-t border-surface-container-high px-6 flex items-center justify-between z-50">
         {navItems.slice(0, 5).map((item) => {
-          const isActive = pathname === item.href
+          const isActive = getIsActive(item.href)
           const Icon = item.icon
           return (
             <Link

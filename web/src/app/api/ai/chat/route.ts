@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { generateResponse, SYSTEM_PROMPT } from '@/lib/gemma'
+import { fetchUserMemory, formatMemoryContext, extractAndSaveMemory } from '@/lib/ai-memory'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -109,7 +110,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Insufficient AiCoins. Need at least 1 coin per message.' }, { status: 403 })
     }
 
-    // 5. Build System Prompt with Profile Context
+    // 5. Fetch User Memory for Cross-Session Context
+    const userMemory = await fetchUserMemory(user.id, token!)
+    const memoryContext = await formatMemoryContext(userMemory)
+
+    // 6. Build System Prompt with Profile Context + Memory
     const contextualPrompt = `
 ${SYSTEM_PROMPT}
 
@@ -118,13 +123,13 @@ User Profile Context:
 - Level: ${profile.level}
 - Current XP: ${profile.xp}
 
-Last User Message: ${content}
+${memoryContext}
 `
 
-    // 6. Generate Response
+    // 7. Generate Response
     const aiResponse = await generateResponse(contextualPrompt, history as any)
 
-    // 7. Save Messages & Deduct Coin
+    // 8. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
       conversation_id: activeConversationId,
       user_id: user.id,
@@ -143,7 +148,12 @@ Last User Message: ${content}
     })
     if (saveAiMsgError) throw saveAiMsgError
 
-    // Deduct Coin
+    // 9. Extract and Save Memory from Conversation (non-blocking)
+    extractAndSaveMemory(user.id, content, aiResponse, token!).catch(err => 
+      console.error('[AI Memory Extraction Failed]:', err)
+    )
+
+    // 10. Deduct Coin
     const { error: updateProfileError } = await authSupabase
       .from('user_profiles')
       .update({ ai_coins: profile.ai_coins - 1 })

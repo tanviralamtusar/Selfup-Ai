@@ -127,7 +127,7 @@ ${memoryContext}
 `
 
     // 7. Generate Response
-    const aiResponse = await generateResponse(contextualPrompt, history as any)
+    const aiResponse = await generateResponse(content, history as any, contextualPrompt)
 
     // 8. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({

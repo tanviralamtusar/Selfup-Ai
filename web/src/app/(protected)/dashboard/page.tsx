@@ -31,7 +31,7 @@ import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 import { StreakCard } from '@/components/gamification/StreakCard'
 import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
-
+import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 const containerAnim = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
@@ -144,6 +144,9 @@ export default function DashboardPage() {
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50 })
+
+  // Wallet state
+  const [showWalletModal, setShowWalletModal] = useState(false)
 
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
@@ -275,10 +278,13 @@ export default function DashboardPage() {
                 </div>
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight text-on-surface font-headline leading-tight">{displayName}</h1>
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
-                  <div className="bg-surface-container-highest/30 px-4 py-1.5 rounded-full border border-outline-variant/10 flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowWalletModal(true)}
+                    className="bg-surface-container-highest/30 px-4 py-1.5 rounded-full border border-outline-variant/10 flex items-center gap-2 hover:bg-surface-container-high transition-colors active:scale-95"
+                  >
                     <span className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">AiCoins</span>
                     <span className="text-xs font-black text-on-surface tabular-nums">{formatNumber(coins)}</span>
-                  </div>
+                  </button>
                   <div className="bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20 flex items-center gap-2">
                     <Trophy size={10} className="text-primary" />
                     <span className="text-[9px] font-black text-primary uppercase tracking-widest">Top 5%</span>
@@ -586,6 +592,11 @@ export default function DashboardPage() {
         newLevel={levelUpData.newLevel}
         totalXp={levelUpData.totalXp}
         coinsReward={levelUpData.coinsRewarded}
+      />
+
+      <AiCoinWalletModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
       />
     </motion.div>
   )

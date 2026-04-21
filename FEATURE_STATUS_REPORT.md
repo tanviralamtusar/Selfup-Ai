@@ -76,7 +76,7 @@
 - ✅ **XP + Levels System** — Level calculation, XP accumulation, level-up events working
 - ✅ **Badge System** — Badges database schema ready, achievement logic partially implemented
 - ✅ **Leaderboard Display** — Global and friends leaderboard endpoints exist, UI in progress
-- 🚧 **AiCoin Economy** (in progress — Earning/spending logic defined, transaction tracking needs UI)
+- ✅ **AiCoin Economy** — Earning/spending logic defined, transaction history UI integrated into dashboard (NEW!)
 - 🚧 **Streaks Tracking** (in progress — Data model ready, visual display and freeze feature pending)
 - 🚧 **Quests System** (in progress — Quest templates exist, AI quest generation needs work)
 - ⚠️ **Social Challenges** — Endpoints created but UI not implemented

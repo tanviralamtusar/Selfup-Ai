@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { PERSONA_PROMPTS } from './gemma'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -92,10 +93,14 @@ ${memory.achievements ? `- Recent Wins: ${memory.achievements}` : ''}
 
   // AI Persona preferences
   if (memory.ai_interaction_style || memory.preferred_advice_type) {
+    const personaKey = memory.ai_interaction_style || 'balanced'
+    const detailedPersona = PERSONA_PROMPTS[personaKey] || PERSONA_PROMPTS['balanced']
+
     sections.push(`
 REMEMBERED - How to Help:
-- Interaction Style Preference: ${memory.ai_interaction_style || 'Flexible'}
+- Interaction Style Preference: ${personaKey}
 - Advice Type: ${memory.preferred_advice_type || 'Balanced'}
+- IMPORTANT TONE INSTRUCTIONS: ${detailedPersona}
 `)
   }
 

@@ -70,23 +70,34 @@ export default function OnboardingPage() {
     if (!profile) return
     setIsLoading(true)
     try {
-      // 1. Update Profile
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .update({
-          display_name: formData.displayName,
-          age: parseInt(formData.age) || null,
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          displayName: formData.displayName,
+          age: formData.age,
           gender: formData.gender,
           timezone: formData.timezone,
-          onboarding_done: true,
+          goals: formData.goals,
+          persona: formData.persona
         })
-        .eq('id', profile.id)
+      })
 
-      if (profileError) throw profileError
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to complete onboarding')
+      }
 
-      // 2. Refresh Profile in Store
+      // Refresh Profile in Store
       const { data: updatedProfile } = await supabase.from('user_profiles').select('*').eq('id', profile.id).single()
       if (updatedProfile) setProfile(updatedProfile)
+      
       toast.success('Onboarding complete! Welcome to SelfUp.')
       router.push(ROUTES.DASHBOARD)
       

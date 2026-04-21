@@ -15,13 +15,18 @@ export async function GET(req: NextRequest) {
   })
 
   const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  // Fetch habits with today's log status
+  // Fetch habits with logs from the last 90 days
   const { data: habits, error: dbErr } = await db
     .from('habits')
-    .select(`*, habit_logs(completed_at)`)
+    .select(`
+      *,
+      habit_logs(completed_at)
+    `)
     .eq('user_id', user.id)
     .eq('is_active', true)
+    .gte('habit_logs.completed_at', ninetyDaysAgo)
     .order('created_at', { ascending: true })
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })

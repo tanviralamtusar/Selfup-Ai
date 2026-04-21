@@ -6,6 +6,8 @@ import { CheckCircle2, ChevronRight, Flame, Loader2, Plus, Sparkles, Trophy } fr
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { HabitHeatmap } from './HabitHeatmap'
+import { HabitCalendarGrid } from './HabitCalendarGrid'
 
 interface Habit {
   id: string
@@ -16,6 +18,7 @@ interface Habit {
   streak: number
   best_streak: number
   completed_today: boolean
+  habit_logs?: { completed_at: string }[]
 }
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -80,7 +83,12 @@ export function HabitsView() {
         toast.success(`+${data.xpEarned || 10} XP!`)
         // Optimistic update
         setHabits(prev => prev.map(h => 
-          h.id === habit.id ? { ...h, completed_today: true, streak: h.streak + 1 } : h
+          h.id === habit.id ? { 
+            ...h, 
+            completed_today: true, 
+            streak: h.streak + 1,
+            habit_logs: [...(h.habit_logs || []), { completed_at: new Date().toISOString().split('T')[0] }]
+          } : h
         ))
       }
     } catch { toast.error('Failed to update habit') }
@@ -104,6 +112,11 @@ export function HabitsView() {
           <Plus size={16} /> New Habit
         </button>
       </div>
+
+      {/* Global Heatmap */}
+      {!isLoading && habits.length > 0 && (
+        <HabitHeatmap habits={habits} />
+      )}
 
       {/* Add Habit Inline Form */}
       <AnimatePresence>
@@ -207,6 +220,12 @@ export function HabitsView() {
                   {habit.description && (
                     <p className="text-xs text-on-surface-variant/60 truncate">{habit.description}</p>
                   )}
+                  
+                  {/* Calendar Grid */}
+                  <HabitCalendarGrid 
+                    logs={habit.habit_logs || []} 
+                    pillar={habit.pillar} 
+                  />
                 </div>
 
                 {/* Check-in button */}

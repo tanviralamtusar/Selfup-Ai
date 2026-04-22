@@ -2,6 +2,9 @@
 .env
 .env.local
 .env.production
+.env*.local
+!.env.example
+!web/.env.example
 
 # Dependencies
 node_modules/
@@ -9,6 +12,7 @@ node_modules/
 # Build outputs
 dist/
 build/
+.next/
 
 # Logs
 *.log
@@ -23,9 +27,14 @@ Thumbs.db
 .idea/
 
 # Frontend specific
-frontend/dist/
-frontend/node_modules/
+web/node_modules/
+web/.next/
+web/.env.local
+web/.env
+web/tsconfig.tsbuildinfo
+web/next-env.d.ts
+web/scratch/
+web/build.log
 
-# Backend specific
-backend/dist/
-backend/node_modules/
+# Gemini
+.gemini/

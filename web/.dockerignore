@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build output
+.next
+out
+build
+dist
+
+# Testing
+coverage
+
+# Environment files (injected at runtime via Coolify)
+.env
+.env.*
+
+# Debug & logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE & OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Misc
+scratch
+build.log
+*.md
+tsconfig.tsbuildinfo

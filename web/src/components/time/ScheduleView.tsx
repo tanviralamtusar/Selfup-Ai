@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
-import { Loader2, Calendar, Clock, Trash2, GripHorizontal, X, ChevronDown } from 'lucide-react'
+import { Loader2, Calendar, Clock, Trash2, GripHorizontal, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Task {
@@ -22,7 +22,7 @@ interface DragState {
   offsetY: number
 }
 
-const HOURS = Array.from({ length: 18 }, (_, i) => i + 6) // 6 AM to 11 PM
+const HOURS = Array.from({ length: 18 }, (_, i) => i + 6)
 const HOUR_HEIGHT = 80
 
 export function ScheduleView() {
@@ -47,11 +47,10 @@ export function ScheduleView() {
         const data: Task[] = await res.json()
         setAllTasks(data)
       }
-    } catch { 
-      toast.error('Failed to load schedule') 
-    }
-    finally { 
-      setIsLoading(false) 
+    } catch {
+      toast.error('Failed to load schedule')
+    } finally {
+      setIsLoading(false)
     }
   }, [session])
 
@@ -59,31 +58,16 @@ export function ScheduleView() {
     if (session?.access_token) fetchTasks()
   }, [session, fetchTasks])
 
-  // Helper to place task in the grid based on HH:MM
   const getTaskStyle = (start: string, end: string) => {
     const s = new Date(start)
     const e = new Date(end)
     const startHour = s.getHours() + s.getMinutes() / 60
     const duration = (e.getTime() - s.getTime()) / (1000 * 60 * 60)
-    
+
     const top = (startHour - 6) * HOUR_HEIGHT
     const height = duration * HOUR_HEIGHT
-    
+
     return { top: `${top}px`, height: `${Math.max(40, height)}px` }
-  }
-
-  // Calculate time from position in schedule
-  const getTimeFromPosition = (y: number): { hour: number; minutes: number } => {
-    const hour = Math.floor(y / HOUR_HEIGHT) + 6
-    const minutes = Math.round((y % HOUR_HEIGHT) / HOUR_HEIGHT * 60)
-    return { hour: Math.min(23, Math.max(6, hour)), minutes }
-  }
-
-  // Format time display
-  const formatTime = (hour: number, minutes: number) => {
-    const ampm = hour >= 12 ? 'PM' : 'AM'
-    const displayHour = hour === 12 ? 12 : hour % 12 || 12
-    return `${displayHour}:${minutes.toString().padStart(2, '0')} ${ampm}`
   }
 
   const handleTaskDragStart = (e: React.DragEvent, taskId: string) => {
@@ -102,7 +86,6 @@ export function ScheduleView() {
     const task = allTasks.find(t => t.id === dragState.taskId)
     if (!task) return
 
-    // Set 1-hour duration
     const startDate = new Date()
     startDate.setHours(targetHour, 0, 0, 0)
     const endDate = new Date(startDate)
@@ -111,9 +94,9 @@ export function ScheduleView() {
     try {
       const res = await fetch(`/api/tasks/${task.id}`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}` 
+          Authorization: `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           scheduled_start: startDate.toISOString(),
@@ -139,9 +122,9 @@ export function ScheduleView() {
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}` 
+          Authorization: `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           scheduled_start: null,
@@ -185,7 +168,7 @@ export function ScheduleView() {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-linear-to-l from-secondary/5 to-transparent pointer-events-none" />
         <div className="relative z-10">
           <h2 className="text-xl font-black uppercase tracking-widest text-on-surface flex items-center gap-2">
-            <Calendar className="text-secondary" size={20} /> Today's Timeline
+            <Calendar className="text-secondary" size={20} /> Today&apos;s Timeline
           </h2>
           <p className="text-xs text-on-surface-variant/60 font-medium mt-1">Drag tasks to schedule them. Structure brings freedom.</p>
         </div>
@@ -209,10 +192,7 @@ export function ScheduleView() {
               Unscheduled ({unscheduledTasks.length})
             </h3>
 
-            <div className={cn(
-              'space-y-2 max-h-96 overflow-y-auto hidden lg:flex lg:flex-col',
-              expandedPanel && 'flex flex-col'
-            )}>
+            <div className={cn('space-y-2 max-h-96 overflow-y-auto hidden lg:flex lg:flex-col', expandedPanel && 'flex flex-col')}>
               {unscheduledTasks.length === 0 ? (
                 <p className="text-xs text-on-surface-variant/60 py-4 text-center">All tasks scheduled!</p>
               ) : (
@@ -252,85 +232,89 @@ export function ScheduleView() {
 
         {/* Timeline Grid */}
         <div className="lg:col-span-3">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-6 relative min-h-150 overflow-x-auto">
-            {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-surface-container-low/80 backdrop-blur-sm z-20 rounded-3xl">
-                <Loader2 className="animate-spin text-secondary" size={32} />
-              </div>
-            ) : null}
+          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl relative overflow-hidden flex flex-col h-screen lg:h-auto">
+            {/* Header */}
+            <div className="bg-surface-container-highest border-b border-outline-variant/10 p-4 sticky top-0 z-10">
+              <p className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant/50">Drag tasks here to schedule</p>
+            </div>
 
-            <div 
-              ref={containerRef}
-              className="relative w-full min-w-125" 
-              style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}
-            >
-              {/* Time lines and drop zones */}
-              {HOURS.map((hour, i) => (
-                <div
-                  key={hour}
-                  onMouseEnter={() => handleTimelineMouseEnter(hour)}
-                  onMouseLeave={() => setHoveredHour(null)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleTimelineDrop(e, hour)}
-                  className={cn(
-                    'absolute w-full flex items-start border-t border-outline-variant/10 transition-colors',
-                    hoveredHour === hour && dragState.taskId && 'bg-secondary/5'
-                  )}
-                  style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
-                >
-                  <span className="w-16 shrink-0 text-[10px] font-black font-headline text-on-surface-variant/40 -mt-2.5 bg-surface-container-low pr-2">
-                    {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                  </span>
+            {/* Scrollable timeline */}
+            <div className="flex-1 overflow-y-auto">
+              {isLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-surface-container-low/80 backdrop-blur-sm z-20">
+                  <Loader2 className="animate-spin text-secondary" size={32} />
                 </div>
-              ))}
+              ) : null}
 
-              {/* Render scheduled tasks */}
-              <div className="absolute left-16 right-0 top-0 bottom-0 pointer-events-none">
-                <AnimatePresence>
-                  {scheduledTasks.map(task => {
-                    if (!task.scheduled_start || !task.scheduled_end) return null
-                    const style = getTaskStyle(task.scheduled_start, task.scheduled_end)
-                    
-                    return (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        key={task.id}
-                        className="absolute left-2 right-4 rounded-xl border p-3 pointer-events-auto shadow-lg overflow-hidden flex flex-col justify-between group hover:shadow-xl transition-shadow bg-surface-container-highest hover:bg-surface-container-highest/90"
-                        style={{
-                          backgroundColor: 'rgba(var(--secondary), 0.08)',
-                          borderColor: 'rgba(var(--secondary), 0.3)',
-                          ...style
-                        }}
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-l-xl" />
-                        <div>
-                          <p className="text-xs font-bold text-on-surface truncate pr-6">{task.title}</p>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-secondary mt-1 flex items-center gap-1">
-                            <Clock size={10} />
-                            {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
-                            {new Date(task.scheduled_end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                        <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => handleUnscheduleTask(task.id)}
-                            className="flex-1 p-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded text-[10px] font-semibold transition-colors"
-                          >
-                            Unschedule
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="p-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
+              <div ref={containerRef} className="relative w-full" style={{ height: `${HOURS.length * HOUR_HEIGHT}px`, minWidth: '600px' }}>
+                {/* Time grid */}
+                {HOURS.map((hour, i) => (
+                  <div
+                    key={hour}
+                    onMouseEnter={() => handleTimelineMouseEnter(hour)}
+                    onMouseLeave={() => setHoveredHour(null)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleTimelineDrop(e, hour)}
+                    className={cn('absolute w-full flex items-start border-t border-outline-variant/20 transition-all duration-200', hoveredHour === hour && dragState.taskId && 'bg-secondary/10 border-secondary/40')}
+                    style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
+                  >
+                    <div className="w-20 shrink-0 flex items-center justify-end pr-4 -mt-2.5 bg-surface-container-low">
+                      <span className="text-xs font-black font-headline text-on-surface-variant/60">
+                        {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                      </span>
+                    </div>
+                    <div className="flex-1 h-full border-l border-outline-variant/10" />
+                  </div>
+                ))}
+
+                {/* Scheduled tasks */}
+                <div className="absolute left-20 right-4 top-0 bottom-0 pointer-events-none">
+                  <AnimatePresence>
+                    {scheduledTasks.map(task => {
+                      if (!task.scheduled_start || !task.scheduled_end) return null
+                      const style = getTaskStyle(task.scheduled_start, task.scheduled_end)
+
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          key={task.id}
+                          className="absolute left-2 right-2 rounded-xl border p-3 pointer-events-auto shadow-lg overflow-hidden flex flex-col justify-between group hover:shadow-xl transition-shadow cursor-default"
+                          style={{
+                            backgroundColor: 'rgba(var(--secondary), 0.12)',
+                            borderColor: 'rgba(var(--secondary), 0.4)',
+                            ...style
+                          }}
+                        >
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-l-xl" />
+                          <div>
+                            <p className="text-xs font-bold text-on-surface truncate pr-6">{task.title}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-secondary mt-1 flex items-center gap-1">
+                              <Clock size={10} />
+                              {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
+                              {new Date(task.scheduled_end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                          <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => handleUnscheduleTask(task.id)}
+                              className="flex-1 p-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded text-[10px] font-semibold transition-colors"
+                            >
+                              Unschedule
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(task.id)}
+                              className="p-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>

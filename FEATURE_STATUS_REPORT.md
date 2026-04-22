@@ -103,7 +103,7 @@
 ### 🚀 Onboarding (2/4)
 - ✅ **Basic Info Collection** — Step 1 working (name, age, gender, timezone)
 - ✅ **Goal Selection** — Step 2 allows multi-select of fitness/skills/time/style
-- 🚧 **AI Follow-up Questions** (in progress — Structure ready, dynamic flow needs refinement)
+- ✅ **AI Follow-up Questions** — Dynamic Deep Dive based on selected goals.
 - ⚠️ **Initial Plan Generation** — Schedule, roadmap, starting quests not generated
 
 ### 👤 User Settings (3/7)

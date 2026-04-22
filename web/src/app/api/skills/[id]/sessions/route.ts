@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { QuestService } from '@/lib/quest.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -59,6 +60,10 @@ export async function POST(
       
       if (profileError) console.error('[API] Session XP update failed:', profileError)
     }
+
+    // Track quest progress for skill-related quests
+    const questService = new QuestService(authSupabase)
+    await questService.checkAndUpdateProgress(user.id, 'skill_session', 1)
 
     return NextResponse.json({ session, xpEarned })
   } catch (err: any) {

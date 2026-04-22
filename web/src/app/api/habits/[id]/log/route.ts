@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { GamificationService } from '@/lib/gamification.service'
+import { QuestService } from '@/lib/quest.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -61,6 +62,10 @@ export async function POST(
   // Update overall streak
   const { streak: newOverallStreak, freezeUsed } = await gService.updateOverallStreak(user.id)
 
+  // Track quest progress for habit-related quests
+  const questService = new QuestService(db)
+  const questUpdates = await questService.checkAndUpdateProgress(user.id, 'habit', 1)
+
   return NextResponse.json({ 
     log, 
     xpEarned: xpAward,
@@ -68,5 +73,6 @@ export async function POST(
     levelUpDetails,
     streak: newOverallStreak,
     freezeUsed,
+    questUpdates,
   })
 }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabase-server'
+import { QuestService } from '@/lib/quest.service'
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET(req: Request) {
   try {
@@ -52,6 +54,14 @@ export async function POST(req: Request) {
       .single()
 
     if (error) throw error
+
+    // Track quest progress for water-related quests
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const userDb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+    const questService = new QuestService(userDb)
+    await questService.checkAndUpdateProgress(session.user.id, 'water', amount_ml)
 
     return NextResponse.json(data)
   } catch (error: any) {

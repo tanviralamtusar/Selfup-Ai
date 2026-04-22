@@ -78,7 +78,7 @@
 - ✅ **Leaderboard Display** — Global and friends leaderboard endpoints exist, UI in progress
 - ✅ **AiCoin Economy** — Earning/spending logic defined, transaction history UI integrated into dashboard (NEW!)
 - 🚧 **Streaks Tracking** (in progress — Data model ready, visual display and freeze feature pending)
-- 🚧 **Quests System** (in progress — Quest templates exist, AI quest generation needs work)
+- ✅ **Quests System** — Full system with progress tracking, auto-validation, AI generation, and premium UI. (COMPLETED)
 - ⚠️ **Social Challenges** — Endpoints created but UI not implemented
 - ⚠️ **Streak Freeze Item** — Mechanic designed but not coded
 - ❌ **Badge Display on Profile** — Not yet implemented

@@ -23,18 +23,32 @@ export async function POST(
   // Get the user_quest record
   const { data: userQuest, error: uqErr } = await db
     .from('user_quests')
-    .select('id, status')
+    .select('id, status, current_value, target_value')
     .eq('user_id', user.id)
     .eq('quest_id', questId)
     .single()
 
   if (uqErr || !userQuest) return NextResponse.json({ error: 'Quest not accepted' }, { status: 404 })
   if (userQuest.status === 'completed') return NextResponse.json({ error: 'Quest already completed' }, { status: 409 })
+  if (userQuest.status === 'expired') return NextResponse.json({ error: 'Quest has expired' }, { status: 410 })
+
+  // Validate progress — must have reached target (or allow manual complete for target=1 quests)
+  if (userQuest.target_value > 1 && userQuest.current_value < userQuest.target_value) {
+    return NextResponse.json({
+      error: 'Quest not yet complete',
+      current_value: userQuest.current_value,
+      target_value: userQuest.target_value,
+    }, { status: 400 })
+  }
 
   // Mark complete
   const { error: markErr } = await db
     .from('user_quests')
-    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .update({
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+      current_value: userQuest.target_value, // Ensure it shows as 100%
+    })
     .eq('id', userQuest.id)
 
   if (markErr) return NextResponse.json({ error: markErr.message }, { status: 500 })
@@ -42,7 +56,7 @@ export async function POST(
   // Get quest rewards (use admin client since quests table might have restricted RLS)
   const { data: quest } = await adminClient
     .from('quests')
-    .select('xp_reward, coin_reward')
+    .select('xp_reward, coin_reward, title')
     .eq('id', questId)
     .single()
 
@@ -55,14 +69,18 @@ export async function POST(
   
   // If coins are rewarded by the quest itself (separate from level up bonus)
   if (coinReward > 0) {
-    await gService.addCoins(user.id, coinReward, `Completed quest: ${questId}`)
+    await gService.addCoins(user.id, coinReward, `Completed quest: ${quest?.title}`)
   }
+
+  // Update overall streak
+  const { streak } = await gService.updateOverallStreak(user.id)
 
   return NextResponse.json({ 
     success: true, 
     xpReward, 
     coinReward,
     leveledUp,
-    levelUpDetails
+    levelUpDetails,
+    streak,
   })
 }

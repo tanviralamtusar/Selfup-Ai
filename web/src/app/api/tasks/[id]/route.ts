@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { QuestService } from '@/lib/quest.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -43,6 +44,10 @@ export async function PATCH(
     if (profile) {
       await db.from('user_profiles').update({ xp: profile.xp + 50 }).eq('id', user.id)
     }
+
+    // Track quest progress for task-related quests
+    const questService = new QuestService(db)
+    await questService.checkAndUpdateProgress(user.id, 'task_complete', 1)
   }
 
   return NextResponse.json(data)

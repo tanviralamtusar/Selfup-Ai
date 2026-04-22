@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { displayName, age, gender, timezone, goals, persona } = body
+    const { displayName, age, gender, timezone, goals, persona, answers } = body
 
     // 1. Update Profile
     const supabase = await supabaseServer()
@@ -51,6 +51,20 @@ export async function POST(req: NextRequest) {
         },
         { onConflict: 'user_id,memory_key' }
       )
+    }
+
+    // 4. Save AI Memory (Follow-up Answers)
+    if (answers && typeof answers === 'object') {
+      const memoryEntries = Object.entries(answers).map(([key, val]) => ({
+        user_id: user.id,
+        memory_key: `onboarding_answer_${key}`,
+        memory_val: val as string,
+        source: 'onboarding'
+      }))
+
+      if (memoryEntries.length > 0) {
+        await supabase.from('ai_memory').upsert(memoryEntries, { onConflict: 'user_id,memory_key' })
+      }
     }
 
     return NextResponse.json({ success: true })

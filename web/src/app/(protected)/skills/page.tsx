@@ -31,6 +31,8 @@ export default function SkillsPage() {
   const [isRefreshingRoadmap, setIsRefreshingRoadmap] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isLoggingSession, setIsLoggingSession] = useState(false)
+  const [roadmapStatus, setRoadmapStatus] = useState<'not_started' | 'pending' | 'processing' | 'completed' | 'failed'>('not_started')
+  const [roadmapError, setRoadmapError] = useState<string | null>(null)
 
   // Add Skill Form
   const [newSkill, setNewSkill] = useState({ name: '', category: 'General', generateRoadmap: true })
@@ -49,8 +51,21 @@ export default function SkillsPage() {
       fetchRoadmap(activeSkillId)
     } else {
       setActiveRoadmap(null)
+      setRoadmapStatus('not_started')
+      setRoadmapError(null)
     }
   }, [activeSkillId])
+
+  // Polling for roadmap completion
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (activeSkillId && (roadmapStatus === 'pending' || roadmapStatus === 'processing')) {
+      interval = setInterval(() => {
+        fetchRoadmap(activeSkillId, true) // silent fetch
+      }, 3000)
+    }
+    return () => clearInterval(interval)
+  }, [activeSkillId, roadmapStatus])
 
   const fetchSkills = async () => {
     try {
@@ -66,18 +81,26 @@ export default function SkillsPage() {
     }
   }
 
-  const fetchRoadmap = async (id: string) => {
-    setIsRefreshingRoadmap(true)
+  const fetchRoadmap = async (id: string, silent = false) => {
+    if (!silent) setIsRefreshingRoadmap(true)
     try {
       const res = await fetch(`/api/skills/${id}/roadmap`, {
         headers: { 'Authorization': `Bearer ${session?.access_token}` }
       })
       const data = await res.json()
-      if (res.ok) setActiveRoadmap(data)
+      if (res.ok) {
+        setActiveRoadmap(data.roadmap)
+        setRoadmapStatus(data.status)
+        setRoadmapError(data.error)
+        
+        if (data.status === 'completed' && !silent) {
+          // fetchSkills() // Refresh progress stats if roadmap just completed
+        }
+      }
     } catch (err) {
-      toast.error('Failed to load roadmap')
+      if (!silent) toast.error('Failed to load roadmap')
     } finally {
-      setIsRefreshingRoadmap(false)
+      if (!silent) setIsRefreshingRoadmap(false)
     }
   }
 
@@ -278,6 +301,8 @@ export default function SkillsPage() {
                       skillName={activeSkill.name}
                       milestones={activeRoadmap?.skill_milestones || []} 
                       onToggleMilestone={handleToggleMilestone}
+                      status={roadmapStatus}
+                      error={roadmapError}
                     />
                   )}
                 </div>

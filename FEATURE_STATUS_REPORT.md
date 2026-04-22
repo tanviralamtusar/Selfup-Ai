@@ -53,7 +53,8 @@
 - ✅ **Task Status Tracking** — Todo/In Progress/Done states functional
 - ✅ **Pomodoro History** — Sessions saved and retrievable
 - 🚧 **Habits** (in progress — API routes exist, UI component partially built, habit calendar pending)
-- 🚧 **Schedule View** (in progress — skeleton component exists, time-blocking not implemented)
+- ✅ **Schedule View** — High-fidelity time-blocking UI with drag-and-drop persistence and Pillar-specific styling.
+- 🚧 **AI Auto-Scheduling** (in progress — Backend logic implemented, frontend trigger active)
 - ⚠️ **Recurring Tasks** — Backend support exists, UI controls missing
 - ⚠️ **Google Calendar Sync** — Not implemented
 
@@ -65,10 +66,10 @@
 - 🚧 **AI Workout Plans** (in progress — Backend route exists, UI integration pending)
 - ⚠️ **Body Transformation** — Photo upload setup exists, progress graph not implemented
 
-### 🧠 Skills (2/5)
+### 🧠 Skills (3/5)
 - ✅ **Skill Management** — Add custom skills, fetch list, delete skills
 - ✅ **Skill Roadmap Display** — Timeline component shows milestones
-- 🚧 **AI Roadmap Generation** (in progress — Backend logic exists, needs UI integration)
+- ✅ **AI Roadmap Generation** — Nova architecting multi-step skill paths based on skill name.
 - 🚧 **Progress Tracking** (in progress — Structure ready, UI needs completion)
 - ⚠️ **YouTube Integration** — API configured but not yet integrated into UI
 
@@ -78,7 +79,7 @@
 - ✅ **Leaderboard Display** — Global and friends leaderboard endpoints exist, UI in progress
 - ✅ **AiCoin Economy** — Earning/spending logic defined, transaction history UI integrated into dashboard (NEW!)
 - 🚧 **Streaks Tracking** (in progress — Data model ready, visual display and freeze feature pending)
-- 🚧 **Quests System** (in progress — Quest templates exist, AI quest generation needs work)
+- ✅ **Quests System** — Full system with progress tracking, auto-validation, AI generation, and premium UI. (COMPLETED)
 - ⚠️ **Social Challenges** — Endpoints created but UI not implemented
 - ⚠️ **Streak Freeze Item** — Mechanic designed but not coded
 - ❌ **Badge Display on Profile** — Not yet implemented
@@ -103,7 +104,7 @@
 ### 🚀 Onboarding (2/4)
 - ✅ **Basic Info Collection** — Step 1 working (name, age, gender, timezone)
 - ✅ **Goal Selection** — Step 2 allows multi-select of fitness/skills/time/style
-- 🚧 **AI Follow-up Questions** (in progress — Structure ready, dynamic flow needs refinement)
+- ✅ **AI Follow-up Questions** — Dynamic Deep Dive based on selected goals.
 - ⚠️ **Initial Plan Generation** — Schedule, roadmap, starting quests not generated
 
 ### 👤 User Settings (3/7)

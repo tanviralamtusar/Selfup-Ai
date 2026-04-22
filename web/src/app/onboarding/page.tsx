@@ -8,10 +8,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronRight, User, Target, Sparkles, Brain } from 'lucide-react'
 import { toast } from 'sonner'
 
-type Step = 'about' | 'goals' | 'persona' | 'ready'
+type Step = 'about' | 'goals' | 'questions' | 'persona' | 'ready'
 const steps: { id: Step; label: string; icon: any; color: string }[] = [
   { id: 'about', label: 'About You', icon: User, color: 'var(--blue)' },
   { id: 'goals', label: 'Your Goals', icon: Target, color: 'var(--green)' },
+  { id: 'questions', label: 'AI Deep Dive', icon: Sparkles, color: 'var(--primary)' },
   { id: 'persona', label: 'AI Persona', icon: Brain, color: 'var(--pink)' },
   { id: 'ready', label: 'Ready!', icon: Sparkles, color: 'var(--amber)' },
 ]
@@ -21,6 +22,7 @@ export default function OnboardingPage() {
   const { profile, setProfile } = useAuthStore()
   const [currentStep, setCurrentStep] = useState<Step>('about')
   const [isLoading, setIsLoading] = useState(false)
+  const [isAiLoading, setIsAiLoading] = useState(false)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -30,7 +32,40 @@ export default function OnboardingPage() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     goals: [] as string[],
     persona: 'balanced', // balanced, tough-love, analytical, cheerleader
+    answers: {} as Record<string, string>
   })
+
+  const [aiQuestions, setAiQuestions] = useState<{ id: string; text: string }[]>([])
+
+  const fetchAiQuestions = async () => {
+    setIsAiLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/onboarding/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ goals: formData.goals })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setAiQuestions(data.questions)
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (err) {
+      toast.error('Nova failed to analyze goals. Using default questions.')
+      setAiQuestions([
+        { id: 'experience', text: 'What is your current experience level with these goals?' },
+        { id: 'commitment', text: 'How many hours per week can you realistically dedicate to your growth?' },
+        { id: 'motivation', text: 'What motivated you to start this journey today?' }
+      ])
+    } finally {
+      setIsAiLoading(false)
+    }
+  }
 
   // Prevent routing if already onboarding is done
   useEffect(() => {
@@ -42,7 +77,7 @@ export default function OnboardingPage() {
   const stepIndex = steps.findIndex((s) => s.id === currentStep)
   const progressPercent = ((stepIndex + 1) / steps.length) * 100
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 'about') {
       if (!formData.displayName) {
         toast.error('Please enter a display name')
@@ -54,6 +89,14 @@ export default function OnboardingPage() {
         toast.error('Please select at least one goal')
         return
       }
+      setCurrentStep('questions')
+      fetchAiQuestions()
+    } else if (currentStep === 'questions') {
+      const unanswered = aiQuestions.some(q => !formData.answers[q.id])
+      if (unanswered) {
+        toast.error('Please answer all questions for Nova')
+        return
+      }
       setCurrentStep('persona')
     } else if (currentStep === 'persona') {
       setCurrentStep('ready')
@@ -62,7 +105,8 @@ export default function OnboardingPage() {
 
   const handleBack = () => {
     if (currentStep === 'goals') setCurrentStep('about')
-    else if (currentStep === 'persona') setCurrentStep('goals')
+    else if (currentStep === 'questions') setCurrentStep('goals')
+    else if (currentStep === 'persona') setCurrentStep('questions')
     else if (currentStep === 'ready') setCurrentStep('persona')
   }
 
@@ -85,7 +129,8 @@ export default function OnboardingPage() {
           gender: formData.gender,
           timezone: formData.timezone,
           goals: formData.goals,
-          persona: formData.persona
+          persona: formData.persona,
+          answers: formData.answers
         })
       })
 
@@ -304,6 +349,51 @@ export default function OnboardingPage() {
                       )
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* ─── STEP 2.5: AI QUESTIONS ─── */}
+              {currentStep === 'questions' && (
+                <div className="space-y-6">
+                  {isAiLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-6 text-center">
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
+                        <Brain className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold font-display">Nova is analyzing your goals...</h3>
+                        <p className="text-sm text-foreground-secondary max-w-[280px]">Architecting your personalized follow-up experience.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <h2 className="text-2xl font-bold font-display mb-2">Deep Dive</h2>
+                        <p className="text-foreground-secondary">Nova wants to understand your context better.</p>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        {aiQuestions.map((q, idx) => (
+                          <div key={q.id} className="space-y-3">
+                            <label className="block text-sm font-semibold text-foreground-secondary">
+                              <span className="text-primary mr-2">0{idx + 1}.</span>
+                              {q.text}
+                            </label>
+                            <textarea
+                              value={formData.answers[q.id] || ''}
+                              onChange={(e) => setFormData({ 
+                                ...formData, 
+                                answers: { ...formData.answers, [q.id]: e.target.value } 
+                              })}
+                              className={`${inputClasses} h-24 resize-none`}
+                              placeholder="Type your answer here..."
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

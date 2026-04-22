@@ -31,11 +31,27 @@ export async function GET(
         )
       `)
       .eq('skill_id', skillId)
-      .single()
+      .maybeSingle()
 
-    if (error) {
-      // If no roadmap found, return empty structure instead of 404 to allow UI to show "Generating..."
-      return NextResponse.json({ milestones: [] })
+    if (error) throw error
+
+    if (!roadmap) {
+      // Check if there is a pending/processing task in the queue
+      const { data: queueTask } = await authSupabase
+        .from('ai_queue')
+        .select('status, error')
+        .eq('action_type', 'roadmap')
+        .eq('user_id', user.id)
+        .contains('payload', { skillId })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      return NextResponse.json({ 
+        roadmap: null, 
+        status: queueTask?.status || 'not_started',
+        error: queueTask?.error
+      })
     }
 
     // Sort milestones by order_index
@@ -43,7 +59,10 @@ export async function GET(
       roadmap.skill_milestones.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0))
     }
 
-    return NextResponse.json(roadmap)
+    return NextResponse.json({ 
+      roadmap, 
+      status: 'completed' 
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

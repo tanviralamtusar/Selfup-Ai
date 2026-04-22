@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { QuestService } from '@/lib/quest.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -52,6 +53,10 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 })
+
+    // Track quest progress for outfit-related quests
+    const questService = new QuestService(supabase)
+    await questService.checkAndUpdateProgress(user.id, 'outfit_log', 1)
 
     return NextResponse.json(data)
   } catch (err: any) {

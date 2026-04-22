@@ -363,25 +363,13 @@ export default function DashboardPage() {
         </div>
       </motion.section>
 
-      {/* ─── Streak & Badges Row ─── */}
-      <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Streak Card */}
-        <StreakCard
-          streak={profile?.streak_overall ?? 0}
-          best={profile?.streak_best ?? 0}
-          freezeCount={profile?.streak_freeze_count ?? 0}
-          coins={coins}
-          onBuyFreeze={handleBuyFreeze}
-        />
-
-        {/* Badge Showcase */}
-        <div className="lg:col-span-2 bg-surface-container-low rounded-2xl p-5 border border-outline-variant/10 shadow-xl">
-          <div className="flex items-center gap-1.5 mb-4">
-            <div className="w-4 h-px bg-amber-400" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-amber-400/80">Achievements</p>
-          </div>
-          <BadgeShowcase badges={badges} isLoading={badgesLoading} />
+      {/* ─── Achievements Row ─── */}
+      <motion.div variants={itemAnim} className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/10 shadow-xl">
+        <div className="flex items-center gap-1.5 mb-4">
+          <div className="w-4 h-px bg-amber-400" />
+          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-amber-400/80">Achievements</p>
         </div>
+        <BadgeShowcase badges={badges} isLoading={badgesLoading} />
       </motion.div>
 
       {/* ─── Main Content: 4-Column Grid + Activity Feed ─── */}

@@ -70,7 +70,7 @@ export function BadgeShowcase() {
         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60 flex items-center gap-2">
           <Trophy size={12} className="text-amber-500" /> Earned Badges
         </h3>
-        <Link href={ROUTES.SOCIAL_LEADERBOARD} className="text-[8px] font-black uppercase text-primary hover:underline flex items-center gap-1">
+        <Link href={ROUTES.LEADERBOARD} className="text-[8px] font-black uppercase text-primary hover:underline flex items-center gap-1">
           Full Collection <ChevronRight size={10} />
         </Link>
       </div>
@@ -102,7 +102,7 @@ export function BadgeShowcase() {
             </motion.div>
           ))}
           {badges.length > 8 && (
-            <Link href={ROUTES.SOCIAL_LEADERBOARD} className="flex-shrink-0 w-14 h-14 rounded-2xl bg-surface-container-highest/50 flex flex-col items-center justify-center border border-outline-variant/10 text-on-surface-variant/40 hover:text-primary transition-colors">
+            <Link href={ROUTES.LEADERBOARD} className="flex-shrink-0 w-14 h-14 rounded-2xl bg-surface-container-highest/50 flex flex-col items-center justify-center border border-outline-variant/10 text-on-surface-variant/40 hover:text-primary transition-colors">
               <span className="text-[10px] font-black">+{badges.length - 8}</span>
               <span className="text-[6px] font-black uppercase tracking-tighter">More</span>
             </Link>

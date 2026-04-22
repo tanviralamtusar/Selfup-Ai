@@ -280,15 +280,25 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <button
-                onClick={handleSaveAI}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-secondary text-on-secondary font-black text-xs uppercase tracking-widest shadow-lg shadow-secondary/20 hover:opacity-90 transition-all active:scale-95 disabled:opacity-60"
-              >
-                {isLoading ? <Loader2 size={16} className="animate-spin" /> :
-                 savedSection === 'ai' ? <Check size={16} /> : <Sparkles size={16} />}
-                {savedSection === 'ai' ? 'Saved!' : 'Update Companion'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveAI}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-secondary text-on-secondary font-black text-xs uppercase tracking-widest shadow-lg shadow-secondary/20 hover:opacity-90 transition-all active:scale-95 disabled:opacity-60"
+                >
+                  {isLoading ? <Loader2 size={16} className="animate-spin" /> :
+                   savedSection === 'ai' ? <Check size={16} /> : <Sparkles size={16} />}
+                  {savedSection === 'ai' ? 'Saved!' : 'Update Companion'}
+                </button>
+
+                <button
+                  onClick={() => window.location.href = '/chat'}
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-surface-container-highest text-on-surface font-black text-xs uppercase tracking-widest border border-outline-variant/10 hover:bg-surface-container-medium transition-all active:scale-95"
+                >
+                  <Brain size={16} className="text-secondary" />
+                  Test Persona
+                </button>
+              </div>
             </motion.div>
           )}
 

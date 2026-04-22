@@ -39,15 +39,16 @@ export default function ChatPage() {
 
   // Fetch messages when conversation changes
   useEffect(() => {
+    const personaName = profile?.ai_persona_name || 'Nova'
     if (activeConversationId) {
       fetchMessages(activeConversationId)
     } else {
       setMessages([{ 
         role: 'assistant', 
-        content: `Greetings, ${profile?.display_name || 'Pathfinder'}. I am Nova, your AI life-coach. How shall we accelerate your progress toward mastery today?` 
+        content: `Greetings, ${profile?.display_name || 'Pathfinder'}. I am ${personaName}, your AI life-coach. How shall we accelerate your progress toward mastery today?` 
       }])
     }
-  }, [activeConversationId])
+  }, [activeConversationId, profile?.ai_persona_name])
 
   // Auto-scroll
   useEffect(() => {
@@ -167,9 +168,19 @@ export default function ChatPage() {
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <Brain size={20} className="text-primary" />
-              <span className="font-headline font-bold text-lg">Nova</span>
-              <div className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest border border-primary/20">AI Companion</div>
+              <Brain size={20} className={cn(
+                "transition-colors",
+                profile?.ai_persona_style === 'strict' ? 'text-red-500' :
+                profile?.ai_persona_style === 'motivational' ? 'text-secondary' :
+                profile?.ai_persona_style === 'neutral' ? 'text-blue-400' : 'text-primary'
+              )} />
+              <span className="font-headline font-bold text-lg">{profile?.ai_persona_name || 'Nova'}</span>
+              <div className={cn(
+                "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-colors",
+                profile?.ai_persona_style === 'strict' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                profile?.ai_persona_style === 'motivational' ? 'bg-secondary/10 text-secondary border-secondary/20' :
+                profile?.ai_persona_style === 'neutral' ? 'bg-blue-400/10 text-blue-400 border-blue-400/20' : 'bg-primary/10 text-primary border-primary/20'
+              )}>AI Companion</div>
             </div>
           </div>
 
@@ -194,11 +205,19 @@ export default function ChatPage() {
               key={i} 
               role={msg.role} 
               content={msg.content} 
+              name={profile?.ai_persona_name}
+              style={profile?.ai_persona_style}
               isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}
             />
           ))}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <ChatMessage role="assistant" content="" isLast />
+            <ChatMessage 
+              role="assistant" 
+              content="" 
+              name={profile?.ai_persona_name}
+              style={profile?.ai_persona_style}
+              isLast 
+            />
           )}
         </div>
 

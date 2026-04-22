@@ -12,10 +12,10 @@
 | **🔐 Authentication** | 7 | 3 | 2 | 2 | 0 |
 | **🚀 Onboarding** | 4 | 2 | 1 | 1 | 0 |
 | **🤖 AI System** | 8 | 3 | 2 | 2 | 1 |
-| **📊 Dashboard** | 7 | 4 | 2 | 1 | 0 |
+| **📊 Dashboard** | 7 | 5 | 1 | 1 | 0 |
 | **🏋️ Fitness** | 6 | 3 | 2 | 1 | 0 |
 | **🧠 Skills** | 5 | 2 | 2 | 1 | 0 |
-| **⏰ Time Management** | 8 | 4 | 2 | 2 | 0 |
+| **⏰ Time Management** | 8 | 5 | 1 | 2 | 0 |
 | **👗 Style** | 5 | 2 | 2 | 1 | 0 |
 | **🎮 Gamification** | 9 | 3 | 3 | 2 | 1 |
 | **🔔 Notifications** | 7 | 2 | 2 | 2 | 1 |
@@ -43,7 +43,7 @@
 - ✅ **Stats Overview** — Life score calculation functional
 - ✅ **Active Quests Panel** — Fetches and displays active quests
 - ✅ **Category Cards** — Fitness, Skills, Time, Style cards available and clickable
-- 🚧 **Recent Activity Feed** (in progress — data structure ready, UI rendering pending)
+- ✅ **Recent Activity Feed** — Premium chronological chronicle of all user actions with pillar icons and rarity effects.
 - 🚧 **Weekly Summary Card** (in progress — AI generation logic exists, display needs work)
 - ⚠️ **Streak Display** — Planned but not fully wired
 
@@ -54,7 +54,7 @@
 - ✅ **Pomodoro History** — Sessions saved and retrievable
 - 🚧 **Habits** (in progress — API routes exist, UI component partially built, habit calendar pending)
 - ✅ **Schedule View** — High-fidelity time-blocking UI with drag-and-drop persistence and Pillar-specific styling.
-- 🚧 **AI Auto-Scheduling** (in progress — Backend logic implemented, frontend trigger active)
+- ✅ **AI Auto-Scheduling** — Nova engine integration with user persona/memory and structured logic reasoning.
 - ⚠️ **Recurring Tasks** — Backend support exists, UI controls missing
 - ⚠️ **Google Calendar Sync** — Not implemented
 
@@ -91,12 +91,12 @@
 - 🚧 **AI Fashion Recommendations** (in progress — Logic exists, integration pending)
 - ⚠️ **Style Goals** — Not yet implemented
 
-### 🤖 AI System (3/8)
+### 🤖 AI System (4/8)
 - ✅ **Gemma Integration** — Google AI Studio connected, message sending works
 - ✅ **Chat Interface** — Chat messages display, input sends to AI, responses received
 - ✅ **AI Cross-Session Memory** — Memory fetching, extraction, injection implemented (NEW!)
-- 🚧 **AI Persona** (in progress — Personality selection UI exists, prompt injection needs work)
-- ⚠️ **AI Auto-Scheduling** — Feature designed, not implemented in UI
+- ✅ **AI Persona** — Dynamic tone (Friendly, Strict, Motivational, Neutral) and custom name integration in AI chat.
+- ✅ **AI Auto-Scheduling** — Feature implemented in Schedule View with batch updates and revert system.
 - ⚠️ **Proactive Messages** — Morning/evening check-ins designed but not scheduled
 - ⚠️ **Rate Limit Queue** — Bull + Redis setup, needs integration with Gemma calls
 - ❌ **Voice Input/Output** — Not implemented

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
-import { generateResponse, SYSTEM_PROMPT } from '@/lib/gemma'
+import { generateResponse, SYSTEM_PROMPT, PERSONA_PROMPTS } from '@/lib/gemma'
 import { fetchUserMemory, formatMemoryContext, extractAndSaveMemory } from '@/lib/ai-memory'
 import { createClient } from '@supabase/supabase-js'
 
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     // 4. Fetch User Profile for Coins and Stats
     const { data: profile, error: profileError } = await authSupabase
       .from('user_profiles')
-      .select('ai_coins, level, xp, display_name')
+      .select('ai_coins, level, xp, display_name, ai_persona_name, ai_persona_style')
       .eq('id', user.id)
       .single()
 
@@ -114,9 +114,19 @@ export async function POST(req: NextRequest) {
     const userMemory = await fetchUserMemory(user.id, token!)
     const memoryContext = await formatMemoryContext(userMemory)
 
-    // 6. Build System Prompt with Profile Context + Memory
+    // 6. Build System Prompt with Profile Context + Memory + Persona
+    const personaName = profile.ai_persona_name || 'Nova'
+    const personaStyle = profile.ai_persona_style || 'friendly'
+    const personaTone = PERSONA_PROMPTS[personaStyle] || PERSONA_PROMPTS['friendly']
+
+    const basePrompt = SYSTEM_PROMPT.replaceAll('{{NAME}}', personaName)
     const contextualPrompt = `
-${SYSTEM_PROMPT}
+${basePrompt}
+
+Persona Context:
+- Name: ${personaName}
+- Coaching Style: ${personaStyle}
+- Instructions: ${personaTone}
 
 User Profile Context:
 - Name: ${profile.display_name}

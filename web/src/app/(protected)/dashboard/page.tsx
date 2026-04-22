@@ -533,46 +533,30 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* ─── Pillars & Activity Feed Grid ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pillars of Mastery */}
-        <motion.section variants={itemAnim} className="lg:col-span-2 bg-surface-container-low rounded-[2rem] p-8 border border-outline-variant/10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[140px] rounded-full -translate-y-1/2 translate-x-1/2" />
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 relative z-10">
-            <div>
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="w-5 h-px bg-primary" />
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Mastery Pillars</p>
-              </div>
-              <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline leading-none">Pillars of Mastery</h2>
+      {/* ─── Pillars of Mastery ─── */}
+      <motion.section variants={itemAnim} className="bg-surface-container-low rounded-[2rem] p-8 border border-outline-variant/10 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[140px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 relative z-10">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="w-5 h-px bg-primary" />
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Mastery Pillars</p>
             </div>
-            <Link href={ROUTES.SKILLS} className="px-5 py-2 hover:bg-primary hover:text-on-primary transition-all text-primary bg-primary/10 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
-              All Stats <ArrowRight size={14} />
-            </Link>
+            <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline leading-none">Pillars of Mastery</h2>
           </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 relative z-10">
-            <Gauge percent={75} colorClass="text-primary" label="Power" title="Physical" />
-            <Gauge percent={60} colorClass="text-secondary" label="Mind" title="Cognitive" />
-            <Gauge percent={90} colorClass="text-tertiary-fixed-dim" label="Will" title="Mental" />
-            <Gauge percent={30} colorClass="text-error" label="Soul" title="Social" />
-          </div>
-        </motion.section>
-
-        {/* Activity Feed */}
-        <motion.section variants={itemAnim} className="bg-surface-container-low rounded-[2rem] p-6 border border-outline-variant/10 shadow-2xl flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant flex items-center gap-2">
-              <Bolt size={14} className="text-primary" /> Recent Chronicles
-            </h2>
-            <div className="h-1 w-12 bg-outline-variant/20 rounded-full" />
-          </div>
-          <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide max-h-[400px]">
-            <ActivityFeed />
-          </div>
-        </motion.section>
-      </div>
+          <Link href={ROUTES.SKILLS} className="px-5 py-2 hover:bg-primary hover:text-on-primary transition-all text-primary bg-primary/10 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+            All Stats <ArrowRight size={14} />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 relative z-10">
+          <Gauge percent={75} colorClass="text-primary" label="Power" title="Physical" />
+          <Gauge percent={60} colorClass="text-secondary" label="Mind" title="Cognitive" />
+          <Gauge percent={90} colorClass="text-tertiary-fixed-dim" label="Will" title="Mental" />
+          <Gauge percent={30} colorClass="text-error" label="Soul" title="Social" />
+        </div>
+      </motion.section>
 
       <LevelUpModal
         isOpen={showLevelUp}

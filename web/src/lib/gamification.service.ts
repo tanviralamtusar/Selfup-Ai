@@ -113,16 +113,16 @@ export class GamificationService {
       return { streak: 0, freezeUsed: false }
     }
 
-    const today = new Date()
-    const todayStr = today.toISOString().split('T')[0]
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
 
-    // Already counted today
+    // Already counted today — do nothing but return current
     if (profile.streak_last_date === todayStr) {
       return { streak: profile.streak_overall ?? 0, freezeUsed: false }
     }
 
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterday = new Date(now)
+    yesterday.setDate(now.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
 
     let newStreak = 1
@@ -130,20 +130,25 @@ export class GamificationService {
     let freezeCount = profile.streak_freeze_count ?? 0
 
     if (profile.streak_last_date === yesterdayStr) {
-      // Consecutive day — extend streak
+      // Perfect continuity — extend streak
       newStreak = (profile.streak_overall ?? 0) + 1
     } else if (profile.streak_last_date && freezeCount > 0) {
-      // Missed a day but have a freeze — consume it and extend
+      // Missed a day (or more), check if we can use a freeze
       const lastDate = new Date(profile.streak_last_date)
-      const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+      const diffTime = Math.abs(now.getTime() - lastDate.getTime())
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-      if (daysDiff <= 2) {
-        // Only allow freeze for a single missed day
+      // We only allow a freeze to bridge a 1-day gap (diffDays would be 2 if yesterday was missed)
+      if (diffDays <= 2) {
         newStreak = (profile.streak_overall ?? 0) + 1
         freezeCount -= 1
         freezeUsed = true
+        console.log(`[Streak] Freeze consumed for user ${userId}. New streak: ${newStreak}`)
+      } else {
+        console.log(`[Streak] Too many days missed (${diffDays}). Resetting streak for user ${userId}`)
       }
-      // If more than 2 days missed, reset regardless
+    } else {
+      console.log(`[Streak] Missed day and no freezes. Resetting for user ${userId}`)
     }
 
     const newBest = Math.max(newStreak, profile.streak_best ?? 0)
@@ -240,6 +245,43 @@ export class GamificationService {
       balance_after: newBalance
     })
 
-    return true
+  /**
+   * Gets the activity status for the current week.
+   * Returns an array of 7 booleans [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+   */
+  async getWeeklyActivity(userId: string): Promise<boolean[]> {
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 is Sunday, 1 is Monday...
+    
+    // Calculate Monday of the current week
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+    monday.setHours(0, 0, 0, 0)
+
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+
+    // Fetch all logs between Monday and Sunday
+    const { data: logs } = await this.supabase
+      .from('habit_logs')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', monday.toISOString().split('T')[0])
+      .lte('completed_at', sunday.toISOString().split('T')[0])
+
+    const activityMap = new Array(7).fill(false)
+    const completedDays = new Set(logs?.map(l => l.completed_at))
+
+    for (let i = 0; i < 7; i++) {
+      const current = new Date(monday)
+      current.setDate(monday.getDate() + i)
+      const dateStr = current.toISOString().split('T')[0]
+      if (completedDays.has(dateStr)) {
+        activityMap[i] = true
+      }
+    }
+
+    return activityMap
   }
 }

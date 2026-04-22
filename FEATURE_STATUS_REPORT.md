@@ -78,10 +78,10 @@
 - ✅ **Badge System** — Badges database schema ready, achievement logic partially implemented
 - ✅ **Leaderboard Display** — Global and friends leaderboard endpoints exist, UI in progress
 - ✅ **AiCoin Economy** — Earning/spending logic defined, transaction history UI integrated into dashboard (NEW!)
-- 🚧 **Streaks Tracking** (in progress — Data model ready, visual display and freeze feature pending)
+- ✅ **Streaks Tracking** — High-fidelity visual status, weekly activity map, and 30-day consistency audit. (COMPLETED)
 - ✅ **Quests System** — Full system with progress tracking, auto-validation, AI generation, and premium UI. (COMPLETED)
 - ⚠️ **Social Challenges** — Endpoints created but UI not implemented
-- ⚠️ **Streak Freeze Item** — Mechanic designed but not coded
+- ✅ **Streak Freeze Item** — Purchase and consumption logic fully implemented with UI status indicators. (COMPLETED)
 - ❌ **Badge Display on Profile** — Not yet implemented
 
 ### 👗 Style (2/5)

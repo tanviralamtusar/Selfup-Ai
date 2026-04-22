@@ -32,6 +32,7 @@ import { StreakCard } from '@/components/gamification/StreakCard'
 import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
+import { StreakHistory } from '@/components/gamification/StreakHistory'
 const containerAnim = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
@@ -148,6 +149,10 @@ export default function DashboardPage() {
   // Wallet state
   const [showWalletModal, setShowWalletModal] = useState(false)
 
+  // Streak Stats
+  const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
+  const [showStreakHistory, setShowStreakHistory] = useState(false)
+
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${session?.access_token}`
@@ -158,6 +163,7 @@ export default function DashboardPage() {
       fetchHabits()
       fetchActivities()
       fetchBadges()
+      fetchStreakStats()
     }
   }, [session])
 
@@ -185,6 +191,16 @@ export default function DashboardPage() {
       if (res.ok) setBadges(await res.json())
     } catch { /* silently fail — badges endpoint may not exist yet */ }
     finally { setBadgesLoading(false) }
+  }
+
+  const fetchStreakStats = async () => {
+    try {
+      const res = await fetch('/api/gamification?type=stats', { headers: headers() })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.weeklyActivity) setWeeklyActivity(data.weeklyActivity)
+      }
+    } catch { /* silently fail */ }
   }
 
   const handleLogHabit = async (habitId: string) => {
@@ -358,6 +374,10 @@ export default function DashboardPage() {
               currentStreak={profile?.streak_overall ?? 0}
               bestStreak={profile?.streak_best ?? 0}
               freezeCount={profile?.streak_freeze_count ?? 0}
+              weeklyActivity={weeklyActivity}
+              lastDate={profile?.streak_last_date}
+              onPurchase={fetchStreakStats}
+              onViewHistory={() => setShowStreakHistory(true)}
             />
           </div>
         </div>
@@ -569,6 +589,15 @@ export default function DashboardPage() {
       <AiCoinWalletModal
         isOpen={showWalletModal}
         onClose={() => setShowWalletModal(false)}
+      />
+
+      <StreakHistory
+        isOpen={showStreakHistory}
+        onClose={() => setShowStreakHistory(false)}
+        currentStreak={profile?.streak_overall ?? 0}
+        bestStreak={profile?.streak_best ?? 0}
+        freezeCount={profile?.streak_freeze_count ?? 0}
+        lastDate={profile?.streak_last_date}
       />
     </motion.div>
   )

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   const { user, error } = await verifyAuth(req)
   if (error || !user) return NextResponse.json({ error }, { status: 401 })
 
-  const { name, description, pillar = 'general', frequency = 'daily' } = await req.json()
+  const { name, description, pillar = 'general', frequency = 'daily', frequency_days, reminder_time } = await req.json()
   if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
   const token = req.headers.get('authorization')?.replace('Bearer ', '')
@@ -54,7 +54,15 @@ export async function POST(req: NextRequest) {
 
   const { data, error: dbErr } = await db
     .from('habits')
-    .insert({ user_id: user.id, name, description, pillar, frequency })
+    .insert({ 
+      user_id: user.id, 
+      name, 
+      description, 
+      pillar, 
+      frequency,
+      frequency_days: frequency_days || [1, 2, 3, 4, 5, 6, 7], // Default to every day
+      reminder_time 
+    })
     .select()
     .single()
 

@@ -53,7 +53,8 @@
 - ✅ **Task Status Tracking** — Todo/In Progress/Done states functional
 - ✅ **Pomodoro History** — Sessions saved and retrievable
 - 🚧 **Habits** (in progress — API routes exist, UI component partially built, habit calendar pending)
-- 🚧 **Schedule View** (in progress — skeleton component exists, time-blocking not implemented)
+- ✅ **Schedule View** — High-fidelity time-blocking UI with drag-and-drop persistence and Pillar-specific styling.
+- 🚧 **AI Auto-Scheduling** (in progress — Backend logic implemented, frontend trigger active)
 - ⚠️ **Recurring Tasks** — Backend support exists, UI controls missing
 - ⚠️ **Google Calendar Sync** — Not implemented
 

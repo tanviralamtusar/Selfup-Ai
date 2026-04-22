@@ -224,7 +224,7 @@ export function setupAiWorker() {
           await supabase
             .from('ai_queue')
             .update({ 
-              status: 'done', 
+              status: 'completed', 
               result: result,
               processed_at: new Date().toISOString()
             })

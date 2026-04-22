@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Circle, Clock, Info, ExternalLink, Play, ChevronDown, Loader2 } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Info, ExternalLink, Play, ChevronDown, Loader2, Sparkles, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { cn } from '@/lib/utils'
 
@@ -64,15 +64,66 @@ export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLo
       setIsFetchingResources(null)
     }
   }
+
+  if (isGenerating) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sparkles className="text-primary animate-pulse" size={24} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-black font-headline tracking-tight text-on-surface capitalize">
+            {status === 'pending' ? 'Queuing Architect...' : 'Nova is Architecting...'}
+          </h3>
+          <p className="text-sm text-on-surface-variant/60 max-w-[280px]">
+            {status === 'pending' 
+              ? `Waiting for Nova to begin mapping your journey for ${skillName}.` 
+              : `Analyzing millions of data points to create your personalized ${skillName} roadmap.`}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isFailed) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6">
+        <div className="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center text-error">
+          <AlertCircle size={40} />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-black font-headline tracking-tight text-on-surface">Architectural Error</h3>
+          <p className="text-sm text-on-surface-variant/60 max-w-[280px]">
+            {error || "Nova encountered an unexpected turbulence while mapping your path."}
+          </p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="h-12 px-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-2xl font-black uppercase text-xs tracking-widest border border-outline-variant/10 transition-colors"
+        >
+          Retry Blueprinting
+        </button>
+      </div>
+    )
+  }
+
   if (milestones.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center animate-pulse">
-          <Info size={32} className="text-on-surface-variant/20" />
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
+        <div className="w-16 h-16 rounded-3xl bg-surface-container-high flex items-center justify-center text-on-surface-variant/40 mb-2">
+          <Sparkles size={32} />
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-black text-on-surface uppercase tracking-widest">Generating Growth Path</p>
-          <p className="text-xs text-on-surface-variant/40">Nova is architecting your master plan...</p>
+          <h3 className="text-sm font-black uppercase tracking-widest text-on-surface-variant/60">No Roadmap Found</h3>
+          <p className="text-xs text-on-surface-variant/40 max-w-[200px]">This mastery hasn't been architected yet.</p>
         </div>
       </div>
     )

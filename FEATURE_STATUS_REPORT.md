@@ -65,10 +65,10 @@
 - 🚧 **AI Workout Plans** (in progress — Backend route exists, UI integration pending)
 - ⚠️ **Body Transformation** — Photo upload setup exists, progress graph not implemented
 
-### 🧠 Skills (2/5)
+### 🧠 Skills (3/5)
 - ✅ **Skill Management** — Add custom skills, fetch list, delete skills
 - ✅ **Skill Roadmap Display** — Timeline component shows milestones
-- 🚧 **AI Roadmap Generation** (in progress — Backend logic exists, needs UI integration)
+- ✅ **AI Roadmap Generation** — Nova architecting multi-step skill paths based on skill name.
 - 🚧 **Progress Tracking** (in progress — Structure ready, UI needs completion)
 - ⚠️ **YouTube Integration** — API configured but not yet integrated into UI
 

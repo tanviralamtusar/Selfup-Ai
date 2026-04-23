@@ -245,6 +245,9 @@ export class GamificationService {
       balance_after: newBalance
     })
 
+    return true
+  }
+
   /**
    * Gets the activity status for the current week.
    * Returns an array of 7 booleans [Mon, Tue, Wed, Thu, Fri, Sat, Sun]

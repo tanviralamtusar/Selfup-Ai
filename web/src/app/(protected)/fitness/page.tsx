@@ -108,9 +108,8 @@ export default function FitnessPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative">
-            <h1 className="text-4xl font-black tracking-[0.3em] mb-2 uppercase system-text-glow">
+            <h1 className="text-4xl font-black tracking-[0.3em] mb-2 uppercase">
               Physical <span className="text-blue-500">Vessel</span>
             </h1>
             <div className="text-blue-500/40 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">

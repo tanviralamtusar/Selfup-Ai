@@ -52,7 +52,7 @@
 - ✅ **Tasks Management** — Create, read, update, delete tasks; priority levels working
 - ✅ **Task Status Tracking** — Todo/In Progress/Done states functional
 - ✅ **Pomodoro History** — Sessions saved and retrievable
-- 🚧 **Habits** (in progress — API routes exist, UI component partially built, habit calendar pending)
+- ✅ **Habits** — Fully functional with heatmap, calendar tracking, and AI suggestion integration
 - ✅ **Schedule View** — High-fidelity time-blocking UI with drag-and-drop persistence and Pillar-specific styling.
 - ✅ **AI Auto-Scheduling** — Nova engine integration with user persona/memory and structured logic reasoning.
 - ⚠️ **Recurring Tasks** — Backend support exists, UI controls missing
@@ -63,7 +63,7 @@
 - ✅ **Water Intake Tracking** — Endpoint and logging functional
 - ✅ **Workout View UI** — Component displays workouts with edit/delete options
 - 🚧 **Nutrition Tracking** (in progress — Calorie tracking UI exists, macro tracking needs work)
-- 🚧 **AI Workout Plans** (in progress — Backend route exists, UI integration pending)
+- ✅ **AI Workout Plans** — AI generated workout plans complete with modal UI and background polling
 - ⚠️ **Body Transformation** — Photo upload setup exists, progress graph not implemented
 
 ### 🧠 Skills (3/5)
@@ -101,11 +101,11 @@
 - ⚠️ **Rate Limit Queue** — Bull + Redis setup, needs integration with Gemma calls
 - ❌ **Voice Input/Output** — Not implemented
 
-### 🚀 Onboarding (2/4)
+### 🚀 Onboarding (4/4)
 - ✅ **Basic Info Collection** — Step 1 working (name, age, gender, timezone)
 - ✅ **Goal Selection** — Step 2 allows multi-select of fitness/skills/time/style
 - ✅ **AI Follow-up Questions** — Dynamic Deep Dive based on selected goals.
-- ⚠️ **Initial Plan Generation** — Schedule, roadmap, starting quests not generated
+- ✅ **Initial Plan Generation** — Schedule, roadmap, and starting quests are generated in the background
 
 ### 👤 User Settings (3/7)
 - ✅ **Profile Management** — Photo, name, username, bio, timezone updates working

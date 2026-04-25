@@ -26,14 +26,14 @@ export async function GET(req: NextRequest) {
     `)
     .eq('user_id', user.id)
     .eq('is_active', true)
-    .gte('habit_logs.completed_at', ninetyDaysAgo)
     .order('created_at', { ascending: true })
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
 
-  // Mark each habit as completed_today
+  // Mark each habit as completed_today and filter older logs
   const enriched = habits.map((h: any) => ({
     ...h,
+    habit_logs: h.habit_logs?.filter((l: any) => l.completed_at >= ninetyDaysAgo) || [],
     completed_today: h.habit_logs?.some((l: any) => l.completed_at === today) ?? false
   }))
 

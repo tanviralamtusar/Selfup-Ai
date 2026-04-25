@@ -6,6 +6,7 @@ import { Brain, Plus, Search, Sparkles, X, Loader2, Trophy, Clock, History, Layo
 import { useAuthStore } from '@/store/authStore'
 import { SkillCard } from '@/components/skills/SkillCard'
 import { RoadmapTimeline } from '@/components/skills/RoadmapTimeline'
+import { SkillSessionsHistory } from '@/components/skills/SkillSessionsHistory'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,9 @@ export default function SkillsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null)
   const [activeRoadmap, setActiveRoadmap] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'roadmap' | 'history'>('roadmap')
+  const [sessions, setSessions] = useState<any[]>([])
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false)
   const [isRefreshingRoadmap, setIsRefreshingRoadmap] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isLoggingSession, setIsLoggingSession] = useState(false)
@@ -49,10 +53,13 @@ export default function SkillsPage() {
   useEffect(() => {
     if (activeSkillId) {
       fetchRoadmap(activeSkillId)
+      fetchSessions(activeSkillId)
     } else {
       setActiveRoadmap(null)
       setRoadmapStatus('not_started')
       setRoadmapError(null)
+      setSessions([])
+      setActiveTab('roadmap')
     }
   }, [activeSkillId])
 
@@ -101,6 +108,21 @@ export default function SkillsPage() {
       if (!silent) toast.error('Failed to load roadmap')
     } finally {
       if (!silent) setIsRefreshingRoadmap(false)
+    }
+  }
+
+  const fetchSessions = async (id: string) => {
+    setIsLoadingSessions(true)
+    try {
+      const res = await fetch(`/api/skills/${id}/sessions`, {
+        headers: { 'Authorization': `Bearer ${session?.access_token}` }
+      })
+      const data = await res.json()
+      if (res.ok) setSessions(data)
+    } catch (err) {
+      toast.error('Failed to load session history')
+    } finally {
+      setIsLoadingSessions(false)
     }
   }
 
@@ -171,6 +193,7 @@ export default function SkillsPage() {
         setIsLoggingSession(false)
         setSessionData({ duration: 30, notes: '' })
         fetchSkills()
+        fetchSessions(activeSkillId)
       }
     } catch (err) {
       toast.error('Failed to log session')
@@ -289,19 +312,45 @@ export default function SkillsPage() {
                   </button>
                 </div>
 
-                {/* Roadmap View */}
+                {/* Tabs */}
+                <div className="flex items-center border-b border-outline-variant/10 bg-surface-container-low sticky top-0 z-10">
+                  <button 
+                    onClick={() => setActiveTab('roadmap')}
+                    className={cn(
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all",
+                      activeTab === 'roadmap' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                    )}
+                  >
+                    Roadmap
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('history')}
+                    className={cn(
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all",
+                      activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                    )}
+                  >
+                    Progress History
+                  </button>
+                </div>
+
+                {/* Tab Content View */}
                 <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/10">
-                  {isRefreshingRoadmap && !activeRoadmap ? (
-                    <div className="py-20 flex flex-col items-center gap-4">
-                      <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Accessing Archives...</p>
-                    </div>
+                  {activeTab === 'roadmap' ? (
+                    isRefreshingRoadmap && !activeRoadmap ? (
+                      <div className="py-20 flex flex-col items-center gap-4">
+                        <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Accessing Archives...</p>
+                      </div>
+                    ) : (
+                      <RoadmapTimeline 
+                        skillName={activeSkill.name}
+                        milestones={activeRoadmap?.skill_milestones || []} 
+                        onToggleMilestone={handleToggleMilestone}
+                      />
+                    )
                   ) : (
-                    <RoadmapTimeline 
-                      skillName={activeSkill.name}
-                      milestones={activeRoadmap?.skill_milestones || []} 
-                      onToggleMilestone={handleToggleMilestone}
-                    />
+                    <SkillSessionsHistory sessions={sessions} isLoading={isLoadingSessions} />
                   )}
                 </div>
               </motion.div>

@@ -70,3 +70,35 @@ export async function POST(
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: skillId } = await params
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const authSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+
+    const { data: sessions, error } = await authSupabase
+      .from('skill_sessions')
+      .select('*')
+      .eq('skill_id', skillId)
+      .eq('user_id', user.id)
+      .order('session_date', { ascending: false })
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    return NextResponse.json(sessions)
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

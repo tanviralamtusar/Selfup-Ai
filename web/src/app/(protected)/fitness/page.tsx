@@ -9,12 +9,14 @@ import WorkoutView from '@/components/fitness/WorkoutView';
 import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
 import { LevelUpModal } from '@/components/gamification/LevelUpModal';
+import { AiPlanGeneratorModal } from '@/components/fitness/AiPlanGeneratorModal';
 
 export default function FitnessPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
 
   // Level up state
@@ -45,29 +47,56 @@ export default function FitnessPage() {
     fetchDashboardData();
   }, []);
 
-  const handleGeneratePlan = async () => {
+  const handleOpenAiModal = () => setIsAiModalOpen(true);
+
+  const handleGeneratePlan = async (goal: string, days: number) => {
     setIsGenerating(true);
     try {
       const res = await fetch('/api/ai/queue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          actionType: 'generate_fitness_plan',
+          type: 'fitness_plan',
           payload: {
-            goal: 'muscle_gain',
-            difficulty: 'intermediate',
-            days_per_week: 4
+            goal,
+            days
           }
         })
       });
       
-      if (res.ok) {
-        toast.success('Nova is drafting your plan. Check back in a minute!');
-        // In a real app, we'd poll or use websockets here
+      const data = await res.json();
+      
+      if (res.ok && data.queueId) {
+        toast.success('Nova is drafting your plan. Please wait...');
+        
+        // Start polling
+        const intervalId = setInterval(async () => {
+          try {
+            const pollRes = await fetch(`/api/ai/queue?queueId=${data.queueId}`);
+            if (pollRes.ok) {
+              const pollData = await pollRes.json();
+              
+              if (pollData.status === 'completed') {
+                clearInterval(intervalId);
+                setIsGenerating(false);
+                setIsAiModalOpen(false);
+                toast.success('Your AI fitness plan is ready!');
+                fetchDashboardData();
+              } else if (pollData.status === 'failed') {
+                clearInterval(intervalId);
+                setIsGenerating(false);
+                toast.error('AI generation failed. Please try again.');
+              }
+            }
+          } catch (err) {
+            console.error('Polling error', err);
+          }
+        }, 3000);
+      } else {
+        throw new Error(data.error || 'Failed to start generation');
       }
-    } catch (err) {
-      toast.error('Failed to start AI generation');
-    } finally {
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to start AI generation');
       setIsGenerating(false);
     }
   };
@@ -89,7 +118,7 @@ export default function FitnessPage() {
         
         <div className="flex gap-3">
           <button 
-            onClick={handleGeneratePlan}
+            onClick={handleOpenAiModal}
             disabled={isGenerating}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-indigo-500/50 text-white font-bold text-sm transition-all group"
           >
@@ -130,7 +159,7 @@ export default function FitnessPage() {
       {activeTab === 'workout' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <WorkoutView plans={plans} loading={loading} handleGeneratePlan={handleGeneratePlan} />
+            <WorkoutView plans={plans} loading={loading} handleGeneratePlan={handleOpenAiModal} />
           </div>
 
           <div className="space-y-8">
@@ -172,6 +201,13 @@ export default function FitnessPage() {
         newLevel={levelUpData.newLevel}
         totalXp={levelUpData.totalXp}
         coinsReward={levelUpData.coinsReward}
+      />
+
+      <AiPlanGeneratorModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onSubmit={handleGeneratePlan}
+        isGenerating={isGenerating}
       />
     </div>
   );

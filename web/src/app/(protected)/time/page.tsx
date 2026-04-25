@@ -66,7 +66,7 @@ function CircularTimer({
       ? 'rgba(174,162,255,0.4)'
       : 'rgba(100,100,120,0.2)'
 
-  const strokeColor = state === 'break' ? '#6bffc1' : state === 'active' ? '#aea2ff' : '#48474d'
+  const strokeColor = state === 'break' ? '#6bffc1' : state === 'active' ? '#90caf9' : '#48474d'
 
   const mins = Math.floor(seconds / 60).toString().padStart(2, '0')
   const secs = (seconds % 60).toString().padStart(2, '0')

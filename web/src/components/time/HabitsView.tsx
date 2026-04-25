@@ -179,22 +179,29 @@ export function HabitsView() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-8 max-w-5xl mx-auto italic">
       {/* Header Panel */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-surface-container-low border border-outline-variant/10 p-6 rounded-3xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
-        <div className="space-y-1 relative z-10 text-center md:text-left">
-          <h2 className="text-xl font-black uppercase tracking-widest text-on-surface flex items-center justify-center md:justify-start gap-2">
-            <Flame className="text-orange-400" size={20} /> Today's Imperatives
-          </h2>
-          <p className="text-xs text-on-surface-variant/60 font-medium">Small daily inputs yield massive ultimate outcomes.</p>
+      <div className="relative overflow-hidden bg-slate-950/40 border border-blue-500/20 p-8 rounded-xl group">
+        {/* Decorative Corner */}
+        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-blue-500/20" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-blue-500/20" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
+          <div className="space-y-2 text-center md:text-left">
+            <h2 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 flex items-center justify-center md:justify-start gap-3 system-text-glow">
+              <Zap className="text-blue-400 animate-pulse" size={24} /> Daily Quests
+            </h2>
+            <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em]">Synchronize your actions with system protocols for maximum evolution.</p>
+          </div>
+          <button
+            onClick={() => setIsAddingHabit(prev => !prev)}
+            className="flex items-center gap-3 px-8 py-3 rounded bg-blue-500/10 text-blue-400 text-xs font-black uppercase tracking-[0.3em] border border-blue-500/40 hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_rgba(59,130,246,0.1)] active:scale-95 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]"
+          >
+            <Plus size={18} /> Initialize Protocol
+          </button>
         </div>
-        <button
-          onClick={() => setIsAddingHabit(prev => !prev)}
-          className="relative z-10 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
-        >
-          <Plus size={16} /> New Habit
-        </button>
       </div>
 
       {/* Global Heatmap */}
@@ -211,53 +218,57 @@ export function HabitsView() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-6 space-y-6 relative">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50">Forge a New Habit</h3>
+            <div className="bg-slate-900/60 border border-blue-500/30 rounded-xl p-8 space-y-8 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
+               
+              <div className="flex items-center justify-between relative z-10">
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/80">Quest Formulation</h3>
                 <button 
                   onClick={handleAiSuggest}
                   disabled={isSuggesting}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider hover:bg-primary/20 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 rounded bg-blue-500/5 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] border border-blue-500/20 hover:bg-blue-500/10 transition-all disabled:opacity-50"
                 >
-                  {isSuggesting ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} 
-                  {isSuggesting ? 'Analyzing...' : 'AI Suggest'}
+                  {isSuggesting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 
+                  {isSuggesting ? 'Analyzing Data...' : 'System Suggestion'}
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Imperative Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Protocol Identifier</label>
                     <input
                       autoFocus
-                      placeholder="e.g. Read 20 Pages"
+                      placeholder="e.g. CORE STRENGTHENING"
                       value={newHabit.name}
                       onChange={e => setNewHabit(p => ({ ...p, name: e.target.value }))}
-                      className="w-full h-12 px-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium text-sm"
+                      className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 placeholder:text-blue-900/40 focus:outline-none focus:border-blue-500/60 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] font-black tracking-widest text-sm transition-all"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Description</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Operational Parameters</label>
                     <input
-                      placeholder="The 'why' behind the what"
+                      placeholder="Define the objective..."
                       value={newHabit.description}
                       onChange={e => setNewHabit(p => ({ ...p, description: e.target.value }))}
-                      className="w-full h-12 px-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm"
+                      className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-100 placeholder:text-blue-900/40 focus:outline-none focus:border-blue-500/40 text-sm font-bold transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Pillar Alignment</label>
-                    <div className="grid grid-cols-3 gap-2 bg-surface-container-lowest p-1 rounded-xl">
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Attribute Alignment</label>
+                    <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded border border-blue-500/10">
                       {['fitness', 'skills', 'time', 'style', 'general'].map(p => (
                         <button
                           key={p}
                           onClick={() => setNewHabit(h => ({ ...h, pillar: p }))}
                           className={cn(
-                            "px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                            newHabit.pillar === p ? PILLAR_COLORS[p] : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+                            "px-3 py-2.5 rounded text-[9px] font-black uppercase tracking-[0.2em] transition-all border",
+                            newHabit.pillar === p 
+                              ? "bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                              : "text-blue-500/40 border-transparent hover:text-blue-400 hover:border-blue-500/20"
                           )}
                         >{p}</button>
                       ))}
@@ -266,31 +277,31 @@ export function HabitsView() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Frequency</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Sync Frequency</label>
                       <select 
                         value={newHabit.frequency}
                         onChange={e => setNewHabit(h => ({ ...h, frequency: e.target.value }))}
-                        className="w-full h-12 px-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-xs font-bold focus:outline-none"
+                        className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 text-xs font-black uppercase tracking-widest focus:outline-none cursor-pointer appearance-none hover:border-blue-500/40 transition-all"
                       >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily Loop</option>
+                        <option value="weekly">Weekly Cycle</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Reminder</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Sync Window</label>
                       <input
                         type="time"
                         value={newHabit.reminder_time}
                         onChange={e => setNewHabit(p => ({ ...p, reminder_time: e.target.value }))}
-                        className="w-full h-12 px-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-xs font-bold focus:outline-none"
+                        className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 text-xs font-black focus:outline-none hover:border-blue-500/40 transition-all"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Target Days</label>
+              <div className="space-y-3 relative z-10">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Designated Execution Days</label>
                 <div className="flex justify-between gap-2">
                   {DAYS_OF_WEEK.map((day) => {
                     const isActive = newHabit.frequency_days.includes(day.id)
@@ -305,10 +316,10 @@ export function HabitsView() {
                           setNewHabit({ ...newHabit, frequency_days: newDays })
                         }}
                         className={cn(
-                          "flex-1 h-12 rounded-xl border text-[11px] font-black transition-all",
+                          "flex-1 h-12 rounded border text-[11px] font-black uppercase tracking-widest transition-all",
                           isActive
-                            ? "bg-primary text-on-primary border-primary"
-                            : "bg-surface-container-lowest border-outline-variant/10 text-on-surface-variant hover:border-primary/30"
+                            ? "bg-blue-500 text-white border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                            : "bg-slate-950 border-blue-500/20 text-blue-500/40 hover:border-blue-500/60"
                         )}
                       >
                         {day.label}
@@ -318,9 +329,9 @@ export function HabitsView() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/10">
-                <button onClick={() => setIsAddingHabit(false)} className="px-5 py-2.5 rounded-xl text-on-surface-variant text-xs font-black uppercase tracking-widest hover:bg-surface-container-highest transition-colors">Cancel</button>
-                <button onClick={handleAddHabit} className="px-8 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20">Establish Imperative</button>
+              <div className="flex justify-end gap-4 pt-8 border-t border-blue-500/10 relative z-10">
+                <button onClick={() => setIsAddingHabit(false)} className="px-6 py-3 rounded text-blue-500/60 text-[10px] font-black uppercase tracking-[0.3em] hover:text-blue-300 transition-colors">Abort</button>
+                <button onClick={handleAddHabit} className="px-10 py-3 bg-blue-600 text-white rounded text-[10px] font-black uppercase tracking-[0.3em] hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all active:scale-95 border border-blue-400">Establish Protocol</button>
               </div>
             </div>
           </motion.div>
@@ -329,15 +340,21 @@ export function HabitsView() {
 
       {/* Habits Grid */}
       {isLoading ? (
-        <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>
+        <div className="py-24 flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-blue-500" size={40} />
+          <p className="text-[10px] font-black text-blue-500/40 uppercase tracking-[0.4em] animate-pulse">Syncing System Data...</p>
+        </div>
       ) : habits.length === 0 ? (
-        <div className="py-20 text-center space-y-3 bg-surface-container-low border border-outline-variant/10 rounded-3xl">
-          <Sparkles size={40} className="text-on-surface-variant/20 mx-auto" />
-          <h3 className="text-on-surface-variant/40 font-black uppercase tracking-widest text-sm">No Habits Tracked</h3>
-          <p className="text-on-surface-variant/40 text-xs">A wandering soul gathers no XP. Start tracking something small.</p>
+        <div className="py-24 text-center space-y-6 bg-slate-950/40 border border-blue-500/10 rounded-xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <Sparkles size={48} className="text-blue-500/20 mx-auto" />
+          <div className="space-y-2">
+            <h3 className="text-blue-500/40 font-black uppercase tracking-[0.4em] text-sm">Protocol Bank Empty</h3>
+            <p className="text-blue-500/40 text-[9px] uppercase tracking-widest max-w-xs mx-auto">A wandering soul gathers no XP. Initialize your first daily quest to begin evolution.</p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence>
             {habits.map(habit => (
               <motion.div
@@ -346,48 +363,54 @@ export function HabitsView() {
                 animate={{ opacity: 1, scale: 1 }}
                 key={habit.id}
                 className={cn(
-                  "relative p-6 rounded-3xl transition-all duration-500 overflow-hidden border",
+                  "relative p-8 rounded-xl transition-all duration-500 overflow-hidden border group",
                   habit.completed_today 
-                    ? "bg-tertiary-fixed-dim/5 border-tertiary-fixed-dim/20" 
-                    : "bg-surface-container border-outline-variant/10 hover:border-primary/30"
+                    ? "bg-blue-500/5 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
+                    : "bg-slate-950 border-blue-500/20 hover:border-blue-500/60 hover:shadow-[0_0_25px_rgba(59,130,246,0.05)]"
                 )}
               >
-                {/* Background flourish when done */}
-                {habit.completed_today && (
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-tertiary-fixed-dim/10 rounded-full blur-3xl" />
-                )}
+                {/* Scanline Effect */}
+                <div className="scanline opacity-20 pointer-events-none" />
 
-                <div className="flex justify-between items-start mb-4 relative z-10">
-                  <span className={cn("px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest", PILLAR_COLORS[habit.pillar] || PILLAR_COLORS.general)}>
+                {/* Decoration */}
+                <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+
+                <div className="flex justify-between items-start mb-6 relative z-10">
+                  <span className={cn(
+                    "px-3 py-1 rounded text-[8px] font-black uppercase tracking-[0.2em] border",
+                    habit.pillar === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' :
+                    'text-blue-400 bg-blue-500/5 border-blue-500/20'
+                  )}>
                     {habit.pillar}
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {habit.streak > 2 && (
-                      <span className="flex items-center gap-1 text-[11px] font-black text-orange-400 bg-orange-400/10 px-2 py-1 rounded-md">
-                        <Flame size={12} fill="currentColor" /> {habit.streak}
+                      <span className="flex items-center gap-1 text-[10px] font-black text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded border border-blue-400/40 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                        <Zap size={10} fill="currentColor" /> {habit.streak}
                       </span>
                     )}
                     <button 
                       onClick={() => handleDeleteHabit(habit.id)}
-                      className="p-1.5 rounded-lg text-on-surface-variant/40 hover:text-error hover:bg-error/10 transition-all"
+                      className="p-1.5 rounded text-blue-500/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-1 mb-6 relative z-10">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className={cn("text-lg font-bold truncate", habit.completed_today ? "text-on-surface line-through opacity-70" : "text-on-surface")}>
-                      {habit.name}
-                    </h3>
-                  </div>
+                <div className="space-y-2 mb-8 relative z-10">
+                  <h3 className={cn(
+                    "text-lg font-black uppercase tracking-widest transition-all",
+                    habit.completed_today ? "text-blue-400/40 line-through italic" : "text-blue-50 system-text-glow"
+                  )}>
+                    {habit.name}
+                  </h3>
                   {habit.description && (
-                    <p className="text-xs text-on-surface-variant/60 truncate">{habit.description}</p>
+                    <p className="text-[10px] text-blue-500/60 uppercase tracking-wide truncate">{habit.description}</p>
                   )}
                   
                   {/* Calendar Grid */}
-                  <div className="pt-2">
+                  <div className="pt-4 opacity-60 group-hover:opacity-100 transition-opacity">
                     <HabitCalendarGrid 
                       logs={habit.habit_logs || []} 
                       pillar={habit.pillar} 
@@ -400,36 +423,22 @@ export function HabitsView() {
                   onClick={() => handleCompleteHabit(habit)}
                   disabled={habit.completed_today}
                   className={cn(
-                    "w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-all relative z-10",
+                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative z-10 border shadow-inner",
                     habit.completed_today
-                      ? "bg-tertiary/20 text-tertiary cursor-not-allowed border border-tertiary/20"
-                      : "bg-surface-container-highest text-on-surface hover:bg-primary hover:text-on-primary active:scale-95 shadow-sm hover:shadow-primary/20"
+                      ? "bg-blue-500/20 text-blue-400/60 border-blue-500/30 cursor-not-allowed opacity-50"
+                      : "bg-slate-900 text-blue-400 border-blue-500/40 hover:bg-blue-500 hover:text-white hover:border-blue-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] active:scale-95"
                   )}
                 >
                   {habit.completed_today ? (
-                    <motion.div 
-                      initial={{ scale: 0.8 }} 
-                      animate={{ scale: 1 }}
-                      className="flex items-center gap-2"
-                    >
-                      <CheckCircle2 size={16} /> Imperative Fulfilled
-                    </motion.div>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 size={16} /> Sync Verified
+                    </div>
                   ) : (
-                    "Mark Done"
+                    <>
+                      <Plus size={16} /> Mark Synchronized
+                    </>
                   )}
                 </button>
-                
-                {/* Visual completion burst */}
-                <AnimatePresence>
-                  {habit.completed_today && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1.5, opacity: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className="absolute inset-0 bg-primary/20 rounded-full blur-2xl pointer-events-none"
-                    />
-                  )}
-                </AnimatePresence>
               </motion.div>
             ))}
           </AnimatePresence>

@@ -39,8 +39,7 @@ export default function ChatPage() {
 
   // Fetch messages when conversation changes
   useEffect(() => {
-    const rawPersonaName = profile?.ai_persona_name || 'System'
-    const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+    const personaName = profile?.ai_persona_name || 'System'
 
     if (activeConversationId) {
       fetchMessages(activeConversationId)
@@ -129,8 +128,7 @@ export default function ChatPage() {
   }
 
   const startNewChat = () => {
-    const rawPersonaName = profile?.ai_persona_name || 'System'
-    const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+    const personaName = profile?.ai_persona_name || 'System'
     
     setActiveConversationId(null)
     setMessages([{ 
@@ -156,7 +154,7 @@ export default function ChatPage() {
               activeId={activeConversationId}
               onSelect={setActiveConversationId}
               onNew={startNewChat}
-              aiName={profile?.ai_persona_name === 'Nova' ? 'System' : (profile?.ai_persona_name || 'System')}
+              aiName={profile?.ai_persona_name || 'System'}
             />
           </motion.div>
         )}
@@ -180,7 +178,7 @@ export default function ChatPage() {
                 profile?.ai_persona_style === 'motivational' ? 'text-secondary' :
                 profile?.ai_persona_style === 'neutral' ? 'text-blue-400' : 'text-primary'
               )} />
-              <span className="font-headline font-bold text-lg">{profile?.ai_persona_name === 'Nova' ? 'System' : (profile?.ai_persona_name || 'System')}</span>
+              <span className="font-headline font-bold text-lg">{profile?.ai_persona_name || 'System'}</span>
               <div className={cn(
                 "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-colors",
                 profile?.ai_persona_style === 'strict' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
@@ -211,7 +209,7 @@ export default function ChatPage() {
               key={i} 
               role={msg.role} 
               content={msg.content} 
-              name={profile?.ai_persona_name === 'Nova' ? 'System' : (profile?.ai_persona_name || 'System')}
+              name={profile?.ai_persona_name || 'System'}
               style={profile?.ai_persona_style}
               isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}
             />
@@ -220,7 +218,7 @@ export default function ChatPage() {
             <ChatMessage 
               role="assistant" 
               content="" 
-              name={profile?.ai_persona_name === 'Nova' ? 'System' : (profile?.ai_persona_name || 'System')}
+              name={profile?.ai_persona_name || 'System'}
               style={profile?.ai_persona_style}
               isLast 
             />
@@ -233,7 +231,7 @@ export default function ChatPage() {
             <ChatInput 
               onSend={handleSendMessage} 
               isDisabled={isLoading} 
-              aiName={profile?.ai_persona_name === 'Nova' ? 'System' : (profile?.ai_persona_name || 'System')} 
+              aiName={profile?.ai_persona_name || 'System'} 
             />
           </div>
         </div>

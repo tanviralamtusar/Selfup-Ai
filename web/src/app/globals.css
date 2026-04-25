@@ -1,58 +1,58 @@
 @theme {
-  --color-on-secondary: #260069;
-  --color-on-secondary-fixed-variant: #593ca6;
+  --color-on-secondary: #003355;
+  --color-on-secondary-fixed-variant: #004a7d;
   --color-error: #ff6e84;
-  --color-primary-fixed-dim: #9282ff;
-  --color-on-primary-fixed-variant: #280092;
-  --color-surface-variant: #25252d;
-  --color-surface-container: #19191f;
-  --color-inverse-primary: #5c48ce;
-  --color-tertiary-fixed: #6bffc1;
-  --color-tertiary: #cdffe3;
+  --color-primary-fixed-dim: #7ebfff;
+  --color-on-primary-fixed-variant: #003258;
+  --color-surface-variant: #1e2129;
+  --color-surface-container: #12141a;
+  --color-inverse-primary: #0061a4;
+  --color-tertiary-fixed: #7dd3fc;
+  --color-tertiary: #bae6fd;
   --color-surface-container-lowest: #000000;
-  --color-surface-container-low: #131319;
-  --color-on-tertiary-fixed: #004b33;
-  --color-tertiary-container: #6bffc1;
-  --color-secondary: #a88cfb;
-  --color-primary: #aea2ff;
-  --color-background: #0e0e13;
-  --color-surface: #0e0e13;
-  --color-on-secondary-container: #d7c8ff;
-  --color-secondary-fixed: #d8caff;
-  --color-on-tertiary-fixed-variant: #006b4a;
-  --color-surface-container-highest: #25252d;
-  --color-tertiary-fixed-dim: #5af0b4;
-  --color-tertiary-dim: #5af0b4;
-  --color-on-surface: #f9f5fd;
-  --color-outline: #76747b;
-  --color-inverse-surface: #fcf8ff;
-  --color-primary-fixed: #a092ff;
-  --color-surface-tint: #aea2ff;
-  --color-on-primary-container: #1f0078;
-  --color-secondary-fixed-dim: #ccbaff;
-  --color-secondary-container: #4f319c;
-  --color-on-background: #f9f5fd;
-  --color-surface-container-high: #1f1f26;
-  --color-on-tertiary-container: #006042;
-  --color-surface-dim: #0e0e13;
-  --color-on-primary: #2a0098;
-  --color-inverse-on-surface: #55545b;
+  --color-surface-container-low: #0f1117;
+  --color-on-tertiary-fixed: #001e2f;
+  --color-tertiary-container: #7dd3fc;
+  --color-secondary: #82b1ff;
+  --color-primary: #90caf9;
+  --color-background: #0a0c10;
+  --color-surface: #0a0c10;
+  --color-on-secondary-container: #d1e4ff;
+  --color-secondary-fixed: #d1e4ff;
+  --color-on-tertiary-fixed-variant: #004c6d;
+  --color-surface-container-highest: #232730;
+  --color-tertiary-fixed-dim: #55d0ff;
+  --color-tertiary-dim: #55d0ff;
+  --color-on-surface: #f0f4f8;
+  --color-outline: #747c8a;
+  --color-inverse-surface: #f0f4f8;
+  --color-primary-fixed: #90caf9;
+  --color-surface-tint: #90caf9;
+  --color-on-primary-container: #001d35;
+  --color-secondary-fixed-dim: #adc6ff;
+  --color-secondary-container: #004786;
+  --color-on-background: #f0f4f8;
+  --color-surface-container-high: #1a1d26;
+  --color-on-tertiary-container: #001e2f;
+  --color-surface-dim: #0a0c10;
+  --color-on-primary: #003258;
+  --color-inverse-on-surface: #2e3136;
   --color-error-container: #a70138;
-  --color-primary-dim: #9d8fff;
-  --color-on-secondary-fixed: #3c1989;
+  --color-primary-dim: #82b1ff;
+  --color-on-secondary-fixed: #001d35;
   --color-error-dim: #d73357;
-  --color-secondary-dim: #a88cfb;
-  --color-surface-bright: #2c2b33;
+  --color-secondary-dim: #82b1ff;
+  --color-surface-bright: #252a35;
   --color-on-primary-fixed: #000000;
-  --color-primary-container: #a092ff;
+  --color-primary-container: #90caf9;
   --color-on-error-container: #ffb2b9;
-  --color-on-surface-variant: #acaab1;
+  --color-on-surface-variant: #a1abb9;
   --color-on-error: #490013;
-  --color-on-tertiary: #006948;
-  --color-outline-variant: #48474d;
+  --color-on-tertiary: #00354e;
+  --color-outline-variant: #3f4753;
 
   /* Legacy Compat */
-  --color-xp-purple: #aea2ff;
+  --color-xp-blue: #90caf9;
   --color-coin-gold: #FFD700;
 
   --font-headline: 'Plus Jakarta Sans', sans-serif;
@@ -66,7 +66,7 @@
 
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px rgba(124, 106, 240, 0.15);
+  --shadow-glow: 0 0 20px rgba(33, 150, 243, 0.15);
 }
 
 @import "tailwindcss";
@@ -111,13 +111,45 @@
   .animate-gradient {
     animation: gradient 3s ease infinite;
   }
+
+  .system-glow {
+    @apply shadow-[0_0_15px_rgba(33,150,243,0.3)] border-primary/30;
+  }
+
+  .system-text-glow {
+    text-shadow: 0 0 8px rgba(144, 202, 249, 0.5);
+  }
+
+  .scanline {
+    width: 100%;
+    height: 100px;
+    z-index: 10;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(144, 202, 249, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0.1;
+    position: absolute;
+    bottom: 100%;
+    animation: scanline 4s linear infinite;
+  }
 }
 
 /* ─── ANIMATIONS ─── */
-@keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes scanline {
+  0% { bottom: 100%; }
+  100% { bottom: -100%; }
+}
+
+@keyframes flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
 }
 
 @keyframes slide-up {
@@ -128,4 +160,3 @@
 .animate-slide-up {
   animation: slide-up 0.4s ease-out forwards;
 }
-

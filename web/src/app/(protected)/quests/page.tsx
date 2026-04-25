@@ -39,17 +39,17 @@ interface Quest {
 }
 
 const PILLAR_CONFIG: Record<string, { icon: React.FC<any>; color: string; bg: string }> = {
-  fitness: { icon: Dumbbell, color: 'text-green-400', bg: 'bg-green-500/10' },
-  skills:  { icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
-  time:    { icon: Timer,    color: 'text-secondary', bg: 'bg-secondary/10' },
-  style:   { icon: Palette,  color: 'text-pink-400', bg: 'bg-pink-500/10' },
-  general: { icon: Globe,    color: 'text-on-surface-variant/60', bg: 'bg-surface-container-highest' },
+  fitness: { icon: Dumbbell, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+  skills:  { icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  time:    { icon: Timer,    color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  style:   { icon: Palette,  color: 'text-sky-400', bg: 'bg-sky-500/10' },
+  general: { icon: Globe,    color: 'text-slate-400', bg: 'bg-slate-500/10' },
 }
 
 const TYPE_CONFIG: Record<QuestType, { label: string; color: string; bgCard: string; borderGlow: string }> = {
-  daily:   { label: 'Daily',   color: 'text-yellow-400', bgCard: 'bg-surface-container-low', borderGlow: 'hover:border-yellow-500/20' },
-  weekly:  { label: 'Weekly',  color: 'text-primary',    bgCard: 'bg-surface-container-low', borderGlow: 'hover:border-primary/20' },
-  special: { label: 'Special', color: 'text-amber-400',  bgCard: 'bg-gradient-to-br from-amber-900/20 to-surface-container-low', borderGlow: 'hover:border-amber-500/30' },
+  daily:   { label: 'DAILY',   color: 'text-blue-400', bgCard: 'bg-slate-950/40', borderGlow: 'hover:border-blue-500/40' },
+  weekly:  { label: 'WEEKLY',  color: 'text-cyan-400',    bgCard: 'bg-slate-950/40', borderGlow: 'hover:border-cyan-500/40' },
+  special: { label: 'SPECIAL', color: 'text-amber-400',  bgCard: 'bg-slate-950/60', borderGlow: 'hover:border-amber-500/50' },
 }
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { label: string; color: string; bg: string }> = {
@@ -85,9 +85,9 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "relative rounded-3xl border border-outline-variant/10 p-6 transition-all group overflow-hidden",
-        typeConf.bgCard, typeConf.borderGlow,
-        quest.difficulty === 'legendary' && !isCompleted && 'shadow-amber-500/10 shadow-lg',
+        "relative rounded-3xl border border-blue-500/20 p-6 transition-all group overflow-hidden bg-slate-950/40 backdrop-blur-md",
+        "before:absolute before:inset-0 before:bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px)] before:bg-[size:100%_4px] before:pointer-events-none",
+        quest.difficulty === 'legendary' && !isCompleted && 'border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.15)]',
         (isCompleted || isExpired) && 'opacity-60'
       )}
     >
@@ -99,10 +99,10 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
       <div className="flex items-start gap-4 relative z-10">
         {/* Left Side: Icon & Pillar */}
         <div className="flex flex-col items-center gap-2">
-          <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner", pillar.bg)}>
+          <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.1)] border border-blue-500/20", pillar.bg)}>
             <PillarIcon size={24} className={pillar.color} />
           </div>
-          <div className={cn("px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border border-current", diffConf.color, diffConf.bg)}>
+          <div className={cn("px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] italic border border-current", diffConf.color, diffConf.bg)}>
             {diffConf.label}
           </div>
         </div>
@@ -110,35 +110,35 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
         {/* Middle: Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className={cn("text-[9px] font-black uppercase tracking-[0.2em]", typeConf.color)}>
-              {typeConf.label}
+            <span className={cn("text-[9px] font-black uppercase tracking-[0.3em] italic", typeConf.color)}>
+              {typeConf.label} Protocol
             </span>
             {quest.time_remaining && isActive && (
-              <span className="flex items-center gap-1 text-[9px] font-bold text-on-surface-variant/40">
+              <span className="flex items-center gap-1 text-[9px] font-bold text-blue-400/40 uppercase tracking-widest italic">
                 <Clock size={10} /> {quest.time_remaining}
               </span>
             )}
           </div>
           
-          <h3 className="text-base font-black text-on-surface mb-1 leading-tight">{quest.title}</h3>
-          <p className="text-xs text-on-surface-variant/70 leading-relaxed mb-4 line-clamp-2 group-hover:line-clamp-none transition-all">
+          <h3 className="text-base font-black text-blue-100 mb-1 leading-tight uppercase italic tracking-wider">{quest.title}</h3>
+          <p className="text-xs text-blue-100/60 leading-relaxed mb-4 line-clamp-2 group-hover:line-clamp-none transition-all">
             {quest.description}
           </p>
 
           {/* Progress Section */}
           {isActive && (
             <div className="mb-4 space-y-1.5">
-              <div className="flex justify-between text-[10px] font-bold">
-                <span className="text-on-surface-variant/60">Progress</span>
-                <span className="text-on-surface">{quest.current_value} / {quest.target_value}</span>
+              <div className="flex justify-between text-[10px] font-bold italic tracking-widest uppercase text-blue-400/60">
+                <span>Progress Trace</span>
+                <span className="text-blue-400">{quest.current_value} / {quest.target_value}</span>
               </div>
-              <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-blue-500/10 rounded-full overflow-hidden border border-blue-500/20">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   className={cn(
                     "h-full rounded-full transition-all duration-1000",
-                    progress >= 100 ? 'bg-tertiary-fixed-dim shadow-[0_0_8px_rgba(159,232,255,0.3)]' : 'bg-primary'
+                    progress >= 100 ? 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-blue-500'
                   )}
                 />
               </div>
@@ -147,12 +147,12 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
 
           {/* Rewards */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-container-highest/50">
-              <Zap size={12} className="text-primary" />
-              <span className="text-xs font-black text-primary">+{quest.xp_reward} <span className="text-[10px] opacity-60">XP</span></span>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <Zap size={12} className="text-blue-400" />
+              <span className="text-xs font-black text-blue-400">+{quest.xp_reward} <span className="text-[10px] opacity-60">XP</span></span>
             </div>
             {quest.coin_reward > 0 && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-container-highest/50">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <Star size={12} className="text-amber-400" />
                 <span className="text-xs font-black text-amber-400">+{quest.coin_reward} <span className="text-[10px] opacity-60">AiC</span></span>
               </div>
@@ -178,14 +178,14 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
                 onClick={() => onComplete(quest.id)}
                 disabled={loading || !canComplete}
                 className={cn(
-                  "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all italic",
                   canComplete 
-                    ? 'bg-tertiary-fixed-dim text-on-tertiary shadow-lg shadow-tertiary-fixed-dim/20 hover:scale-105 active:scale-95'
-                    : 'bg-surface-container-highest text-on-surface-variant/40 cursor-not-allowed border border-outline-variant/10'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95 border border-blue-400'
+                    : 'bg-slate-900 text-blue-500/20 cursor-not-allowed border border-blue-500/10'
                 )}
               >
                 {loading ? <Loader2 size={12} className="animate-spin" /> : <Trophy size={14} />}
-                Claim Reward
+                Extract Rewards
               </button>
               <button 
                 onClick={() => onAbandon(quest.id)}
@@ -199,14 +199,14 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
               onClick={() => onAccept(quest.id)}
               disabled={loading}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl",
+                "flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl italic",
                 quest.difficulty === 'legendary'
-                  ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-400'
-                  : 'bg-primary text-on-primary shadow-primary/20 hover:bg-primary/90'
+                  ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-400 border border-amber-400'
+                  : 'bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-500 border border-blue-400'
               )}
             >
               {loading ? <Loader2 size={12} className="animate-spin" /> : <Sword size={14} />}
-              Accept Quest
+              Initialize Quest
             </button>
           )}
         </div>
@@ -351,47 +351,47 @@ export default function QuestsPage() {
           <motion.div 
             initial={{ rotate: -20, scale: 0.8 }}
             animate={{ rotate: 0, scale: 1 }}
-            className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center border-4 border-surface-container shadow-2xl shadow-amber-500/20"
+            className="w-16 h-16 rounded-3xl bg-blue-500/20 flex items-center justify-center border-2 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
           >
-            <Sword size={32} className="text-white" />
+            <Sword size={32} className="text-blue-400" />
           </motion.div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-black font-headline tracking-tighter text-on-surface">Quest Board</h1>
-            <p className="text-on-surface-variant/60 text-sm font-medium">Earn experience points and unlock legendary rewards.</p>
+            <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">System Quests</h1>
+            <p className="text-blue-400/60 text-[10px] font-black tracking-[0.2em] uppercase italic">Earn experience points and unlock legendary rewards.</p>
           </div>
         </div>
 
         {/* AI Generator Button */}
         <button
           onClick={async () => {
-            const loadingToast = toast.loading('AI is crafting personalized quests...')
+            const loadingToast = toast.loading('System is crafting personalized missions...')
             try {
               const res = await fetch('/api/quests/generate', { method: 'POST', headers: headers() })
               if (res.ok) {
-                toast.success('AI Quests generated!', { id: loadingToast })
+                toast.success('Missions generated!', { id: loadingToast })
                 fetchQuests()
               } else {
-                toast.error('Failed to generate quests', { id: loadingToast })
+                toast.error('Failed to generate protocols', { id: loadingToast })
               }
             } catch {
-              toast.error('Connection error', { id: loadingToast })
+              toast.error('Sync error', { id: loadingToast })
             }
           }}
-          className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+          className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/50 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/30 transition-all shadow-lg shadow-blue-500/10"
         >
           <Sparkles size={14} className="group-hover:animate-spin" />
-          AI Generate
+          Protocol Initializer
         </button>
 
         {/* Quick Stats */}
         <div className="flex gap-3">
-          <div className="px-4 py-2.5 rounded-2xl bg-surface-container border border-outline-variant/10 flex flex-col items-center min-w-[80px]">
-            <span className="text-xl font-black text-primary">{stats.active}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40">Active</span>
+          <div className="px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-blue-500/20 flex flex-col items-center min-w-[80px] shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+            <span className="text-xl font-black text-blue-400">{stats.active}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-blue-400/40">Active</span>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-surface-container border border-outline-variant/10 flex flex-col items-center min-w-[80px]">
-            <span className="text-xl font-black text-tertiary-fixed-dim">{stats.completed}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40">Done</span>
+          <div className="px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-blue-500/20 flex flex-col items-center min-w-[80px] shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+            <span className="text-xl font-black text-cyan-400">{stats.completed}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400/40">Sync</span>
           </div>
         </div>
       </div>
@@ -399,12 +399,12 @@ export default function QuestsPage() {
       {/* Navigation & Controls */}
       <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between border-b border-outline-variant/10 pb-6">
         {/* Main Mode Toggle */}
-        <div className="flex gap-2 p-1.5 bg-surface-container-low border border-outline-variant/10 rounded-2xl">
+        <div className="flex gap-2 p-1.5 bg-slate-950/40 border border-blue-500/20 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <button
             onClick={() => setActiveMajorTab('quests')}
             className={cn(
-              "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2",
-              activeMajorTab === 'quests' ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' : 'text-on-surface-variant/60 hover:text-on-surface'
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] italic transition-all flex items-center gap-2",
+              activeMajorTab === 'quests' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'text-blue-400/40 hover:text-blue-400'
             )}
           >
             <Sword size={16} /> Quests
@@ -412,8 +412,8 @@ export default function QuestsPage() {
           <button
             onClick={() => setActiveMajorTab('badges')}
             className={cn(
-              "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2",
-              activeMajorTab === 'badges' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-on-surface-variant/60 hover:text-on-surface'
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] italic transition-all flex items-center gap-2",
+              activeMajorTab === 'badges' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'text-amber-400/40 hover:text-amber-400'
             )}
           >
             <Medal size={16} /> Badges
@@ -423,30 +423,30 @@ export default function QuestsPage() {
         {activeMajorTab === 'quests' && (
           <div className="flex flex-wrap gap-3 items-center">
             {/* Type Filters */}
-            <div className="flex gap-1 p-1 bg-surface-container-highest/30 rounded-xl">
+            <div className="flex gap-1 p-1 bg-slate-950/40 border border-blue-500/10 rounded-xl">
               {(['daily', 'weekly', 'special'] as QuestType[]).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTypeTab(tab)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                    activeTypeTab === tab ? 'bg-surface-container text-on-surface shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface'
+                    "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] italic transition-all",
+                    activeTypeTab === tab ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-blue-400/30 hover:text-blue-400'
                   )}
                 >
-                  {tab}
+                  {tab === 'daily' ? 'DAILY PROTOCOLS' : tab === 'weekly' ? 'WEEKLY TRIALS' : 'SPECIAL MISSIONS'}
                 </button>
               ))}
             </div>
 
             {/* Status Filter */}
-            <div className="flex gap-1 p-1 bg-surface-container-highest/30 rounded-xl">
+            <div className="flex gap-1 p-1 bg-slate-950/40 border border-blue-500/10 rounded-xl">
               {(['all', 'active', 'completed', 'expired'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setStatusFilter(f)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                    statusFilter === f ? 'bg-surface-container text-on-surface shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface'
+                    "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] italic transition-all",
+                    statusFilter === f ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-blue-400/30 hover:text-blue-400'
                   )}
                 >
                   {f}

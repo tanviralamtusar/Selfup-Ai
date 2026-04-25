@@ -15,11 +15,11 @@ interface HabitCalendarGridProps {
 }
 
 const PILLAR_COLORS: Record<string, string> = {
-  fitness: 'bg-green-400',
-  skills:  'bg-primary',
-  time:    'bg-secondary',
-  style:   'bg-pink-400',
-  general: 'bg-on-surface-variant',
+  fitness: 'bg-rose-500',
+  skills:  'bg-blue-500',
+  time:    'bg-cyan-400',
+  style:   'bg-blue-300',
+  general: 'bg-blue-400',
 }
 
 export function HabitCalendarGrid({ logs, pillar, days = 35 }: HabitCalendarGridProps) {

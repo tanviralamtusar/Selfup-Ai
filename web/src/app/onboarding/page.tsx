@@ -491,7 +491,7 @@ export default function OnboardingPage() {
                 onClick={handleComplete}
                 disabled={isLoading}
                 className="px-8 py-2.5 rounded-sm font-semibold text-white transition-all btn-press disabled:opacity-50 flex items-center gap-2"
-                style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-purple))' }}
+                style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-blue))' }}
               >
                 {isLoading ? (
                   <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />

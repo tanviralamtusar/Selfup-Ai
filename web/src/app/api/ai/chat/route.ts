@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     // 6. Build System Prompt with Profile Context + Memory + Persona
     const rawPersonaName = profile.ai_persona_name || 'System'
-    const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+    const personaName = profile?.ai_persona_name || 'System'
     const personaStyle = profile.ai_persona_style || 'friendly'
     const personaTone = PERSONA_PROMPTS[personaStyle] || PERSONA_PROMPTS['friendly']
 

@@ -85,34 +85,36 @@ export function HabitHeatmap({ habits, days = 84 }: HabitHeatmapProps) {
   }, [dateRange])
 
   return (
-    <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-6 space-y-6">
+    <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 space-y-6 relative overflow-hidden italic">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl pointer-events-none" />
+      
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40">Consistency Overview</h3>
-          <p className="text-[11px] font-bold text-on-surface flex items-center gap-2">
-            Last {days} Days <span className="w-1 h-1 rounded-full bg-on-surface-variant/20" /> {habits.length} Active Imperatives
+          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Consistency Logs</h3>
+          <p className="text-[11px] font-black text-blue-100 flex items-center gap-2 uppercase tracking-wide">
+            Last {days} Cycles <span className="w-1 h-1 rounded-full bg-blue-500/30" /> {habits.length} Active Protocols
           </p>
         </div>
-        <div className="flex items-center gap-4 bg-surface-container-lowest/50 px-4 py-2 rounded-xl border border-outline-variant/5">
+        <div className="flex items-center gap-4 bg-slate-950/50 px-4 py-2 rounded border border-blue-500/10">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-[2px] bg-surface-container-highest/20" />
-            <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-wider">None</span>
+            <div className="w-2.5 h-2.5 rounded-[1px] bg-blue-500/5 border border-blue-500/10" />
+            <span className="text-[8px] font-black text-blue-500/40 uppercase tracking-widest">Idle</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-[2px] bg-primary opacity-40" />
-            <div className="w-2.5 h-2.5 rounded-[2px] bg-primary opacity-70" />
-            <div className="w-2.5 h-2.5 rounded-[2px] bg-primary" />
-            <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-wider">Max</span>
+            <div className="w-2.5 h-2.5 rounded-[1px] bg-blue-500 opacity-40 border border-white/10" />
+            <div className="w-2.5 h-2.5 rounded-[1px] bg-blue-500 opacity-70 border border-white/10" />
+            <div className="w-2.5 h-2.5 rounded-[1px] bg-blue-500 border border-white/20 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+            <span className="text-[8px] font-black text-blue-500/40 uppercase tracking-widest">Peak</span>
           </div>
         </div>
       </div>
 
-      <div className="relative overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-outline-variant/20">
+      <div className="relative overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500/20">
         <div className="flex gap-2 min-w-max">
           {/* Days of week labels */}
           <div className="flex flex-col gap-1.5 pr-2 pt-1">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
-              <span key={i} className="text-[8px] font-black text-on-surface-variant/30 h-3.5 w-6 flex items-center justify-end">
+              <span key={i} className="text-[8px] font-black text-blue-500/30 h-3.5 w-6 flex items-center justify-end uppercase tracking-tighter">
                 {i % 2 === 0 ? day : ''}
               </span>
             ))}
@@ -122,7 +124,6 @@ export function HabitHeatmap({ habits, days = 84 }: HabitHeatmapProps) {
           <div className="flex gap-1.5">
             {columns.map((week, weekIndex) => (
               <div key={weekIndex} className="flex flex-col gap-1.5">
-                {/* Pad the first week if necessary */}
                 {weekIndex === 0 && week.length < 7 && Array.from({ length: 7 - week.length }).map((_, i) => (
                   <div key={`pad-${i}`} className="w-3.5 h-3.5" />
                 ))}
@@ -133,42 +134,40 @@ export function HabitHeatmap({ habits, days = 84 }: HabitHeatmapProps) {
                   const count = dayData?.count || 0
                   const pillars = Array.from(dayData?.pillars || [])
                   
-                  // Color logic
-                  let bgColor = 'bg-surface-container-highest/20'
+                  let bgColor = 'bg-blue-500/5 border-blue-500/10'
                   let opacity = 'opacity-100'
                   let glow = ''
                   
                   if (count > 0) {
                     const primaryPillar = pillars[0]
-                    bgColor = PILLAR_COLORS[primaryPillar] || PILLAR_COLORS.general
+                    bgColor = (PILLAR_COLORS[primaryPillar] || PILLAR_COLORS.general) + ' border-white/10'
                     
                     if (count === 1) opacity = 'opacity-40'
                     else if (count === 2) opacity = 'opacity-70'
                     else {
                       opacity = 'opacity-100'
-                      glow = `shadow-[0_0_10px] ${bgColor.replace('bg-', 'shadow-')}/30`
+                      glow = `shadow-[0_0_12px] ${bgColor.split(' ')[0].replace('bg-', 'shadow-')}/50`
                     }
                   }
 
                   return (
                     <motion.div
                       key={dateStr}
-                      whileHover={{ scale: 1.25, zIndex: 10 }}
+                      whileHover={{ scale: 1.3, zIndex: 10 }}
                       className={cn(
-                        "w-3.5 h-3.5 rounded-[3px] transition-all duration-300 cursor-pointer relative group",
+                        "w-3.5 h-3.5 rounded-[1px] transition-all duration-300 cursor-pointer relative group border",
                         bgColor,
                         opacity,
                         glow
                       )}
                     >
                       {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-surface-container-highest text-[10px] font-bold text-on-surface rounded-lg border border-outline-variant/20 whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 shadow-2xl scale-90 group-hover:scale-100">
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="text-on-surface-variant/60">{format(date, 'EEEE, MMM do')}</span>
-                          <span className="text-primary">{count} Imperatives Completed</span>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-slate-900 text-[10px] font-black text-blue-100 rounded border border-blue-500/40 whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 shadow-[0_0_20px_rgba(59,130,246,0.2)] scale-90 group-hover:scale-100 uppercase tracking-widest italic">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-blue-500/60">{format(date, 'EEEE, MMM do')}</span>
+                          <span className="text-blue-400">{count} Sync Events</span>
                         </div>
-                        {/* Arrow */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-surface-container-highest" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r border-b border-blue-500/40 rotate-45 -translate-y-1" />
                       </div>
                     </motion.div>
                   )

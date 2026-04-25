@@ -104,96 +104,110 @@ export default function FitnessPage() {
   const activePlan = plans.find(p => p.is_active);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 pb-20">
+    <div className="min-h-screen bg-black text-white p-6 pb-20 italic">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter mb-2 italic uppercase">
-            War Room <span className="text-indigo-500">Fitness</span>
-          </h1>
-          <p className="text-zinc-500 text-sm max-w-md">
-            Optimize your physical vessel. High-performance training for the modern high-performer.
-          </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative">
+            <h1 className="text-4xl font-black tracking-[0.3em] mb-2 uppercase system-text-glow">
+              Physical <span className="text-blue-500">Vessel</span>
+            </h1>
+            <div className="text-blue-500/40 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+              Strategic Body Optimization Module v4.2
+            </div>
+          </div>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button 
             onClick={handleOpenAiModal}
             disabled={isGenerating}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-indigo-500/50 text-white font-bold text-sm transition-all group"
+            className="relative group flex items-center gap-3 px-6 py-3 bg-slate-950 border border-blue-500/30 rounded-xl text-blue-100 font-black text-[10px] uppercase tracking-[0.2em] transition-all overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:border-blue-500/60"
           >
+            <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors" />
             {isGenerating ? (
-              <Loader2 size={18} className="animate-spin text-indigo-400" />
+              <Loader2 size={16} className="animate-spin text-blue-400" />
             ) : (
-              <Sparkles size={18} className="text-indigo-400 group-hover:rotate-12 transition-transform" />
+              <Sparkles size={16} className="text-blue-400 group-hover:rotate-12 transition-transform" />
             )}
-            {isGenerating ? 'System Generating...' : 'System AI Plan'}
+            {isGenerating ? 'Synthesizing...' : 'AI Optimization'}
           </button>
           
-          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-900/40 transition-all">
-            <Plus size={18} />
-            Build Plan
+          <button className="flex items-center gap-3 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400 transition-all hover:scale-105 active:scale-95">
+            <Plus size={16} />
+            Build Protocol
           </button>
         </div>
       </div>
 
       {/* ── Tabs Menu ── */}
-      <div className="flex border-b border-zinc-800/50 mb-8 overflow-x-auto scrollbar-hide">
+      <div className="flex bg-slate-950/40 border border-blue-500/10 rounded-xl p-1 mb-10 overflow-x-auto scrollbar-hide backdrop-blur-sm">
         {(['workout', 'nutrition', 'body'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "flex-1 md:flex-none min-w-[120px] py-4 text-[11px] font-black uppercase tracking-widest transition-all relative",
-              activeTab === tab ? 'text-indigo-400' : 'text-zinc-500 hover:text-zinc-300'
+              "flex-1 md:flex-none min-w-[140px] py-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative rounded-lg",
+              activeTab === tab ? 'text-blue-50 bg-blue-600/20 shadow-[inset_0_0_15px_rgba(59,130,246,0.2)] border border-blue-500/30' : 'text-blue-500/40 hover:text-blue-300 hover:bg-blue-500/5'
             )}
           >
             {tab}
-            {activeTab === tab && (
-              <motion.div layoutId="fitnessTabIndicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-t-full" />
-            )}
           </button>
         ))}
       </div>
 
-      {activeTab === 'workout' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <WorkoutView plans={plans} loading={loading} handleGeneratePlan={handleOpenAiModal} />
-          </div>
-
-          <div className="space-y-8">
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <History size={20} className="text-indigo-500" />
-                <h2 className="text-xl font-bold">Recent Output</h2>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
+        >
+          {activeTab === 'workout' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <div className="lg:col-span-2">
+                <WorkoutView plans={plans} loading={loading} handleGeneratePlan={handleOpenAiModal} />
               </div>
-              
-              <div className="space-y-3">
-                {logs.length > 0 ? (
-                  logs.slice(0, 5).map((log) => (
-                    <div key={log.id} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-green-400">+{log.xp_earned} XP</span>
-                        <span className="text-[10px] text-zinc-600">{new Date(log.completed_at).toLocaleDateString()}</span>
-                      </div>
-                      <h4 className="text-sm font-bold text-white mb-1">Workout Session</h4>
-                      <p className="text-xs text-zinc-500 line-clamp-1 italic">"{log.notes || 'No notes'}"</p>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-12 text-center text-zinc-600 italic text-sm">
-                    No activities logged yet.
+
+              <div className="space-y-10">
+                <section className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+                  <div className="flex items-center gap-3 mb-6">
+                    <History size={18} className="text-blue-500" />
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Temporal Logs</h2>
                   </div>
-                )}
+                  
+                  <div className="space-y-4">
+                    {logs.length > 0 ? (
+                      logs.slice(0, 5).map((log) => (
+                        <div key={log.id} className="p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative group/log overflow-hidden">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">+{log.xp_earned} XP</span>
+                            <span className="text-[8px] font-black text-blue-500/30 uppercase tracking-widest">{new Date(log.completed_at).toLocaleDateString()}</span>
+                          </div>
+                          <h4 className="text-[11px] font-black text-blue-50 mb-1 uppercase tracking-widest">Protocol Executed</h4>
+                          <p className="text-[10px] text-blue-500/60 line-clamp-1 italic italic leading-relaxed">"{log.notes || 'No log data recorded.'}"</p>
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover/log:bg-blue-500/40 transition-colors" />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-12 text-center text-blue-500/20 italic text-[10px] font-black uppercase tracking-widest border border-dashed border-blue-500/10 rounded-xl">
+                        NO PROTOCOLS LOGGED
+                      </div>
+                    )}
+                  </div>
+                </section>
               </div>
-            </section>
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {activeTab === 'nutrition' && <NutritionView />}
-      {activeTab === 'body' && <BodyView />}
+          {activeTab === 'nutrition' && <NutritionView />}
+          {activeTab === 'body' && <BodyView />}
+        </motion.div>
+      </AnimatePresence>
 
       <LevelUpModal
         isOpen={showLevelUp}

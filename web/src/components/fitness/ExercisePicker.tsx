@@ -47,7 +47,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
           <input
             type="text"
             placeholder="Search exercises (e.g. Bench Press, Squat)..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -67,12 +67,12 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                 key={ex.id}
                 className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${
                   isSelected 
-                    ? 'bg-indigo-500/10 border border-indigo-500/20' 
+                    ? 'bg-blue-500/10 border border-blue-500/20' 
                     : 'hover:bg-zinc-900/80 border border-transparent'
                 }`}
               >
                 <div>
-                  <h4 className="text-sm font-semibold text-white group-hover:text-indigo-400">
+                  <h4 className="text-sm font-semibold text-white group-hover:text-blue-400">
                     {ex.name}
                   </h4>
                   <p className="text-[11px] text-zinc-500 flex gap-2 mt-0.5">
@@ -88,7 +88,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                   className={`p-1.5 rounded-md transition-all ${
                     isSelected
                       ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-zinc-800 text-zinc-400 hover:bg-indigo-600 hover:text-white'
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-blue-600 hover:text-white'
                   }`}
                 >
                   {isSelected ? <Check size={16} /> : <Plus size={16} />}

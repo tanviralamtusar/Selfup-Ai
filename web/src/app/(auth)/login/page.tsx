@@ -77,7 +77,7 @@ export default function LoginPage() {
         <div className="absolute top-20 left-20 w-64 h-64 rounded-full opacity-20"
           style={{ background: 'radial-gradient(circle, var(--accent-primary) 0%, transparent 70%)' }} />
         <div className="absolute bottom-32 right-20 w-80 h-80 rounded-full opacity-15"
-          style={{ background: 'radial-gradient(circle, var(--xp-purple) 0%, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle, var(--xp-blue) 0%, transparent 70%)' }} />
         <div className="absolute top-1/2 left-1/3 w-40 h-40 rounded-full opacity-10"
           style={{ background: 'radial-gradient(circle, var(--green) 0%, transparent 70%)' }} />
 

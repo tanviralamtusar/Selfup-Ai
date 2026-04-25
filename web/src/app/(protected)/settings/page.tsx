@@ -13,23 +13,23 @@ import { cn } from '@/lib/utils'
 type PersonaStyle = 'friendly' | 'strict' | 'motivational' | 'neutral'
 
 const PERSONA_STYLES: Record<PersonaStyle, { label: string; description: string; emoji: string }> = {
-  friendly:     { label: 'Friendly',     description: 'Warm, encouraging, celebrates wins', emoji: '😊' },
-  strict:       { label: 'Strict',       description: 'Direct, no excuses, elite standards', emoji: '⚔️' },
-  motivational: { label: 'Motivational', description: 'Hype-driven, high energy, relentless', emoji: '🔥' },
-  neutral:      { label: 'Neutral',      description: 'Calm, analytical, data-focused', emoji: '🧠' },
+  friendly:     { label: 'SUPPORTIVE',   description: 'Warm, encouraging, celebrates wins', emoji: '🌟' },
+  strict:       { label: 'ELITE',       description: 'Direct, no excuses, elite standards', emoji: '⚔️' },
+  motivational: { label: 'RELENTLESS', description: 'Hype-driven, high energy, relentless', emoji: '🔥' },
+  neutral:      { label: 'ANALYTICAL',  description: 'Calm, analytical, data-focused', emoji: '🧠' },
 }
 
 function SectionHeader({ icon: Icon, title, subtitle, color = 'text-primary' }: {
   icon: React.FC<any>; title: string; subtitle: string; color?: string
 }) {
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center bg-surface-container-medium border border-outline-variant/10", color.replace('text-', 'bg-').replace(/text-([^/]+)/, 'bg-$1') + '/10')}>
-        <Icon size={18} className={color} />
+    <div className="flex items-center gap-3 mb-6 relative z-10">
+      <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center bg-slate-950 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]", color === 'text-blue-400' ? 'text-blue-400' : 'text-cyan-400')}>
+        <Icon size={18} />
       </div>
       <div>
-        <h2 className="text-sm font-black text-on-surface uppercase tracking-widest">{title}</h2>
-        <p className="text-[10px] text-on-surface-variant/40 font-black uppercase tracking-widest">{subtitle}</p>
+        <h2 className="text-sm font-black text-blue-100 uppercase tracking-[0.3em] italic">{title}</h2>
+        <p className="text-[10px] text-blue-400/40 font-black uppercase tracking-[0.2em] italic">{subtitle}</p>
       </div>
     </div>
   )
@@ -101,28 +101,29 @@ export default function SettingsPage() {
   }
 
   const navItems = [
-    { id: 'profile', label: 'Profile', icon: User, subtitle: 'Name, bio & visibility' },
-    { id: 'ai', label: 'AI Companion', icon: Brain, subtitle: 'Persona & behavior' },
-    { id: 'privacy', label: 'Privacy', icon: Shield, subtitle: 'Data & visibility' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, subtitle: 'Alerts & reminders' },
+    { id: 'profile', label: 'VESSEL PROFILE', icon: User, subtitle: 'Identity & Visibility' },
+    { id: 'ai', label: 'SYSTEM COGNITION', icon: Brain, subtitle: 'Persona & Protocols' },
+    { id: 'privacy', label: 'VESSEL ENCRYPTION', icon: Shield, subtitle: 'Data & Secrecy' },
+    { id: 'notifications', label: 'NETWORK ALERTS', icon: Bell, subtitle: 'System Reminders' },
   ]
 
   return (
     <div className="space-y-8 pb-20">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-surface-container-medium flex items-center justify-center border border-outline-variant/10">
-          <Settings size={28} className="text-on-surface-variant" />
+        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+          <Settings size={28} className="text-blue-400" />
         </div>
         <div>
-          <h1 className="text-4xl font-black font-headline tracking-tighter text-on-surface">Settings</h1>
-          <p className="text-on-surface-variant/60 text-sm">Configure your SelfUp experience.</p>
+          <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">System Settings</h1>
+          <p className="text-blue-400/60 text-sm font-bold italic tracking-widest uppercase">Calibrate your system interface.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Sidebar Nav */}
-        <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-2 space-y-1">
+        <div className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-2 space-y-1 backdrop-blur-md relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
           {navItems.map(item => {
             const Icon = item.icon
             return (
@@ -130,18 +131,18 @@ export default function SettingsPage() {
                 key={item.id}
                 onClick={() => setActiveSection(item.id as any)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-all group",
+                  "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-all group relative z-10",
                   activeSection === item.id
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-on-surface-variant hover:bg-surface-container-medium/50 hover:text-on-surface border border-transparent'
+                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+                    : 'text-blue-400/40 hover:bg-blue-500/5 hover:text-blue-400 border border-transparent'
                 )}
               >
-                <Icon size={16} className={activeSection === item.id ? 'text-primary' : 'text-on-surface-variant group-hover:text-on-surface'} />
+                <Icon size={16} className={activeSection === item.id ? 'text-blue-400' : 'text-blue-400/40 group-hover:text-blue-400'} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black uppercase tracking-widest truncate">{item.label}</p>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40 truncate">{item.subtitle}</p>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] italic truncate">{item.label}</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] italic text-blue-400/20 truncate">{item.subtitle}</p>
                 </div>
-                <ChevronRight size={12} className={cn("flex-shrink-0 transition-transform", activeSection === item.id ? 'text-primary rotate-90' : 'text-on-surface-variant/20')} />
+                <ChevronRight size={12} className={cn("flex-shrink-0 transition-transform", activeSection === item.id ? 'text-blue-400 rotate-90' : 'text-blue-400/10')} />
               </button>
             )
           })}
@@ -151,55 +152,56 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
           {activeSection === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-              className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-8 space-y-6"
+              className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 space-y-6 backdrop-blur-md relative overflow-hidden"
             >
-              <SectionHeader icon={User} title="Profile" subtitle="How others see you" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
+              <SectionHeader icon={User} title="VESSEL IDENTITY" subtitle="How the network sees you" color="text-blue-400" />
 
               {/* Avatar preview */}
-              <div className="flex items-center gap-6 p-5 bg-surface-container-medium/40 rounded-2xl border border-outline-variant/5">
-                <div className="w-16 h-16 rounded-2xl bg-surface-container-highest border border-outline-variant/10 flex items-center justify-center font-black text-primary text-2xl overflow-hidden">
+              <div className="flex items-center gap-6 p-5 bg-blue-500/5 rounded-2xl border border-blue-500/10 relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-slate-950 border border-blue-500/20 flex items-center justify-center font-black text-blue-400 text-2xl overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                   {profile?.avatar_url
                     ? <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                     : (displayName || profile?.username)?.[0]?.toUpperCase() || 'U'
                   }
                 </div>
                 <div>
-                  <p className="text-sm font-black text-on-surface">{displayName || profile?.username}</p>
-                  <p className="text-xs font-black text-on-surface-variant/40 uppercase tracking-widest">@{profile?.username}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-1">Level {profile?.level} · {profile?.xp} XP</p>
+                  <p className="text-sm font-black text-blue-100 italic uppercase tracking-widest">{displayName || profile?.username}</p>
+                  <p className="text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] italic">VESSEL @{profile?.username}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mt-1 italic">Vessel Rank {profile?.level} · {profile?.xp} XP</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 relative z-10">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2">Display Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">IDENTIFIER</label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
-                    placeholder={profile?.username || 'Display name'}
-                    className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all"
+                    placeholder={profile?.username || 'Enter Identifier'}
+                    className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all placeholder:text-blue-500/10"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2">Bio</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">BIO-PROTOCOL</label>
                   <textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
                     rows={3}
-                    placeholder="Tell the world who you're becoming..."
-                    className="w-full px-4 py-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none transition-all"
+                    placeholder="Calibrating existence parameters..."
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 resize-none transition-all placeholder:text-blue-500/10"
                   />
                 </div>
 
                 {/* Public toggle */}
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-surface-container-medium/40 border border-outline-variant/5">
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
                   <div className="flex items-center gap-3">
-                    {isPublic ? <Eye size={16} className="text-primary" /> : <EyeOff size={16} className="text-on-surface-variant/40" />}
+                    {isPublic ? <Eye size={16} className="text-cyan-400" /> : <EyeOff size={16} className="text-blue-400/20" />}
                     <div>
-                      <p className="text-sm font-black text-on-surface">Public Profile</p>
-                      <p className="text-[10px] uppercase tracking-widest font-black text-on-surface-variant/40">
-                        {isPublic ? 'Visible on leaderboard' : 'Hidden from leaderboard'}
+                      <p className="text-sm font-black text-blue-100 italic uppercase tracking-wider">Network Visibility</p>
+                      <p className="text-[10px] uppercase tracking-[0.2em] font-black text-blue-400/40 italic">
+                        {isPublic ? 'VESSEL DETECTABLE BY NETWORK' : 'VESSEL ENCRYPTED'}
                       </p>
                     </div>
                   </div>
@@ -207,10 +209,10 @@ export default function SettingsPage() {
                     onClick={() => setIsPublic(p => !p)}
                     className={cn(
                       "w-12 h-6 rounded-full border-2 transition-all relative",
-                      isPublic ? 'bg-primary border-primary' : 'bg-surface-container-highest border-outline-variant/20'
+                      isPublic ? 'bg-blue-500 border-blue-400' : 'bg-slate-950 border-blue-500/20'
                     )}
                   >
-                    <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all", isPublic ? 'left-6' : 'left-0.5')} />
+                    <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-blue-100 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all", isPublic ? 'left-6' : 'left-0.5')} />
                   </button>
                 </div>
               </div>
@@ -218,34 +220,35 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveProfile}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-on-primary font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95 disabled:opacity-60"
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-500 text-slate-950 font-black text-xs uppercase tracking-[0.3em] italic shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-60 relative z-10"
               >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> :
                  savedSection === 'profile' ? <Check size={16} /> : <Zap size={16} />}
-                {savedSection === 'profile' ? 'Saved!' : 'Save Changes'}
+                {savedSection === 'profile' ? 'SYNCHRONIZED!' : 'UPDATE PROTOCOL'}
               </button>
             </motion.div>
           )}
 
           {activeSection === 'ai' && (
             <motion.div key="ai" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-              className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-8 space-y-6"
+              className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 space-y-6 backdrop-blur-md relative overflow-hidden"
             >
-              <SectionHeader icon={Sparkles} title="AI Companion" subtitle="Customize System's behavior" color="text-secondary" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
+              <SectionHeader icon={Sparkles} title="SYSTEM COGNITION" subtitle="Calibrate System personality" color="text-cyan-400" />
 
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2">Companion Name</label>
+              <div className="relative z-10">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">SYSTEM DESIGNATION</label>
                 <input
                   type="text"
                   value={personaName}
                   onChange={e => setPersonaName(e.target.value)}
                   placeholder="System"
-                  className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all"
                 />
               </div>
 
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-3">Coaching Style</label>
+              <div className="relative z-10">
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-3 italic">COACHING PROTOCOL</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(Object.entries(PERSONA_STYLES) as [PersonaStyle, any][]).map(([key, conf]) => (
                     <button
@@ -254,49 +257,49 @@ export default function SettingsPage() {
                       className={cn(
                         "flex items-start gap-3 p-4 rounded-2xl border text-left transition-all",
                         personaStyle === key
-                          ? 'bg-secondary/10 border-secondary/30 shadow-sm shadow-secondary/10'
-                          : 'border-outline-variant/10 hover:border-outline-variant/20'
+                          ? 'bg-blue-500/10 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+                          : 'bg-slate-950/20 border-blue-500/10 hover:border-blue-500/20'
                       )}
                     >
                       <span className="text-xl leading-none">{conf.emoji}</span>
                       <div>
-                        <p className={cn("text-xs font-black uppercase tracking-widest", personaStyle === key ? 'text-secondary' : 'text-on-surface')}>{conf.label}</p>
-                        <p className="text-[10px] text-on-surface-variant/40 font-medium mt-0.5">{conf.description}</p>
+                        <p className={cn("text-xs font-black uppercase tracking-[0.2em] italic", personaStyle === key ? 'text-blue-400' : 'text-blue-100/60')}>{conf.label}</p>
+                        <p className="text-[10px] text-blue-400/40 font-bold italic mt-0.5 uppercase">{conf.description}</p>
                       </div>
-                      {personaStyle === key && <Check size={14} className="text-secondary ml-auto flex-shrink-0" />}
+                      {personaStyle === key && <Check size={14} className="text-blue-400 ml-auto flex-shrink-0" />}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Preview */}
-              <div className="p-4 rounded-2xl bg-secondary/5 border border-secondary/10">
-                <p className="text-[10px] font-black uppercase tracking-widest text-secondary/60 mb-2">Preview</p>
-                <p className="text-sm text-on-surface font-medium italic">
-                  "{personaStyle === 'friendly' ? `Hey! I'm ${personaName} — let's crush today's goals together! 🌟` :
-                    personaStyle === 'strict' ? `${personaName} here. No excuses. What are we working on?` :
-                    personaStyle === 'motivational' ? `LET'S GOOOO! ${personaName} is READY. What's the mission?! 🔥` :
-                    `${personaName} online. State your objective and I'll optimize your path.`}"
+              <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/60 mb-2 italic">LOG PREVIEW</p>
+                <p className="text-sm text-blue-100 font-bold italic tracking-wide">
+                  "{personaStyle === 'friendly' ? `Affirmative. I am ${personaName} — synchronization at 100%. Let's crush today's protocols together! 🌟` :
+                    personaStyle === 'strict' ? `${personaName} active. No excuses detected. State your objective, Vessel.` :
+                    personaStyle === 'motivational' ? `LIMIT BREAK! ${personaName} is INITIALIZED. Ascend the ranks! 🔥` :
+                    `${personaName} core online. Objective detected. Optimizing path...`}"
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 relative z-10">
                 <button
                   onClick={handleSaveAI}
                   disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-secondary text-on-secondary font-black text-xs uppercase tracking-widest shadow-lg shadow-secondary/20 hover:opacity-90 transition-all active:scale-95 disabled:opacity-60"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-cyan-500 text-slate-950 font-black text-xs uppercase tracking-[0.3em] italic shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:opacity-90 transition-all active:scale-95 disabled:opacity-60"
                 >
                   {isLoading ? <Loader2 size={16} className="animate-spin" /> :
                    savedSection === 'ai' ? <Check size={16} /> : <Sparkles size={16} />}
-                  {savedSection === 'ai' ? 'Saved!' : 'Update Companion'}
+                  {savedSection === 'ai' ? 'CORE UPDATED' : 'SYNCHRONIZE CORES'}
                 </button>
 
                 <button
                   onClick={() => window.location.href = '/chat'}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-surface-container-highest text-on-surface font-black text-xs uppercase tracking-widest border border-outline-variant/10 hover:bg-surface-container-medium transition-all active:scale-95"
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-slate-950 text-blue-400 font-black text-xs uppercase tracking-[0.3em] italic border border-blue-500/20 hover:bg-slate-900 transition-all active:scale-95"
                 >
-                  <Brain size={16} className="text-secondary" />
-                  Test Persona
+                  <Brain size={16} className="text-cyan-400" />
+                  TEST LINK
                 </button>
               </div>
             </motion.div>
@@ -304,16 +307,17 @@ export default function SettingsPage() {
 
           {(activeSection === 'privacy' || activeSection === 'notifications') && (
             <motion.div key={activeSection} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-              className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-8"
+              className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 backdrop-blur-md relative overflow-hidden"
             >
-              <div className="py-16 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-surface-container-medium flex items-center justify-center mx-auto mb-4 border border-outline-variant/10">
-                  {activeSection === 'privacy' ? <Shield size={28} className="text-on-surface-variant/30" /> : <Bell size={28} className="text-on-surface-variant/30" />}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
+              <div className="py-16 text-center relative z-10">
+                <div className="w-16 h-16 rounded-3xl bg-slate-950 flex items-center justify-center mx-auto mb-4 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                  {activeSection === 'privacy' ? <Shield size={28} className="text-blue-500/20" /> : <Bell size={28} className="text-blue-500/20" />}
                 </div>
-                <h3 className="text-sm font-black text-on-surface-variant/30 uppercase tracking-widest">
-                  {activeSection === 'privacy' ? 'Privacy Controls' : 'Notification Settings'}
+                <h3 className="text-sm font-black text-blue-500/20 uppercase tracking-[0.3em] italic">
+                  {activeSection === 'privacy' ? 'VESSEL ENCRYPTION' : 'NETWORK ALERTS'}
                 </h3>
-                <p className="text-xs text-on-surface-variant/20 mt-2">Coming in the next update.</p>
+                <p className="text-xs text-blue-500/10 mt-2 font-bold italic tracking-widest uppercase">Protocol coming in next iteration.</p>
               </div>
             </motion.div>
           )}

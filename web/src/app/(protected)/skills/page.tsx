@@ -210,20 +210,20 @@ export default function SkillsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-[0_0_20px_rgba(174,162,255,0.1)]">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
               <Brain size={28} />
             </div>
-            <h1 className="text-4xl font-black font-headline tracking-tighter text-on-surface">Skill Repository</h1>
+            <h1 className="text-4xl font-black font-headline italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">System Skill Registry</h1>
           </div>
-          <p className="text-on-surface-variant/60 text-sm font-medium pl-15">Architect your path to mastery with AI guidance.</p>
+          <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Architect your path to mastery with System guidance.</p>
         </div>
 
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all btn-press"
+          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-500/20 text-blue-400 rounded-2xl font-black uppercase text-xs tracking-[0.2em] italic border border-blue-500/50 shadow-lg shadow-blue-500/10 hover:bg-blue-500/30 transition-all btn-press"
         >
           <Plus size={18} />
-          Forge New Skill
+          Initialize Mastery
         </button>
       </div>
 
@@ -231,25 +231,25 @@ export default function SkillsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Skill Cards */}
         <div className="lg:col-span-7 space-y-6">
-          {isLoading && skills.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-surface-container-low rounded-3xl border border-outline-variant/10 border-dashed">
-              <Loader2 className="animate-spin text-primary mb-4" />
-              <p className="text-sm font-black uppercase tracking-widest text-on-surface-variant/40">Syncing with Brain...</p>
-            </div>
-          ) : skills.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-surface-container-low rounded-3xl border border-outline-variant/10 border-dashed text-center px-6">
-              <div className="w-16 h-16 rounded-3xl bg-surface-container-high flex items-center justify-center mb-6">
-                 <Sparkles size={32} className="text-on-surface-variant/20" />
+            {isLoading && skills.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed backdrop-blur-md">
+                <Loader2 className="animate-spin text-blue-400 mb-4" />
+                <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with System Database...</p>
               </div>
-              <h2 className="text-xl font-black mb-2 uppercase tracking-tight">Empty Repository</h2>
-              <p className="text-sm text-on-surface-variant/40 max-w-xs mb-8">You haven't defined any masteries yet. Let System help you choose a path.</p>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="px-8 py-3 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-xl font-bold uppercase text-[10px] tracking-widest border border-outline-variant/10"
-              >
-                Begin Your Journey
-              </button>
-            </div>
+            ) : skills.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed text-center px-6 backdrop-blur-md">
+                <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20">
+                   <Sparkles size={32} className="text-blue-400/40" />
+                </div>
+                <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">Empty Registry</h2>
+                <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let System help you choose a path.</p>
+                <button 
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="px-8 py-3 bg-blue-500/10 hover:bg-blue-500/20 transition-colors rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/30 text-blue-400"
+                >
+                  Begin Your Journey
+                </button>
+              </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {skills.map(skill => (
@@ -272,43 +272,43 @@ export default function SkillsPage() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-surface-container-low border border-outline-variant/10 rounded-3xl overflow-hidden shadow-2xl sticky top-24"
+                className="bg-slate-950/80 border border-blue-500/30 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(59,130,246,0.1)] sticky top-24 backdrop-blur-xl"
               >
                 {/* Detail Header */}
-                <div className="p-8 border-b border-outline-variant/10 relative overflow-hidden bg-gradient-to-br from-surface-container-low to-surface-container-medium">
+                <div className="p-8 border-b border-blue-500/20 relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-slate-950">
                   <button 
                     onClick={() => setActiveSkillId(null)}
-                    className="absolute top-4 right-4 p-2 hover:bg-surface-container-highest rounded-full text-on-surface-variant/40 transition-colors"
+                    className="absolute top-4 right-4 p-2 hover:bg-blue-500/10 rounded-full text-blue-400/40 transition-colors"
                   >
                     <X size={20} />
                   </button>
 
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                       <Trophy size={24} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-black font-headline text-on-surface tracking-tight">{activeSkill.name}</h2>
-                      <p className="text-xs font-black uppercase text-secondary tracking-[0.2em]">{activeSkill.current_level}</p>
+                      <h2 className="text-2xl font-black font-headline text-blue-100 tracking-tight uppercase italic">{activeSkill.name}</h2>
+                      <p className="text-xs font-black uppercase text-blue-400 tracking-[0.3em] italic">Rank: {activeSkill.current_level}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-background/50 border border-outline-variant/5">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">XP Contribution</p>
-                      <p className="text-xl font-black text-primary italic">+{activeSkill.milestoneStats.completed * 100}</p>
+                    <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">XP Accumulation</p>
+                      <p className="text-xl font-black text-blue-400 italic">+{activeSkill.milestoneStats.completed * 100}</p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-background/50 border border-outline-variant/5">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Total Mastery</p>
-                      <p className="text-xl font-black text-secondary italic">{Number(activeSkill.total_hours || 0).toFixed(1)}h</p>
+                    <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Temporal Investment</p>
+                      <p className="text-xl font-black text-cyan-400 italic">{Number(activeSkill.total_hours || 0).toFixed(1)}h</p>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => setIsLoggingSession(true)}
-                    className="w-full mt-6 py-4 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-black uppercase text-xs tracking-widest border border-primary/20 transition-all btn-press"
+                    className="w-full mt-6 py-4 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl font-black uppercase text-xs tracking-[0.3em] italic border border-blue-500/30 transition-all btn-press shadow-[0_0_15px_rgba(59,130,246,0.1)]"
                   >
-                    Log Practice Session
+                    Initiate Practice Session
                   </button>
                 </div>
 
@@ -317,8 +317,8 @@ export default function SkillsPage() {
                   <button 
                     onClick={() => setActiveTab('roadmap')}
                     className={cn(
-                      "flex-1 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all",
-                      activeTab === 'roadmap' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
+                      activeTab === 'roadmap' ? 'border-blue-400 text-blue-400 system-text-glow' : 'border-transparent text-blue-400/40 hover:text-blue-400'
                     )}
                   >
                     Roadmap
@@ -326,11 +326,11 @@ export default function SkillsPage() {
                   <button 
                     onClick={() => setActiveTab('history')}
                     className={cn(
-                      "flex-1 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all",
-                      activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
+                      activeTab === 'history' ? 'border-blue-400 text-blue-400 system-text-glow' : 'border-transparent text-blue-400/40 hover:text-blue-400'
                     )}
                   >
-                    Progress History
+                    Progress Trace
                   </button>
                 </div>
 

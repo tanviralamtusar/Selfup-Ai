@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
                   disabled={isLoading}
                   className="w-full py-3 rounded-sm font-semibold text-white transition-all btn-press disabled:opacity-50 flex items-center justify-center gap-2"
                   style={{
-                    background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-purple))',
+                    background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-blue))',
                   }}
                 >
                   {isLoading ? (

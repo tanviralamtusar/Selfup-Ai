@@ -33,6 +33,7 @@ import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
+
 const containerAnim = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
@@ -50,18 +51,21 @@ function Gauge({ percent, colorClass, label, title }: { percent: number, colorCl
   return (
     <div className="flex flex-col items-center gap-3 group">
       <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center p-1.5">
+        <div className="absolute inset-0 border border-blue-500/10 rounded-full animate-[spin_10s_linear_infinite]" />
+        <div className="absolute inset-2 border border-blue-500/5 rounded-full animate-[spin_15s_linear_reverse_infinite]" />
+        
         <svg 
-          className="w-full h-full -rotate-90" 
+          className="w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" 
           viewBox="0 0 128 128" 
           preserveAspectRatio="xMidYMid meet"
         >
           {/* Track */}
           <circle 
-            className="text-surface-container-highest/30" 
+            className="text-blue-500/10" 
             cx="64" cy="64" r="58" 
             fill="transparent" 
             stroke="currentColor" 
-            strokeWidth="6"
+            strokeWidth="4"
           />
           {/* Progress */}
           <motion.circle 
@@ -72,18 +76,18 @@ function Gauge({ percent, colorClass, label, title }: { percent: number, colorCl
             strokeDasharray={dasharray} 
             initial={{ strokeDashoffset: dasharray }}
             animate={{ strokeDashoffset: dashoffset }}
-            strokeWidth="6"
+            strokeWidth="4"
             strokeLinecap="round"
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className="text-lg md:text-xl font-black text-on-surface leading-none">{Math.round(percent)}%</span>
-          <span className="text-[8px] md:text-[9px] uppercase font-black text-on-surface-variant/60 tracking-[0.2em] mt-0.5">{label}</span>
+          <span className="text-lg md:text-xl font-black text-blue-50 system-text-glow leading-none">{Math.round(percent)}%</span>
+          <span className="text-[8px] md:text-[9px] uppercase font-black text-blue-400/60 tracking-[0.2em] mt-0.5">{label}</span>
         </div>
       </div>
       <div className="text-center">
-        <p className="text-[10px] font-black text-on-surface-variant group-hover:text-primary uppercase tracking-widest transition-colors mb-0.5">{title}</p>
-        <div className="h-0.5 w-6 bg-primary/20 mx-auto rounded-full group-hover:w-10 transition-all" />
+        <p className="text-[10px] font-black text-blue-300/40 group-hover:text-blue-400 uppercase tracking-[0.3em] transition-colors mb-0.5">{title}</p>
+        <div className="h-[1px] w-4 bg-blue-500/20 mx-auto group-hover:w-8 transition-all" />
       </div>
     </div>
   )
@@ -265,129 +269,130 @@ export default function DashboardPage() {
       animate="show"
       className="space-y-6 pb-6"
     >
-      {/* ─── RPG Profile Header ─── */}
-      <motion.section variants={itemAnim} className="relative overflow-hidden rounded-[2.5rem] bg-surface-container-low p-6 md:p-8 border border-outline-variant/10 shadow-2xl">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-secondary/5 blur-3xl rounded-full" />
+      {/* ─── SYSTEM STATUS HEADER ─── */}
+      <motion.section variants={itemAnim} className="relative group">
+        <div className="absolute inset-0 bg-blue-500/5 blur-3xl rounded-[2.5rem] pointer-events-none" />
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
-          {/* Left: Avatar & Basic Stats */}
-          <div className="lg:col-span-8 space-y-8">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="relative group">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2rem] overflow-hidden ring-4 ring-primary/10 shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary/20">
-                  <img 
-                    className="w-full h-full object-cover" 
-                    alt="Avatar" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2EIJrkG8GjWUaqksGrM3EhEN0QvYFC1AjRMhRnDPcUV38hJ22CC5uj95ZGQX5yQ1DfC_bIT00J40cE4gpVSgmP8AHdmwLMl5QY-rOqjeY-LAM4tNNQ6vTRax-BTbFP7NEs-8GbXqnPRLNQI9RJygYPAzSIDe7AQJdRVKOD9wo-KPnuqN5q4G8_bIPOJUlkL3pTdX7jx6ijSjDwpfOxLT21Wf3hKeUxgr3BvX5tIqydhmNmHA1IUE89vEpZeP1bbP7tSbEkcq98j5j"
-                  />
+        <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-6 md:p-8 border border-blue-500/20 shadow-2xl">
+          {/* Decorative Corner Lines */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-blue-400/50" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-blue-400/50" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-blue-400/50" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+            {/* Left: Avatar & Basic Stats */}
+            <div className="lg:col-span-8 space-y-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-3xl">
+                    {profile?.avatar_url ? (
+                      <img 
+                        className="w-full h-full object-cover rounded-xl" 
+                        alt="Avatar" 
+                        src={profile.avatar_url}
+                      />
+                    ) : (
+                      displayName[0]?.toUpperCase()
+                    )}
+                  </div>
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow">
+                    LVL {level}
+                  </div>
                 </div>
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-on-primary font-black px-4 py-1.5 rounded-xl text-[10px] uppercase tracking-[0.2em] shadow-lg ring-4 ring-surface-container-low whitespace-nowrap">
-                  Level {level}
+                
+                <div className="flex-1 text-center md:text-left space-y-1">
+                  <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
+                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Status: Awakened</p>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+                    <button 
+                      onClick={() => setShowWalletModal(true)}
+                      className="bg-blue-500/10 px-4 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
+                    >
+                      <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
+                      <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
+                    </button>
+                    <div className="bg-blue-500/5 px-4 py-1.5 rounded-lg border border-blue-500/10 flex items-center gap-2">
+                      <Trophy size={10} className="text-blue-400" />
+                      <span className="text-[9px] font-black text-blue-400/40 uppercase tracking-widest">Global Rank: #420</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex-1 text-center md:text-left space-y-1">
-                <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
-                  <Sparkles size={12} className="text-primary animate-pulse" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-on-surface-variant/40">Master Pathfinder</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Health (HP) */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end px-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 system-text-glow">HP</span>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{health} / {maxHealth}</span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: `${healthPct}%` }} 
+                      className="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]" 
+                    />
+                  </div>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-on-surface font-headline leading-tight">{displayName}</h1>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
-                  <button 
-                    onClick={() => setShowWalletModal(true)}
-                    className="bg-surface-container-highest/30 px-4 py-1.5 rounded-full border border-outline-variant/10 flex items-center gap-2 hover:bg-surface-container-high transition-colors active:scale-95"
-                  >
-                    <span className="text-[9px] font-black text-on-surface-variant uppercase tracking-widest">AiCoins</span>
-                    <span className="text-xs font-black text-on-surface tabular-nums">{formatNumber(coins)}</span>
-                  </button>
-                  <div className="bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20 flex items-center gap-2">
-                    <Trophy size={10} className="text-primary" />
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Top 5%</span>
+                
+                {/* Experience (XP) */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end px-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: `${xpPercent}%` }} 
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]" 
+                    />
+                  </div>
+                </div>
+
+                {/* MP / MANA */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-end px-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400 system-text-glow">MP</span>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{mana} / {maxMana}</span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: `${manaPct}%` }} 
+                      className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]" 
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Health (HP) */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-end px-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    Hp
-                  </span>
-                  <span className="text-[10px] font-black text-on-surface tabular-nums">{health} / {maxHealth}</span>
-                </div>
-                <div className="h-4 w-full bg-surface-container-lowest rounded-full p-1 border border-outline-variant/10 shadow-inner overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${healthPct}%` }} 
-                    className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.5)]" 
-                  />
-                </div>
-              </div>
-              
-              {/* Experience (XP) */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-end px-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-500 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                    Xp
-                  </span>
-                  <span className="text-[10px] font-black text-on-surface tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
-                </div>
-                <div className="h-4 w-full bg-surface-container-lowest rounded-full p-1 border border-outline-variant/10 shadow-inner overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${xpPercent}%` }} 
-                    className="h-full bg-gradient-to-r from-yellow-600 to-yellow-300 rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)]" 
-                  />
-                </div>
-              </div>
-
-              {/* Mana */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-end px-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    mana
-                  </span>
-                  <span className="text-[10px] font-black text-on-surface tabular-nums">{mana} / {maxMana}</span>
-                </div>
-                <div className="h-4 w-full bg-surface-container-lowest rounded-full p-1 border border-outline-variant/10 shadow-inner overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${manaPct}%` }} 
-                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
-                  />
-                </div>
-              </div>
+            {/* Right: Streak Card Area */}
+            <div className="lg:col-span-4">
+              <StreakCard 
+                currentStreak={profile?.streak_overall ?? 0}
+                bestStreak={profile?.streak_best ?? 0}
+                freezeCount={profile?.streak_freeze_count ?? 0}
+                weeklyActivity={weeklyActivity}
+                lastDate={profile?.streak_last_date}
+                onPurchase={fetchStreakStats}
+                onViewHistory={() => setShowStreakHistory(true)}
+              />
             </div>
-
-            <BadgeShowcase />
-          </div>
-
-          {/* Right: Streak Card */}
-          <div className="lg:col-span-4">
-            <StreakCard 
-              currentStreak={profile?.streak_overall ?? 0}
-              bestStreak={profile?.streak_best ?? 0}
-              freezeCount={profile?.streak_freeze_count ?? 0}
-              weeklyActivity={weeklyActivity}
-              lastDate={profile?.streak_last_date}
-              onPurchase={fetchStreakStats}
-              onViewHistory={() => setShowStreakHistory(true)}
-            />
           </div>
         </div>
       </motion.section>
 
       {/* ─── Achievements Row ─── */}
-      <motion.div variants={itemAnim} className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/10 shadow-xl">
+      <motion.div variants={itemAnim} className="bg-slate-950/40 rounded-xl p-5 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)] relative overflow-hidden group">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
         <div className="flex items-center gap-1.5 mb-4">
-          <div className="w-4 h-px bg-amber-400" />
-          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-amber-400/80">Achievements</p>
+          <div className="w-4 h-px bg-blue-400" />
+          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-400/80 italic">ACHIEVEMENTS ACQUIRED</p>
         </div>
         <BadgeShowcase />
       </motion.div>
@@ -398,50 +403,51 @@ export default function DashboardPage() {
         <div className="xl:col-span-3">
           <motion.div variants={itemAnim} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {/* Column: Habits */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
-                <h2 className="text-[9px] font-black tracking-[2px] flex items-center gap-1.5 font-headline uppercase text-on-surface">
-                  <Bolt className="text-primary" size={12} /> Habits
+                <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                  Habit Protocols
                 </h2>
-                <Link href={ROUTES.TIME} className="text-on-surface-variant/40 hover:text-primary transition-all hover:scale-110 active:scale-90">
+                <Link href={ROUTES.TIME} className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </Link>
               </div>
               <div className="space-y-3">
                 {habits.length === 0 ? (
-                  <div className="p-4 rounded-2xl border border-dashed border-outline-variant/10 text-center">
-                    <p className="text-[10px] text-on-surface-variant/30 font-black uppercase tracking-widest">No habits yet</p>
-                    <Link href={ROUTES.TIME} className="text-[9px] text-primary font-black uppercase tracking-widest mt-1 block hover:underline">
-                      Create one →
+                  <div className="p-6 rounded border border-dashed border-blue-500/10 text-center bg-slate-900/20">
+                    <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
+                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">
+                      + Initialize Protocol
                     </Link>
                   </div>
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn(
-                    "group bg-surface-container-low hover:bg-surface-container-high p-2 rounded-2xl transition-all border shadow-sm hover:-translate-y-0.5",
-                    habit.completed_today ? 'border-tertiary-fixed-dim/20 opacity-70' : 'border-outline-variant/10'
+                    "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic",
+                    habit.completed_today ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
                   )}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={() => !habit.completed_today && handleLogHabit(habit.id)}
                         disabled={habit.completed_today || loggingHabit === habit.id}
                         className={cn(
-                          "w-8 h-8 flex items-center justify-center rounded-lg transition-all active:scale-90",
+                          "w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90",
                           habit.completed_today
-                            ? 'bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim cursor-default'
-                            : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-on-primary'
+                            ? 'bg-blue-500/5 text-blue-500/30 border-blue-500/10'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500 hover:text-white shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         )}
                       >
                         {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> :
                          habit.completed_today ? <Check size={14} /> : <Plus size={14} />}
                       </button>
-                      <div className="flex-1 px-2">
-                        <p className="text-xs font-black tracking-tight text-on-surface">{habit.name}</p>
-                        <p className="text-[9px] text-primary font-black uppercase tracking-widest">+10 XP</p>
+                      <div className="flex-1">
+                        <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.name}</p>
+                        <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+10 EXP</p>
                       </div>
                       {habit.streak > 0 && (
-                        <div className="flex items-center gap-1 pr-2">
-                          <Flame size={12} className="text-orange-400" />
-                          <span className="text-[10px] font-black text-orange-400">{habit.streak}</span>
+                        <div className="flex items-center gap-1 pr-1">
+                          <Zap size={12} className="text-blue-300" />
+                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.streak}</span>
                         </div>
                       )}
                     </div>
@@ -451,60 +457,62 @@ export default function DashboardPage() {
             </div>
 
             {/* Column: Dailies */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
-                <h2 className="text-[9px] font-black tracking-[2px] flex items-center gap-1.5 font-headline uppercase text-on-surface">
-                  <Calendar className="text-secondary" size={12} /> Dailies
+                <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                  <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                  Daily Quests
                 </h2>
-                <button className="text-on-surface-variant/40 hover:text-secondary transition-all hover:scale-110 active:scale-90">
+                <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </button>
               </div>
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2.5 bg-surface-container-low p-2.5 rounded-xl border border-outline-variant/10 hover:bg-surface-container-high transition-all group cursor-pointer shadow-sm hover:-translate-y-0.5">
-                  <div className="w-4 h-4 rounded border text-outline border-outline-variant group-hover:border-secondary flex items-center justify-center transition-all group-hover:bg-secondary/10">
-                    <Check className="text-secondary opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={10} strokeWidth={3} />
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 bg-slate-900/40 p-3 rounded-lg border border-blue-500/20 hover:bg-slate-900/60 transition-all group cursor-pointer italic relative overflow-hidden">
+                  <div className="w-5 h-5 rounded border border-blue-500/30 group-hover:border-blue-400 flex items-center justify-center transition-all bg-slate-950">
+                    <Check className="text-blue-400 opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={12} strokeWidth={3} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-black text-on-surface">Read 20 Pages</p>
-                    <div className="w-full h-1 bg-surface-container-lowest rounded-full mt-1 overflow-hidden">
-                      <div className="bg-secondary h-full w-[40%] transition-all duration-700 shadow-[0_0_10px_rgba(168,140,251,0.5)]" />
+                    <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">System Maintenance: Read 20 Pgs</p>
+                    <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-blue-500/10">
+                      <div className="bg-blue-500 h-full w-[40%] transition-all duration-700 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2.5 bg-surface-container-low p-2.5 rounded-xl border border-outline-variant/10 opacity-50 shadow-sm cursor-pointer grayscale group">
-                  <div className="w-4 h-4 rounded bg-secondary flex items-center justify-center shadow-md shadow-secondary/20">
-                    <Check className="text-on-secondary" size={10} strokeWidth={3} />
+                <div className="flex items-center gap-3 bg-slate-900/20 p-3 rounded-lg border border-blue-500/10 opacity-50 cursor-default italic grayscale">
+                  <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                    <Check className="text-blue-400" size={12} strokeWidth={3} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-black text-on-surface line-through decoration-on-surface-variant/40">Python Practice</p>
+                    <p className="text-[11px] font-black text-blue-500/60 uppercase line-through decoration-blue-500/40 tracking-tight">Code Refactoring: Practice</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Column: To-Dos + Rewards */}
-            <div className="space-y-5">
+            <div className="space-y-6">
               {/* To-Dos */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[9px] font-black tracking-[2px] flex items-center gap-1.5 font-headline uppercase text-on-surface">
-                    <CheckCircle className="text-tertiary-fixed-dim" size={12} /> To-Dos
+                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                    <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+                    Critical Tasks
                   </h2>
-                  <button className="text-on-surface-variant/40 hover:text-tertiary-fixed-dim transition-all hover:scale-110 active:scale-90">
+                  <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                     <PlusCircle size={16} />
                   </button>
                 </div>
-                <div className="space-y-2.5">
-                  <div className="bg-surface-container-low p-3 rounded-xl border border-outline-variant/10 hover:border-primary/30 transition-all shadow-sm hover:-translate-y-0.5 cursor-pointer group relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-12 h-12 bg-error/5 blur-xl rounded-full" />
-                    <div className="flex items-start justify-between gap-2.5 relative z-10">
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] font-black leading-snug text-on-surface group-hover:text-primary transition-colors">Complete Project Specs</p>
-                        <span className="inline-flex px-1.5 py-0.5 rounded-md bg-error/10 text-error text-[7px] font-black uppercase tracking-[0.2em] ring-1 ring-error/20">High Priority</span>
+                <div className="space-y-3">
+                  <div className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/5 blur-xl rounded-full" />
+                    <div className="flex items-start justify-between gap-3 relative z-10">
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-black leading-snug text-blue-50 group-hover:text-blue-400 transition-colors uppercase tracking-tight">Finalize Core Specs</p>
+                        <span className="inline-flex px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 text-[7px] font-black uppercase tracking-[0.3em] border border-rose-500/20">PRIORITY: HIGH</span>
                       </div>
-                      <div className="w-3.5 h-3.5 rounded-[3px] bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center transition-all group-hover:border-primary">
-                         <div className="w-1 h-1 rounded-[2px] bg-primary opacity-0 group-hover:opacity-20 transition-opacity" />
+                      <div className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all group-hover:border-blue-400">
+                         <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
                       </div>
                     </div>
                   </div>
@@ -512,29 +520,30 @@ export default function DashboardPage() {
               </div>
 
               {/* Rewards */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[9px] font-black tracking-[2px] flex items-center gap-1.5 font-headline uppercase text-on-surface">
-                    <Trophy className="text-tertiary" size={12} /> Rewards
+                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                    Exchange Hub
                   </h2>
-                  <button className="text-on-surface-variant/40 hover:text-on-surface transition-all">
+                  <button className="text-blue-500/40 hover:text-blue-400 transition-all">
                     <Filter size={14} />
                   </button>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {[
-                    { icon: Gamepad2, title: 'Gaming 1hr', cost: '150 AiC', color: 'text-primary' },
-                    { icon: Shield, title: 'Epic Shield', cost: '2,500 AiC', color: 'text-secondary' }
+                    { icon: Gamepad2, title: 'Restoration: 1hr', cost: '150 AiC', color: 'text-blue-400' },
+                    { icon: Shield, title: 'System Guard', cost: '2.5K AiC', color: 'text-cyan-400' }
                   ].map(reward => (
-                    <div key={reward.title} className="group relative overflow-hidden bg-surface-container-low p-2.5 rounded-xl border border-outline-variant/10 hover:bg-surface-container-high transition-all flex items-center gap-3 shadow-sm hover:-translate-y-0.5 cursor-pointer">
-                      <div className={cn("w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center shadow-inner ring-1 ring-outline-variant/10 group-hover:scale-110 transition-transform", reward.color)}>
+                    <div key={reward.title} className="group relative overflow-hidden bg-slate-900/40 p-2.5 rounded-lg border border-blue-500/10 hover:bg-slate-900/60 hover:border-blue-500/30 transition-all flex items-center gap-3 italic cursor-pointer">
+                      <div className={cn("w-9 h-9 rounded bg-slate-950 flex items-center justify-center border border-blue-500/10 shadow-inner group-hover:scale-110 transition-transform", reward.color)}>
                         <reward.icon size={16} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-[11px] font-black tracking-tight text-on-surface">{reward.title}</p>
-                        <p className="text-[8px] font-black text-tertiary-fixed-dim uppercase tracking-widest">{reward.cost}</p>
+                        <p className="text-[11px] font-black tracking-tight text-blue-50 uppercase">{reward.title}</p>
+                        <p className="text-[8px] font-black text-blue-500/60 uppercase tracking-[0.2em]">{reward.cost}</p>
                       </div>
-                      <button className="px-2.5 py-1 bg-surface-container-highest/50 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all active:scale-95 shadow-sm border border-outline-variant/10">Buy</button>
+                      <button className="px-3 py-1.5 bg-blue-500/10 rounded text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 hover:bg-blue-500 hover:text-white transition-all active:scale-95 border border-blue-500/20 italic">Exchange</button>
                     </div>
                   ))}
                 </div>
@@ -544,37 +553,39 @@ export default function DashboardPage() {
         </div>
 
         {/* Right column: Activity Feed */}
-        <motion.div variants={itemAnim} className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/10 shadow-xl max-h-[600px] overflow-y-auto scrollbar-hide">
-          <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-surface-container-low pb-2 z-10">
-            <div className="w-4 h-px bg-primary" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/80">Activity Feed</p>
+        <motion.div variants={itemAnim} className="bg-slate-950/40 rounded-xl p-5 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)] max-h-[600px] overflow-y-auto custom-scrollbar relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
+          <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-slate-950/80 backdrop-blur-md pb-2 z-10 -mx-1 px-1">
+            <div className="w-4 h-px bg-blue-500" />
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SYSTEM EVENT LOG</p>
           </div>
           <ActivityFeed />
         </motion.div>
       </div>
 
-      {/* ─── Pillars of Mastery ─── */}
-      <motion.section variants={itemAnim} className="bg-surface-container-low rounded-[2rem] p-8 border border-outline-variant/10 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[140px] rounded-full -translate-y-1/2 translate-x-1/2" />
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 relative z-10">
+      {/* ─── Attributes of the Awakened ─── */}
+      <motion.section variants={itemAnim} className="bg-slate-950/40 rounded-xl p-8 border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.05)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 blur-[140px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.05)_50%),linear-gradient(90deg,rgba(255,0,0,0.01),rgba(0,255,0,0.01),rgba(0,0,255,0.01))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-5 relative z-10">
           <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-5 h-px bg-primary" />
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Mastery Pillars</p>
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-5 h-px bg-blue-500" />
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 italic">STATUS ATTRIBUTES</p>
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-on-surface font-headline leading-none">Pillars of Mastery</h2>
+            <h2 className="text-3xl font-black tracking-tighter text-blue-50 font-headline leading-none italic uppercase system-text-glow">Attributes of the Awakened</h2>
           </div>
-          <Link href={ROUTES.SKILLS} className="px-5 py-2 hover:bg-primary hover:text-on-primary transition-all text-primary bg-primary/10 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
-            All Stats <ArrowRight size={14} />
+          <Link href={ROUTES.SKILLS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">
+            DETAILED ANALYSIS <ArrowRight size={14} />
           </Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 relative z-10">
-          <Gauge percent={75} colorClass="text-primary" label="Power" title="Physical" />
-          <Gauge percent={60} colorClass="text-secondary" label="Mind" title="Cognitive" />
-          <Gauge percent={90} colorClass="text-tertiary-fixed-dim" label="Will" title="Mental" />
-          <Gauge percent={30} colorClass="text-error" label="Soul" title="Social" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 relative z-10">
+          <Gauge percent={75} colorClass="text-blue-400" label="STR" title="STRENGTH" />
+          <Gauge percent={60} colorClass="text-cyan-400" label="INT" title="INTELLIGENCE" />
+          <Gauge percent={90} colorClass="text-blue-300" label="AGI" title="AGILITY" />
+          <Gauge percent={30} colorClass="text-rose-500" label="VIT" title="VITALITY" />
         </div>
       </motion.section>
 

@@ -59,99 +59,127 @@ export default function BodyView() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 italic">
       {/* ─── Log Metrics Form ─── */}
-      <section className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 h-fit">
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
-          <Activity size={20} className="text-pink-500" />
-          Log Body Metrics
-        </h2>
+      <section className="bg-slate-950 border border-blue-500/20 rounded-xl p-8 relative overflow-hidden group h-fit">
+        <div className="absolute inset-0 scanline pointer-events-none opacity-[0.03]" />
+        <div className="flex items-center gap-4 mb-8 relative z-10">
+          <div className="p-2 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <Activity size={20} />
+          </div>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Vessel Calibration</h2>
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Weight (kg)</label>
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="group/input">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Mass (KG)</label>
               <input
                 type="number" step="0.1"
                 value={form.weight_kg}
                 onChange={e => setForm({...form, weight_kg: e.target.value})}
-                placeholder="e.g. 75.5"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500/50"
+                placeholder="75.5"
+                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-blue-500/10"
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Body Fat (%)</label>
+            <div className="group/input">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Adipose Index (%)</label>
               <input
                 type="number" step="0.1"
                 value={form.body_fat_pct}
                 onChange={e => setForm({...form, body_fat_pct: e.target.value})}
-                placeholder="e.g. 15.0"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500/50"
+                placeholder="15.0"
+                className="w-full bg-slate-950 border border-rose-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-rose-50 focus:outline-none focus:border-rose-500/50 transition-colors placeholder:text-rose-500/10"
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Waist (cm)</label>
+            <div className="group/input">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Axial (CM)</label>
               <input
                 type="number" step="0.1"
                 value={form.waist_cm}
                 onChange={e => setForm({...form, waist_cm: e.target.value})}
-                placeholder="e.g. 80.0"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500/50"
+                placeholder="80.0"
+                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-blue-500/10"
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-zinc-500 mb-1">Chest (cm)</label>
+            <div className="group/input">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Thoracic (CM)</label>
               <input
                 type="number" step="0.1"
                 value={form.chest_cm}
                 onChange={e => setForm({...form, chest_cm: e.target.value})}
-                placeholder="e.g. 100.0"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-pink-500/50"
+                placeholder="100.0"
+                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-blue-500/10"
               />
             </div>
           </div>
           <button
             disabled={isSubmitting}
             type="submit"
-            className="w-full mt-4 flex items-center justify-center gap-2 py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-lg transition-colors"
+            className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-[0.3em] rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400 group active:scale-95"
           >
-            {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
-            Log Metrics
+            {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} className="group-hover:rotate-90 transition-transform" />}
+            Initialize Calibration
           </button>
         </form>
       </section>
 
       {/* ─── Metrics History ─── */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <TrendingDown size={20} className="text-zinc-500" />
-          Recent Logs
-        </h2>
+      <section className="space-y-6">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <TrendingDown size={20} />
+          </div>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Calibration History</h2>
+        </div>
         
         {loading ? (
-          <div className="h-48 rounded-xl bg-zinc-900/50 animate-pulse border border-zinc-800" />
+          <div className="h-64 rounded-xl bg-slate-950/40 animate-pulse border border-blue-500/10 shadow-[inset_0_0_30px_rgba(59,130,246,0.05)]" />
         ) : metrics.length === 0 ? (
-          <div className="text-zinc-500 text-sm italic py-8 text-center border border-dashed border-zinc-800 rounded-2xl">
-            No metrics logged yet. Track your progress here.
+          <div className="text-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em] py-16 text-center border border-dashed border-blue-500/20 rounded-xl bg-slate-950/20 relative overflow-hidden group">
+            <div className="absolute inset-0 scanline pointer-events-none opacity-[0.02]" />
+            No structural traces detected.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {metrics.map(m => (
-              <div key={m.id} className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-4 flex justify-between items-center hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="block text-xs text-zinc-500 mb-1 font-bold">
+              <div key={m.id} className="bg-slate-950 border border-blue-500/10 rounded-xl p-5 flex justify-between items-center hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative overflow-hidden group">
+                <div className="absolute inset-0 scanline pointer-events-none opacity-[0.03]" />
+                <div className="relative z-10">
+                  <span className="block text-[8px] text-blue-500/30 mb-2 font-black uppercase tracking-[0.2em]">
                     {new Date(m.logged_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric'})}
                   </span>
-                  <div className="flex gap-4">
-                    {m.weight_kg && <div><span className="text-lg font-black text-white">{m.weight_kg}</span><span className="text-xs text-zinc-500 ml-1">kg</span></div>}
-                    {m.body_fat_pct && <div><span className="text-lg font-black text-pink-400">{m.body_fat_pct}</span><span className="text-xs text-pink-500 ml-1">%</span></div>}
+                  <div className="flex gap-6">
+                    {m.weight_kg && (
+                      <div className="group/metric">
+                        <span className="text-xl font-black text-blue-50 group-hover/metric:system-text-glow transition-all">{m.weight_kg}</span>
+                        <span className="text-[10px] text-blue-500/30 ml-2 font-black">KG</span>
+                      </div>
+                    )}
+                    {m.body_fat_pct && (
+                      <div className="group/metric">
+                        <span className="text-xl font-black text-rose-400 group-hover/metric:system-text-glow transition-all">{m.body_fat_pct}</span>
+                        <span className="text-[10px] text-rose-500/30 ml-2 font-black">% ADIPOSE</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                <div className="text-right flex items-center gap-3">
-                  {m.waist_cm && <div className="text-left"><span className="block text-[10px] text-zinc-500 uppercase font-bold">Waist</span><span className="text-sm font-bold">{m.waist_cm}</span></div>}
-                  {m.chest_cm && <div className="text-left"><span className="block text-[10px] text-zinc-500 uppercase font-bold">Chest</span><span className="text-sm font-bold">{m.chest_cm}</span></div>}
+                <div className="text-right flex items-center gap-6 relative z-10">
+                  {m.waist_cm && (
+                    <div className="text-left">
+                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Axial</span>
+                      <span className="text-xs font-black text-blue-200">{m.waist_cm}</span>
+                    </div>
+                  )}
+                  {m.chest_cm && (
+                    <div className="text-left">
+                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Thoracic</span>
+                      <span className="text-xs font-black text-blue-200">{m.chest_cm}</span>
+                    </div>
+                  )}
                 </div>
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover:bg-blue-500/40 transition-all" />
               </div>
             ))}
           </div>

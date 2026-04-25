@@ -50,19 +50,19 @@ const HOURS = Array.from({ length: 18 }, (_, i) => i + 6)
 const HOUR_HEIGHT = 90
 
 const PILLAR_COLORS: Record<string, string> = {
-  fitness: 'rgba(34, 197, 94, 0.2)', // Green
-  skills: 'rgba(59, 130, 246, 0.2)',  // Blue
-  time: 'rgba(168, 85, 247, 0.2)',    // Purple
-  style: 'rgba(236, 72, 153, 0.2)',   // Pink
-  general: 'rgba(100, 116, 139, 0.2)' // Slate
+  fitness: 'rgba(244, 63, 94, 0.1)', // Rose
+  skills: 'rgba(59, 130, 246, 0.1)',  // Blue
+  time: 'rgba(34, 211, 238, 0.1)',    // Cyan
+  style: 'rgba(147, 197, 253, 0.1)',   // Sky
+  general: 'rgba(30, 41, 59, 0.1)'    // Slate
 }
 
 const PILLAR_BORDERS: Record<string, string> = {
-  fitness: 'rgba(34, 197, 94, 0.5)',
+  fitness: 'rgba(244, 63, 94, 0.5)',
   skills: 'rgba(59, 130, 246, 0.5)',
-  time: 'rgba(168, 85, 247, 0.5)',
-  style: 'rgba(236, 72, 153, 0.5)',
-  general: 'rgba(100, 116, 139, 0.5)'
+  time: 'rgba(34, 211, 238, 0.5)',
+  style: 'rgba(147, 197, 253, 0.5)',
+  general: 'rgba(71, 85, 105, 0.5)'
 }
 
 export function ScheduleView() {
@@ -71,12 +71,11 @@ export function ScheduleView() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isOptimizing, setIsOptimizing] = useState(false)
-  const [novaLogic, setSystemLogic] = useState<string | null>(null)
+  const [systemLogic, setSystemLogic] = useState<string | null>(null)
   const [lastBatchIds, setLastBatchIds] = useState<string[]>([])
   const [dragState, setDragState] = useState<DragState>({ id: null, type: 'task', offsetX: 0, offsetY: 0 })
   const [hoveredHour, setHoveredHour] = useState<number | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [expandedPanel, setExpandedPanel] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -134,7 +133,6 @@ export function ScheduleView() {
   }
 
   const getCurrentTimeTop = () => {
-    // Only show current time if viewing today
     if (!isToday) return -100
     const hour = currentTime.getHours() + currentTime.getMinutes() / 60
     if (hour < 6 || hour > 24) return -100
@@ -173,7 +171,6 @@ export function ScheduleView() {
     const startDate = new Date(selectedDate)
     startDate.setHours(targetHour, 0, 0, 0)
     
-    // Determine duration
     let durationMinutes = 60
     if (dragState.type === 'task') {
       const task = allTasks.find(t => t.id === dragState.id)
@@ -200,9 +197,6 @@ export function ScheduleView() {
           toast.success('Task scheduled!')
           await fetchData()
         }
-      } else {
-        // Habits are handled differently for now, maybe just feedback
-        toast.info('Habit positioning coming soon!')
       }
     } catch {
       toast.error('Error scheduling item')
@@ -226,7 +220,6 @@ export function ScheduleView() {
       const { schedule, logic } = await res.json()
       setSystemLogic(logic)
       
-      // Batch update tasks using the new batch API
       const updates = schedule
         .filter((item: any) => item.type === 'task')
         .map((item: any) => {
@@ -325,83 +318,89 @@ export function ScheduleView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 italic">
       {/* Header with Date Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant/10 rounded-2xl px-4 py-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex items-center gap-4 bg-slate-950/40 border border-blue-500/20 rounded-xl px-6 py-4 shadow-[0_0_20px_rgba(59,130,246,0.05)] relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-2 h-full bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
             <button
               onClick={handlePreviousDay}
-              className="p-1 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+              className="p-2 hover:bg-blue-500/10 rounded-lg transition-all text-blue-500/40 hover:text-blue-400 border border-transparent hover:border-blue-500/20"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={20} />
             </button>
-            <div className="min-w-48 text-center">
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-1">Selected Date</p>
-              <p className="text-lg font-black text-on-surface">
-                {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            <div className="min-w-56 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Temporal Alignment</p>
+              <p className="text-xl font-black text-blue-50 tracking-widest system-text-glow">
+                {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
               </p>
             </div>
             <button
               onClick={handleNextDay}
-              className="p-1 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+              className="p-2 hover:bg-blue-500/10 rounded-lg transition-all text-blue-500/40 hover:text-blue-400 border border-transparent hover:border-blue-500/20"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={20} />
             </button>
           </div>
           {!isToday && (
             <button
               onClick={handleToday}
-              className="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-secondary/20 transition-all"
+              className="px-6 py-3 bg-blue-500/5 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-all shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]"
             >
-              Back to Today
+              Back to Present
             </button>
           )}
         </div>
         <button
           onClick={handleAutoSchedule}
           disabled={isOptimizing}
-          className="relative group flex items-center gap-2 px-6 py-3 bg-secondary text-on-secondary rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden shadow-[0_0_20px_rgba(var(--secondary),0.3)]"
+          className="relative group flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-xl font-black uppercase tracking-[0.3em] text-[10px] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400"
         >
           {isOptimizing ? (
             <Loader2 className="animate-spin" size={18} />
           ) : (
             <Sparkles size={18} className="group-hover:animate-pulse" />
           )}
-          <span>{isOptimizing ? 'Optimizing...' : 'System Auto-Schedule'}</span>
+          <span>{isOptimizing ? 'Strategizing...' : 'System Optimization'}</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </button>
       </div>
 
       <AnimatePresence>
-        {novaLogic && (
+        {systemLogic && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-secondary/10 border border-secondary/20 rounded-2xl p-4 flex gap-4 items-start"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-6 flex gap-6 items-start relative overflow-hidden"
           >
-            <div className="p-2 bg-secondary/20 rounded-xl shrink-0">
-              <Sparkles size={16} className="text-secondary" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl pointer-events-none" />
+            <div className="p-3 bg-blue-500/10 rounded-lg shrink-0 border border-blue-500/20">
+              <Sparkles size={20} className="text-blue-400" />
             </div>
-            <div>
-              <div className="flex items-center justify-between gap-4 mb-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-secondary/70">System's Strategy</p>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-4 mb-2">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                  System Strategic Logic
+                </div>
                 <button 
                   onClick={handleRevertSchedule}
-                  className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40 hover:text-red-500 transition-colors"
+                  className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/40 hover:text-rose-500 transition-colors border-b border-transparent hover:border-rose-500/20"
                 >
-                  [ Revert Changes ]
+                  [ REVERT PROTOCOL ]
                 </button>
               </div>
-              <p className="text-sm text-on-surface font-medium leading-relaxed italic">
-                "{novaLogic}"
+              <p className="text-sm text-blue-100 font-bold leading-relaxed tracking-wide italic">
+                "{systemLogic}"
               </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative">
         {/* Loading Overlay */}
         <AnimatePresence>
           {isOptimizing && (
@@ -409,31 +408,33 @@ export function ScheduleView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 flex items-center justify-center bg-surface/40 backdrop-blur-md rounded-3xl"
+              className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-md rounded-2xl border border-blue-500/20"
             >
-              <div className="text-center">
-                <div className="relative inline-block mb-4">
-                  <div className="absolute inset-0 bg-secondary/20 blur-xl rounded-full animate-pulse" />
-                  <Loader2 className="animate-spin text-secondary relative z-10" size={48} />
+              <div className="text-center space-y-4">
+                <div className="relative inline-block">
+                  <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse" />
+                  <Loader2 className="animate-spin text-blue-400 relative z-10" size={56} />
                 </div>
-                <h4 className="text-xl font-black uppercase tracking-tighter text-on-surface">System is Strategizing...</h4>
-                <p className="text-sm text-on-surface-variant font-medium mt-1">Analyzing tasks, persona, and memory for peak efficiency.</p>
+                <h4 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 system-text-glow">Strategizing...</h4>
+                <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em] mt-2">Analyzing protocols, persona data, and temporal constraints.</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-        {/* Side Panel: Unscheduled Tasks & Habits */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-5 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-4 flex items-center gap-2">
-              <Target size={14} /> Backlog ({unscheduledTasks.length})
+
+        {/* Side Panel: Backlog & Habits */}
+        <div className="lg:col-span-1 space-y-8">
+          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 shadow-2xl relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-6 flex items-center gap-2">
+              <Target size={16} /> Backlog <span className="text-blue-500/20">[{unscheduledTasks.length}]</span>
             </h3>
 
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
               {unscheduledTasks.length === 0 ? (
-                <div className="text-center py-8 bg-surface-container-highest/30 rounded-2xl border border-dashed border-outline-variant/20">
-                  <CheckCircle2 className="mx-auto text-on-surface-variant/20 mb-2" size={24} />
-                  <p className="text-[10px] font-bold text-on-surface-variant/40">NO PENDING TASKS</p>
+                <div className="text-center py-12 bg-blue-500/[0.02] rounded-xl border border-dashed border-blue-500/10">
+                  <CheckCircle2 className="mx-auto text-blue-500/20 mb-3" size={32} />
+                  <p className="text-[10px] font-black text-blue-500/30 uppercase tracking-[0.3em]">No Pending Tasks</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -441,24 +442,24 @@ export function ScheduleView() {
                     <motion.div
                       key={task.id}
                       layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task.id, 'task')}
-                      className="group p-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl cursor-grab active:cursor-grabbing hover:border-secondary/30 transition-all hover:bg-surface-container-highest"
+                      className="group p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative overflow-hidden"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className={cn("w-1 h-8 rounded-full shrink-0 mt-0.5", 
-                          task.priority === 'high' ? 'bg-red-500' : 'bg-secondary/40')} 
+                      <div className="flex items-start gap-4">
+                        <div className={cn("w-1 h-10 rounded-full shrink-0 mt-0.5", 
+                          task.priority === 'high' ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-blue-500/40')} 
                         />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-on-surface truncate">{task.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 bg-surface-container rounded-md text-on-surface-variant/60">
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <p className="text-xs font-black text-blue-50 tracking-wider truncate uppercase">{task.title}</p>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/10 rounded text-blue-400 border border-blue-500/20">
                               {task.pillar}
                             </span>
-                            <span className="text-[10px] text-on-surface-variant/40 flex items-center gap-1">
+                            <span className="text-[9px] font-black text-blue-500/40 flex items-center gap-1.5 uppercase">
                               <Clock3 size={10} /> {task.estimated_minutes || 30}m
                             </span>
                           </div>
@@ -472,29 +473,31 @@ export function ScheduleView() {
           </div>
 
           {/* Habits Mini-Panel */}
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-5 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-4 flex items-center gap-2">
-              <Zap size={14} /> Daily Habits
+          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-6 flex items-center gap-2">
+              <Zap size={16} /> Active Protocols
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {habits.map(habit => (
                 <div 
                   key={habit.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, habit.id, 'habit')}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-2xl border transition-all cursor-grab",
+                    "flex items-center justify-between p-4 rounded-lg border transition-all cursor-grab relative overflow-hidden group/item",
                     habit.completed_today 
-                      ? "bg-green-500/10 border-green-500/20 opacity-60" 
-                      : "bg-surface-container-highest/30 border-outline-variant/10 hover:border-secondary/20"
+                      ? "bg-blue-500/5 border-blue-500/20 opacity-40 shadow-inner" 
+                      : "bg-slate-950/60 border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10"
                   )}
                 >
-                  <span className="text-xs font-bold text-on-surface">{habit.name}</span>
+                  <span className="text-[11px] font-black text-blue-100 uppercase tracking-widest">{habit.name}</span>
                   {habit.completed_today ? (
-                    <CheckCircle2 size={14} className="text-green-500" />
+                    <CheckCircle2 size={16} className="text-blue-400" />
                   ) : (
-                    <GripHorizontal size={14} className="text-on-surface-variant/30" />
+                    <GripHorizontal size={16} className="text-blue-500/20 group-hover/item:text-blue-400 transition-colors" />
                   )}
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover/item:bg-blue-500/40 transition-colors" />
                 </div>
               ))}
             </div>
@@ -503,26 +506,26 @@ export function ScheduleView() {
 
         {/* Timeline Grid */}
         <div className="lg:col-span-3">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] relative overflow-hidden flex flex-col shadow-xl">
+          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl relative overflow-hidden flex flex-col shadow-2xl">
             {/* Timeline Header */}
-            <div className="bg-surface-container-highest/50 backdrop-blur-md border-b border-outline-variant/10 p-5 sticky top-0 z-20 flex items-center justify-between">
+            <div className="bg-slate-950/80 backdrop-blur-md border-b border-blue-500/20 p-6 sticky top-0 z-20 flex items-center justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-1">Schedule</p>
-                <p className="text-sm font-black text-on-surface">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Temporal Grid</p>
+                <p className="text-sm font-black text-blue-50 uppercase tracking-widest system-text-glow">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant/50">
+              <div className="flex items-center gap-3 text-[10px] font-black text-blue-500/40 uppercase tracking-[0.3em]">
                 {isToday && (
                   <>
-                    <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                    LIVE
+                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    Live Trace
                   </>
                 )}
               </div>
             </div>
 
             {/* Scrollable timeline */}
-            <div className="flex-1 overflow-y-auto max-h-[800px] custom-scrollbar">
-              <div ref={containerRef} className="relative w-full p-4" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
+            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar bg-blue-500/[0.01]" style={{ backgroundImage: 'radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+              <div ref={containerRef} className="relative w-full p-6" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
                 
                 {/* Current Time Line */}
                 <div 
@@ -530,13 +533,13 @@ export function ScheduleView() {
                   style={{ top: `${getCurrentTimeTop()}px` }}
                 >
                   <div className="relative">
-                    <div className="absolute left-0 w-20 flex justify-end pr-4 -top-3">
-                      <span className="bg-secondary text-on-secondary text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-lg">
+                    <div className="absolute left-0 w-24 flex justify-end pr-6 -top-3.5">
+                      <span className="bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)] uppercase tracking-widest">
                         {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="h-px w-full bg-secondary shadow-[0_0_10px_rgba(var(--secondary),0.5)]" />
-                    <div className="absolute left-20 -top-1 w-2.5 h-2.5 bg-secondary rounded-full shadow-[0_0_8px_rgba(var(--secondary),0.8)]" />
+                    <div className="h-px w-full bg-blue-500/60 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                    <div className="absolute left-24 -top-1.5 w-3 h-3 bg-blue-400 rounded-full shadow-[0_0_15px_rgba(59,130,246,1)] border border-white" />
                   </div>
                 </div>
 
@@ -549,22 +552,22 @@ export function ScheduleView() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleTimelineDrop(e, hour)}
                     className={cn(
-                      'absolute left-0 right-0 flex items-start border-t border-outline-variant/10 transition-all duration-300',
-                      hoveredHour === hour && dragState.id && 'bg-secondary/5 border-t-secondary/40'
+                      'absolute left-0 right-0 flex items-start border-t border-blue-500/5 transition-all duration-300',
+                      hoveredHour === hour && dragState.id && 'bg-blue-500/5 border-t-blue-500/40 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
                     )}
                     style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
                   >
-                    <div className="w-20 shrink-0 flex items-center justify-end pr-5 -mt-3.5">
-                      <span className="text-[11px] font-black font-headline text-on-surface-variant/40 tracking-tighter">
+                    <div className="w-24 shrink-0 flex items-center justify-end pr-6 -mt-3.5">
+                      <span className="text-[10px] font-black text-blue-500/30 tracking-widest uppercase">
                         {hour === 12 ? '12:00 PM' : hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
                       </span>
                     </div>
-                    <div className="flex-1 h-full border-l border-outline-variant/10 border-dashed" />
+                    <div className="flex-1 h-full border-l border-blue-500/5 border-dashed" />
                   </div>
                 ))}
 
                 {/* Scheduled items */}
-                <div className="absolute left-20 right-4 top-0 bottom-0 pointer-events-none">
+                <div className="absolute left-24 right-6 top-0 bottom-0 pointer-events-none">
                   <AnimatePresence>
                     {scheduledTasks.map(task => {
                       if (!task.scheduled_start || !task.scheduled_end) return null
@@ -575,10 +578,10 @@ export function ScheduleView() {
                       return (
                         <motion.div
                           key={task.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute left-3 right-3 rounded-2xl border pointer-events-auto shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all cursor-default backdrop-blur-sm"
+                          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="absolute left-4 right-4 rounded-lg border pointer-events-auto shadow-2xl overflow-hidden flex flex-col group hover:shadow-blue-500/20 transition-all cursor-default backdrop-blur-md"
                           style={{
                             backgroundColor: bgColor,
                             borderColor: borderColor,
@@ -586,26 +589,28 @@ export function ScheduleView() {
                           }}
                         >
                           <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: borderColor }} />
-                          <div className="p-3 flex-1 flex flex-col min-h-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-[13px] font-black text-on-surface leading-tight truncate">{task.title}</p>
+                          <div className="p-4 flex-1 flex flex-col min-h-0 bg-gradient-to-br from-white/[0.03] to-transparent">
+                            <div className="flex items-start justify-between gap-4">
+                              <p className="text-sm font-black text-blue-50 leading-tight uppercase tracking-widest system-text-glow truncate">{task.title}</p>
                               <button
                                 onClick={() => handleUnscheduleTask(task.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-on-surface/10 rounded-lg transition-opacity text-on-surface-variant shrink-0"
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-500/20 rounded transition-all text-blue-500/40 hover:text-rose-400 border border-transparent hover:border-rose-500/20 shrink-0"
                               >
                                 <Trash2 size={12} />
                               </button>
                             </div>
-                            <div className="flex items-center gap-2 mt-auto">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-on-surface/60 bg-on-surface/5 px-2 py-0.5 rounded-md">
+                            <div className="flex items-center gap-4 mt-auto">
+                              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                                 {task.pillar}
                               </span>
-                              <div className="flex items-center gap-1 text-[10px] font-bold text-on-surface/40">
+                              <div className="flex items-center gap-2 text-[9px] font-black text-blue-500/40 uppercase tracking-widest">
                                 <Clock size={10} />
                                 {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
                             </div>
                           </div>
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/[0.02] transition-colors pointer-events-none" />
                         </motion.div>
                       )
                     })}

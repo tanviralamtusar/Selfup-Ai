@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Build Suggestion Prompt
     const rawPersonaName = profile?.ai_persona_name || 'System'
-    const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+    const personaName = profile?.ai_persona_name || 'System'
     
     const systemPrompt = `
       You are "${personaName}", a high-performance AI coach.

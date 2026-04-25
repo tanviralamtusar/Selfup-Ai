@@ -1,8 +1,9 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Star, Sparkles, X, Zap } from 'lucide-react'
+import { AlertCircle, Star, Sparkles, X, Zap, Trophy } from 'lucide-react'
 import { useEffect } from 'react'
+import { SystemFrame } from '../ui/SystemFrame'
 
 interface LevelUpModalProps {
   isOpen: boolean
@@ -38,92 +39,85 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-surface-container-low border border-amber-500/30 rounded-[2rem] p-8 overflow-hidden text-center shadow-2xl shadow-amber-500/20"
+            className="relative w-full max-w-lg overflow-visible"
           >
-            {/* Background Glows */}
-            <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-amber-500/20 to-transparent pointer-events-none" />
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/20 blur-[80px] rounded-full pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-500/20 blur-[80px] rounded-full pointer-events-none" />
-
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors z-10"
-            >
-              <X size={20} />
-            </button>
-
-            {/* Icon Container */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', damping: 12, delay: 0.1 }}
-              className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center"
-            >
-              <div className="absolute inset-0 bg-amber-400/20 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-              <div className="relative w-full h-full bg-gradient-to-br from-amber-300 to-amber-600 rounded-full flex items-center justify-center shadow-inner border-[4px] border-surface-container-low">
-                <Trophy size={48} className="text-white drop-shadow-md" />
-              </div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -top-2 -right-2 w-10 h-10 bg-surface-container-low rounded-full flex items-center justify-center shadow-lg border border-amber-500/30"
+            <SystemFrame title="System Notification" className="w-full">
+              <button
+                onClick={onClose}
+                className="absolute top-0 right-0 p-2 rounded-full hover:bg-blue-500/10 text-blue-400 transition-colors z-50"
               >
-                <Sparkles size={20} className="text-amber-400" />
-              </motion.div>
-            </motion.div>
+                <X size={20} />
+              </button>
 
-            {/* Text Content */}
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-4xl font-black text-on-surface font-headline tracking-tighter mb-2"
-            >
-              Level Up!
-            </motion.h2>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-on-surface-variant mb-8"
-            >
-              You've reached <strong className="text-amber-400">Level {newLevel}</strong>. Your dedication is paying off.
-            </motion.p>
+              <div className="text-center">
+                {/* Icon Container */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', damping: 12, delay: 0.1 }}
+                  className="relative w-20 h-20 mx-auto mb-8 flex items-center justify-center"
+                >
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-full h-full border-2 border-blue-400/50 rounded-full flex items-center justify-center bg-blue-500/5">
+                    <AlertCircle size={40} className="text-blue-400 system-text-glow" />
+                  </div>
+                </motion.div>
 
-            {/* Rewards */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="grid grid-cols-2 gap-4 mb-8"
-            >
-              <div className="p-4 rounded-3xl bg-surface-container border border-outline-variant/10">
-                <div className="w-10 h-10 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
-                  <Zap size={20} className="text-primary" />
-                </div>
-                <p className="text-xl font-black text-on-surface">{totalXp.toLocaleString()}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 mt-1">Total XP</p>
+                {/* Text Content */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-4 mb-10"
+                >
+                  <h2 className="text-2xl font-black text-blue-100 uppercase tracking-[0.2em] system-text-glow">
+                    Level Up Accomplished
+                  </h2>
+                  <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                  <p className="text-blue-200/80 font-medium tracking-wide">
+                    You have acquired the qualifications to reach <br />
+                    <span className="text-blue-400 font-black uppercase tracking-widest text-lg">Level {newLevel}</span>. 
+                    <br />Will you accept the new strength?
+                  </p>
+                </motion.div>
+
+                {/* Rewards Grid */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="grid grid-cols-2 gap-4 mb-10"
+                >
+                  <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
+                    <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
+                      <Zap size={20} className="text-blue-400" />
+                    </div>
+                    <p className="text-xl font-black text-blue-100 tabular-nums">{totalXp.toLocaleString()}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40 mt-1">Total XP</p>
+                  </div>
+                  <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
+                    <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
+                      <Star size={20} className="text-blue-400" />
+                    </div>
+                    <p className="text-xl font-black text-blue-400 tabular-nums">+{coinsReward}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40 mt-1">AiCoins</p>
+                  </div>
+                </motion.div>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  onClick={onClose}
+                  className="group relative w-full py-4 overflow-hidden rounded-xl border border-blue-500/50 bg-blue-500/10 transition-all hover:bg-blue-500/20 active:scale-95"
+                >
+                  <div className="absolute inset-0 bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10 text-blue-100 font-black uppercase tracking-[0.4em] text-sm">
+                    Accept Rewards
+                  </span>
+                </motion.button>
               </div>
-              <div className="p-4 rounded-3xl bg-surface-container border border-outline-variant/10">
-                <div className="w-10 h-10 mx-auto bg-amber-500/10 rounded-2xl flex items-center justify-center mb-2">
-                  <Star size={20} className="text-amber-400" />
-                </div>
-                <p className="text-xl font-black text-amber-400">+{coinsReward}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 mt-1">AiCoins</p>
-              </div>
-            </motion.div>
-
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              onClick={onClose}
-              className="w-full py-4 rounded-2xl bg-amber-500 text-white font-black uppercase tracking-widest text-sm hover:bg-amber-400 transition-all active:scale-95 shadow-lg shadow-amber-500/20"
-            >
-              Claim Rewards
-            </motion.button>
+            </SystemFrame>
           </motion.div>
         </div>
       )}

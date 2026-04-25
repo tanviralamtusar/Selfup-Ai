@@ -81,7 +81,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Sparkles className="text-blue-400 animate-pulse" size={16} />
               <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent" />
             </div>
-            <span className="text-xl font-black font-headline tracking-[-0.05em] text-blue-50 system-text-glow italic uppercase">SYSTEM</span>
+            <span className="text-xl font-black font-headline tracking-[-0.05em] text-blue-50 system-text-glow italic uppercase">Selfup AI</span>
           </Link>
 
           {/* Desktop Search */}
@@ -89,7 +89,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Search className="absolute left-3 text-blue-500/40 group-focus-within:text-blue-400 transition-colors" size={14} />
             <input 
               type="text" 
-              placeholder="QUERY SYSTEM..."
+              placeholder="QUERY SELFUP..."
               className="bg-blue-500/5 border border-blue-500/10 rounded h-8 pl-9 pr-4 w-56 text-[10px] font-black uppercase tracking-[0.2em] focus:outline-none focus:border-blue-500/30 focus:bg-blue-500/10 transition-all text-blue-100 placeholder:text-blue-500/30 italic"
             />
           </div>

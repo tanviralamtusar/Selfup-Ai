@@ -46,7 +46,7 @@ export default function SettingsPage() {
   const [isPublic, setIsPublic] = useState(profile?.is_public || false)
 
   // AI persona state
-  const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'System')
+  const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'SYSTEM')
   const [personaStyle, setPersonaStyle] = useState<PersonaStyle>((profile?.ai_persona_style as PersonaStyle) || 'friendly')
 
   const [savedSection, setSavedSection] = useState<string | null>(null)
@@ -61,7 +61,7 @@ export default function SettingsPage() {
       setDisplayName(profile.display_name || '')
       setBio(profile.bio || '')
       setIsPublic(profile.is_public || false)
-      setPersonaName(profile.ai_persona_name || 'System')
+      setPersonaName(profile.ai_persona_name || 'SYSTEM')
       setPersonaStyle((profile.ai_persona_style as PersonaStyle) || 'friendly')
     }
   }, [profile])
@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
   const navItems = [
     { id: 'profile', label: 'VESSEL PROFILE', icon: User, subtitle: 'Identity & Visibility' },
-    { id: 'ai', label: 'SYSTEM COGNITION', icon: Brain, subtitle: 'Persona & Protocols' },
+    { id: 'ai', label: 'SELFUP COGNITION', icon: Brain, subtitle: 'Persona & Protocols' },
     { id: 'privacy', label: 'VESSEL ENCRYPTION', icon: Shield, subtitle: 'Data & Secrecy' },
     { id: 'notifications', label: 'NETWORK ALERTS', icon: Bell, subtitle: 'System Reminders' },
   ]
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           <Settings size={28} className="text-blue-400" />
         </div>
         <div>
-          <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">System Settings</h1>
+          <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">Selfup Settings</h1>
           <p className="text-blue-400/60 text-sm font-bold italic tracking-widest uppercase">Calibrate your system interface.</p>
         </div>
       </div>
@@ -234,10 +234,10 @@ export default function SettingsPage() {
               className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 space-y-6 backdrop-blur-md relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
-              <SectionHeader icon={Sparkles} title="SYSTEM COGNITION" subtitle="Calibrate System personality" color="text-cyan-400" />
+              <SectionHeader icon={Sparkles} title="SELFUP COGNITION" subtitle="Calibrate System personality" color="text-cyan-400" />
 
               <div className="relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">SYSTEM DESIGNATION</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">SELFUP DESIGNATION</label>
                 <input
                   type="text"
                   value={personaName}

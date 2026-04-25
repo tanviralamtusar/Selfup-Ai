@@ -36,7 +36,7 @@ export function SystemFrame({ children, title, className, showScanline = true }:
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
              </div>
              <h3 className="text-sm font-black uppercase tracking-[0.3em] text-blue-100 system-text-glow">
-               {title || 'SYSTEM NOTIFICATION'}
+               {title || 'SELFUP NOTIFICATION'}
              </h3>
           </div>
 

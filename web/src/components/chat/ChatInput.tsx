@@ -11,7 +11,7 @@ interface ChatInputProps {
   aiName?: string
 }
 
-export function ChatInput({ onSend, isDisabled, aiName = 'System' }: ChatInputProps) {
+export function ChatInput({ onSend, isDisabled, aiName = 'SYSTEM' }: ChatInputProps) {
   const [input, setInput] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {

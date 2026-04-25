@@ -478,7 +478,7 @@ export default function DashboardPage() {
                     <Check className="text-blue-400 opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={12} strokeWidth={3} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">System Maintenance: Read 20 Pgs</p>
+                    <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Selfup Maintenance: Read 20 Pgs</p>
                     <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-blue-500/10">
                       <div className="bg-blue-500 h-full w-[40%] transition-all duration-700 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
                     </div>
@@ -515,7 +515,7 @@ export default function DashboardPage() {
                       <Brain size={16} />
                     </div>
                     <div>
-                      <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Core Cognition</p>
+                      <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Selfup Cognition</p>
                       <p className="text-[8px] text-blue-500/60 uppercase tracking-widest mt-0.5 group-hover:text-blue-400 transition-colors">Access Memory Fragments</p>
                     </div>
                   </div>
@@ -563,7 +563,7 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   {[
                     { icon: Gamepad2, title: 'Restoration: 1hr', cost: '150 AiC', color: 'text-blue-400' },
-                    { icon: Shield, title: 'System Guard', cost: '2.5K AiC', color: 'text-cyan-400' }
+                    { icon: Shield, title: 'Selfup Guard', cost: '2.5K AiC', color: 'text-cyan-400' }
                   ].map(reward => (
                     <div key={reward.title} className="group relative overflow-hidden bg-slate-900/40 p-2.5 rounded-lg border border-blue-500/10 hover:bg-slate-900/60 hover:border-blue-500/30 transition-all flex items-center gap-3 italic cursor-pointer">
                       <div className={cn("w-9 h-9 rounded bg-slate-950 flex items-center justify-center border border-blue-500/10 shadow-inner group-hover:scale-110 transition-transform", reward.color)}>
@@ -587,7 +587,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
           <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-slate-950/80 backdrop-blur-md pb-2 z-10 -mx-1 px-1">
             <div className="w-4 h-px bg-blue-500" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SYSTEM EVENT LOG</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SELFUP EVENT LOG</p>
           </div>
           <ActivityFeed />
         </motion.div>

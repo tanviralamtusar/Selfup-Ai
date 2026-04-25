@@ -56,7 +56,12 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      setProfile: (profile) => set({ profile }),
+      setProfile: (profile) => {
+        if (profile && (profile.ai_persona_name === 'Nova' || !profile.ai_persona_name)) {
+          profile.ai_persona_name = 'SYSTEM';
+        }
+        set({ profile });
+      },
       setSession: (session) => set({ session, isAuthenticated: !!session }),
       setLoading: (isLoading) => set({ isLoading }),
       logout: () => set({ user: null, profile: null, session: null, isAuthenticated: false }),

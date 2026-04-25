@@ -91,8 +91,8 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
                 <Database className="text-blue-400" size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-black italic tracking-[0.2em] text-white uppercase">Core Cognition</h2>
-                <p className="text-[10px] text-blue-400/60 font-mono tracking-widest uppercase">System Memory Fragments</p>
+                <h2 className="text-xl font-black italic tracking-[0.2em] text-white uppercase">Selfup Cognition</h2>
+                <p className="text-[10px] text-blue-400/60 font-mono tracking-widest uppercase">Selfup Memory Fragments</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -169,7 +169,7 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-amber-400 fill-amber-400" />
               <span className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">
-                System memory influences all future companion interactions.
+                Selfup memory influences all future companion interactions.
               </span>
             </div>
             <div className="text-[10px] font-mono text-blue-400/40 uppercase">

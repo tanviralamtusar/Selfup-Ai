@@ -84,7 +84,7 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
         <div>
           {rec.is_ai_generated && (
             <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-2 py-1 rounded-full mb-2">
-              <Sparkles size={8} /> System Pick
+              <Sparkles size={8} /> Selfup Pick
             </span>
           )}
           <h3 className="text-base font-black text-on-surface">{rec.occasion}</h3>
@@ -207,7 +207,7 @@ export default function StylePage() {
         })
       })
       if (res.ok) {
-        toast.success('System is crafting your look! Check back in a moment.')
+        toast.success('Selfup is crafting your look! Check back in a moment.')
       }
     } catch { toast.error('Failed to generate recommendation') }
     finally { setIsGenerating(false) }
@@ -345,7 +345,7 @@ export default function StylePage() {
             className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-2xl bg-pink-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-500/20 hover:bg-pink-400 transition-all active:scale-95 disabled:opacity-60"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-            {isGenerating ? 'System Styling...' : 'Generate Look'}
+            {isGenerating ? 'Selfup Styling...' : 'Generate Look'}
           </button>
         </div>
       </div>

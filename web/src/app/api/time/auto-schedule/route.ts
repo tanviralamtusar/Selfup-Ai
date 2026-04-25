@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
     .eq('is_active', true)
 
   // 5. Construct AI Prompt
-  const rawPersonaName = profile?.ai_persona_name || 'System'
-  const personaName = profile?.ai_persona_name || 'System'
+  const rawPersonaName = profile?.ai_persona_name || 'SYSTEM'
+  const personaName = profile?.ai_persona_name || 'SYSTEM'
 
   const prompt = `
     You are ${personaName}, the user's elite AI strategist. 

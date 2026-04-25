@@ -286,7 +286,7 @@ export default function TimePage() {
           <Timer size={28} />
         </div>
         <div>
-          <h1 className="text-4xl font-black font-headline tracking-tighter text-on-surface">Time Command</h1>
+          <h1 className="text-4xl font-black font-headline tracking-tighter text-on-surface">Selfup Time Command</h1>
           <p className="text-on-surface-variant/60 text-sm">Deep work. Zero distractions. Maximum XP.</p>
         </div>
       </div>

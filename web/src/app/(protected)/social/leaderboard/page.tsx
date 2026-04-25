@@ -84,7 +84,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
             {displayName}
           </p>
           {entry.isCurrentUser && (
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] italic text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full border border-blue-500/20">SYSTEM ACCESS</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] italic text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full border border-blue-500/20">SELFUP ACCESS</span>
           )}
         </div>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40 italic">Vessel Rank: {entry.level}</p>
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
           <Trophy size={28} className="text-blue-400" />
         </div>
         <div>
-          <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">System Network</h1>
+          <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">Selfup Network</h1>
           <p className="text-blue-400/60 text-sm font-bold italic tracking-widest uppercase">Synchronize. Compete. Ascend the Ranks.</p>
         </div>
       </div>

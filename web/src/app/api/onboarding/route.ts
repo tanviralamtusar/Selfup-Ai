@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         age: parseInt(age) || null,
         gender,
         timezone,
-        ai_persona_name: personaName || 'System',
+        ai_persona_name: personaName || 'SYSTEM',
         ai_persona_style: persona,
         onboarding_done: true,
     })

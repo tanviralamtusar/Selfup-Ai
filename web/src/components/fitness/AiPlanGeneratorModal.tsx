@@ -34,7 +34,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                 <Sparkles size={24} />
               </div>
               <div>
-                <h2 className="text-xl font-black uppercase tracking-[0.3em] text-blue-50 system-text-glow">System Fitness</h2>
+                <h2 className="text-xl font-black uppercase tracking-[0.3em] text-blue-50 system-text-glow">Selfup Fitness</h2>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-blue-500/60 font-black">Protocol Initializer</p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
               ) : (
                 <>
                   <Sparkles size={18} className="group-hover:animate-pulse" />
-                  INITIALIZE SYSTEM GENERATION
+                   INITIALIZE SELFUP GENERATION
                 </>
               )}
             </button>

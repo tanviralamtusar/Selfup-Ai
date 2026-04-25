@@ -19,7 +19,7 @@ interface ChatSidebarProps {
   aiName?: string
 }
 
-export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName = 'System' }: ChatSidebarProps) {
+export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName = 'SYSTEM' }: ChatSidebarProps) {
   return (
     <div className="w-80 flex flex-col bg-surface border-r border-outline-variant/10 h-full">
       <div className="p-4">

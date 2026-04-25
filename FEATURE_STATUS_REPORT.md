@@ -55,7 +55,7 @@
 - ✅ **Pomodoro History** — Sessions saved and retrievable
 - ✅ **Habits** — Fully functional with heatmap, calendar tracking, and AI suggestion integration
 - ✅ **Schedule View** — High-fidelity time-blocking UI with drag-and-drop persistence and Pillar-specific styling.
-- ✅ **AI Auto-Scheduling** — Nova engine integration with user persona/memory and structured logic reasoning.
+- ✅ **AI Auto-Scheduling** — SYSTEM engine integration with user persona/memory and structured logic reasoning.
 - ⚠️ **Recurring Tasks** — Backend support exists, UI controls missing
 - ⚠️ **Google Calendar Sync** — Not implemented
 
@@ -71,7 +71,7 @@
 ### 🧠 Skills (4/5)
 - ✅ **Skill Management** — Add custom skills, fetch list, delete skills
 - ✅ **Skill Roadmap Display** — Timeline component shows milestones
-- ✅ **AI Roadmap Generation** — Nova architecting multi-step skill paths based on skill name.
+- ✅ **AI Roadmap Generation** — SYSTEM architecting multi-step skill paths based on skill name.
 - ✅ **Skill Session History** — "Chronicle of Mastery" displaying all past practice sessions.
 - 🚧 **Progress Tracking** (in progress — Structure ready, UI needs completion)
 - ⚠️ **YouTube Integration** — API configured but not yet integrated into UI

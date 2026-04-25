@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
         xp: 0,
         xp_to_next_level: 100,
         onboarding_done: false, // Force onboarding if missing
-        ai_persona_name: 'System',
+        ai_persona_name: 'SYSTEM',
         ai_persona_style: 'friendly',
         theme: 'dark'
       })

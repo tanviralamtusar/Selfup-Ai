@@ -213,9 +213,9 @@ export default function SkillsPage() {
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
               <Brain size={28} />
             </div>
-            <h1 className="text-4xl font-black font-headline italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">System Skill Registry</h1>
+            <h1 className="text-4xl font-black font-headline italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">Selfup Skill Registry</h1>
           </div>
-          <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Architect your path to mastery with System guidance.</p>
+          <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Architect your path to mastery with Selfup guidance.</p>
         </div>
 
         <button 
@@ -234,7 +234,7 @@ export default function SkillsPage() {
             {isLoading && skills.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed backdrop-blur-md">
                 <Loader2 className="animate-spin text-blue-400 mb-4" />
-                <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with System Database...</p>
+                <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with Selfup Database...</p>
               </div>
             ) : skills.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed text-center px-6 backdrop-blur-md">
@@ -242,7 +242,7 @@ export default function SkillsPage() {
                    <Sparkles size={32} className="text-blue-400/40" />
                 </div>
                 <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">Empty Registry</h2>
-                <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let System help you choose a path.</p>
+                <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let Selfup help you choose a path.</p>
                 <button 
                   onClick={() => setIsAddModalOpen(true)}
                   className="px-8 py-3 bg-blue-500/10 hover:bg-blue-500/20 transition-colors rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/30 text-blue-400"
@@ -426,7 +426,7 @@ export default function SkillsPage() {
                    </div>
                    <div className="flex-1">
                       <p className="text-xs font-black uppercase tracking-widest text-primary">AI Roadmap Architect</p>
-                      <p className="text-[10px] text-primary/60">System will build a custom milestone path.</p>
+                      <p className="text-[10px] text-primary/60">Selfup will build a custom milestone path.</p>
                    </div>
                    <input 
                     type="checkbox" 

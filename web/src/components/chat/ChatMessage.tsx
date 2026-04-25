@@ -12,7 +12,7 @@ interface ChatMessageProps {
   style?: 'friendly' | 'strict' | 'motivational' | 'neutral'
 }
 
-export function ChatMessage({ role, content, isLast, name = 'System', style = 'friendly' }: ChatMessageProps) {
+export function ChatMessage({ role, content, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
   const isAssistant = role === 'assistant'
 
   return (

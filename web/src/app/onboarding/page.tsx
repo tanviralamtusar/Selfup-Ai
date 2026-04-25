@@ -32,7 +32,7 @@ export default function OnboardingPage() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     goals: [] as string[],
     persona: 'balanced', // balanced, tough-love, analytical, cheerleader
-    personaName: 'System',
+    personaName: 'SYSTEM',
     answers: {} as Record<string, string>
   })
 

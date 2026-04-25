@@ -11,19 +11,21 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { displayName, age, gender, timezone, goals, persona, answers } = body
+    const { displayName, age, gender, timezone, goals, persona, personaName, answers } = body
 
     // 1. Update Profile
     const supabase = await supabaseServer()
     const { error: profileError } = await supabase
-      .from('user_profiles')
-      .update({
+    .from('user_profiles')
+    .update({
         display_name: displayName,
         age: parseInt(age) || null,
         gender,
         timezone,
+        ai_persona_name: personaName || 'System',
+        ai_persona_style: persona,
         onboarding_done: true,
-      })
+    })
       .eq('id', user.id)
 
     if (profileError) throw profileError

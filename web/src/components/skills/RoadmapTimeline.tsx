@@ -76,11 +76,11 @@ export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLo
         </div>
         <div className="space-y-2">
           <h3 className="text-xl font-black font-headline tracking-tight text-on-surface capitalize">
-            {status === 'pending' ? 'Queuing Architect...' : 'Nova is Architecting...'}
+            {status === 'pending' ? 'Queuing Architect...' : 'System is Architecting...'}
           </h3>
           <p className="text-sm text-on-surface-variant/60 max-w-[280px]">
             {status === 'pending' 
-              ? `Waiting for Nova to begin mapping your journey for ${skillName}.` 
+              ? `Waiting for System to begin mapping your journey for ${skillName}.` 
               : `Analyzing millions of data points to create your personalized ${skillName} roadmap.`}
           </p>
         </div>
@@ -102,7 +102,7 @@ export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLo
         <div className="space-y-2">
           <h3 className="text-xl font-black font-headline tracking-tight text-on-surface">Architectural Error</h3>
           <p className="text-sm text-on-surface-variant/60 max-w-[280px]">
-            {error || "Nova encountered an unexpected turbulence while mapping your path."}
+            {error || "System encountered an unexpected turbulence while mapping your path."}
           </p>
         </div>
         <button 

@@ -71,7 +71,7 @@ export function ScheduleView() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isOptimizing, setIsOptimizing] = useState(false)
-  const [novaLogic, setNovaLogic] = useState<string | null>(null)
+  const [novaLogic, setSystemLogic] = useState<string | null>(null)
   const [lastBatchIds, setLastBatchIds] = useState<string[]>([])
   const [dragState, setDragState] = useState<DragState>({ id: null, type: 'task', offsetX: 0, offsetY: 0 })
   const [hoveredHour, setHoveredHour] = useState<number | null>(null)
@@ -214,7 +214,7 @@ export function ScheduleView() {
 
   const handleAutoSchedule = async () => {
     setIsOptimizing(true)
-    setNovaLogic(null)
+    setSystemLogic(null)
     try {
       const res = await fetch('/api/time/auto-schedule', {
         method: 'POST',
@@ -224,7 +224,7 @@ export function ScheduleView() {
       if (!res.ok) throw new Error()
       
       const { schedule, logic } = await res.json()
-      setNovaLogic(logic)
+      setSystemLogic(logic)
       
       // Batch update tasks using the new batch API
       const updates = schedule
@@ -259,7 +259,7 @@ export function ScheduleView() {
         setLastBatchIds(updates.map(u => u.id))
       }
       
-      toast.success('Nova optimized your schedule!')
+      toast.success('System optimized your schedule!')
       await fetchData()
     } catch {
       toast.error('Auto-schedule failed')
@@ -313,7 +313,7 @@ export function ScheduleView() {
 
       if (res.ok) {
         toast.success('Schedule reverted')
-        setNovaLogic(null)
+        setSystemLogic(null)
         setLastBatchIds([])
         await fetchData()
       }
@@ -368,7 +368,7 @@ export function ScheduleView() {
           ) : (
             <Sparkles size={18} className="group-hover:animate-pulse" />
           )}
-          <span>{isOptimizing ? 'Optimizing...' : 'Nova Auto-Schedule'}</span>
+          <span>{isOptimizing ? 'Optimizing...' : 'System Auto-Schedule'}</span>
         </button>
       </div>
 
@@ -385,7 +385,7 @@ export function ScheduleView() {
             </div>
             <div>
               <div className="flex items-center justify-between gap-4 mb-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-secondary/70">Nova's Strategy</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-secondary/70">System's Strategy</p>
                 <button 
                   onClick={handleRevertSchedule}
                   className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/40 hover:text-red-500 transition-colors"
@@ -416,7 +416,7 @@ export function ScheduleView() {
                   <div className="absolute inset-0 bg-secondary/20 blur-xl rounded-full animate-pulse" />
                   <Loader2 className="animate-spin text-secondary relative z-10" size={48} />
                 </div>
-                <h4 className="text-xl font-black uppercase tracking-tighter text-on-surface">Nova is Strategizing...</h4>
+                <h4 className="text-xl font-black uppercase tracking-tighter text-on-surface">System is Strategizing...</h4>
                 <p className="text-sm text-on-surface-variant font-medium mt-1">Analyzing tasks, persona, and memory for peak efficiency.</p>
               </div>
             </motion.div>

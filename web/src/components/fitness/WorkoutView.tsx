@@ -39,12 +39,12 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
           <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
             <Dumbbell size={40} className="text-zinc-700 mb-4" />
             <h3 className="text-lg font-bold text-zinc-400 mb-1">No Active Protocol</h3>
-            <p className="text-zinc-500 text-sm mb-6">Start by building a custom plan or let Nova generate one.</p>
+            <p className="text-zinc-500 text-sm mb-6">Start by building a custom plan or let System generate one.</p>
             <button 
               onClick={handleGeneratePlan}
               className="flex items-center gap-2 text-indigo-400 font-bold hover:text-indigo-300 transition-colors"
             >
-              Generate Plan with Nova <ArrowRight size={16} />
+              Generate Plan with System <ArrowRight size={16} />
             </button>
           </div>
         )}

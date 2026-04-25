@@ -46,7 +46,7 @@ CREATE TABLE user_profiles (
   pro_expires_at    TIMESTAMPTZ,
   is_public         BOOLEAN DEFAULT true,
   onboarding_done   BOOLEAN DEFAULT false,
-  ai_persona_name   TEXT DEFAULT 'Aria',
+  ai_persona_name   TEXT DEFAULT 'System',
   ai_persona_style  TEXT DEFAULT 'friendly' CHECK (ai_persona_style IN ('friendly','strict','motivational','neutral')),
   theme             TEXT DEFAULT 'dark' CHECK (theme IN ('dark','light')),
   created_at        TIMESTAMPTZ DEFAULT now(),

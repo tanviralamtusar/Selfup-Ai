@@ -84,7 +84,7 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
         <div>
           {rec.is_ai_generated && (
             <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-2 py-1 rounded-full mb-2">
-              <Sparkles size={8} /> Nova Pick
+              <Sparkles size={8} /> System Pick
             </span>
           )}
           <h3 className="text-base font-black text-on-surface">{rec.occasion}</h3>
@@ -117,7 +117,7 @@ export default function StylePage() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [outfitLogs, setOutfitLogs] = useState<any[]>([])
   const [moodboardItems, setMoodboardItems] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState<'nova' | 'moodboard' | 'log'>('nova')
+  const [activeTab, setActiveTab] = useState<'system' | 'moodboard' | 'log'>('system')
   const [styleProfile, setStyleProfile] = useState<StyleProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -207,7 +207,7 @@ export default function StylePage() {
         })
       })
       if (res.ok) {
-        toast.success('Nova is crafting your look! Check back in a moment.')
+        toast.success('System is crafting your look! Check back in a moment.')
       }
     } catch { toast.error('Failed to generate recommendation') }
     finally { setIsGenerating(false) }
@@ -289,13 +289,13 @@ export default function StylePage() {
       {/* Tabs */}
       <div className="flex gap-2 p-1.5 bg-surface-container-low border border-outline-variant/10 rounded-2xl w-fit">
         <button
-          onClick={() => setActiveTab('nova')}
+          onClick={() => setActiveTab('system')}
           className={cn(
             "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-            activeTab === 'nova' ? 'bg-primary/10 text-primary shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+            activeTab === 'system' ? 'bg-primary/10 text-primary shadow-sm' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
           )}
         >
-          <Sparkles size={14} className="inline mr-2" /> Nova Picks
+          <Sparkles size={14} className="inline mr-2" /> System Picks
         </button>
         <button
           onClick={() => setActiveTab('moodboard')}
@@ -317,7 +317,7 @@ export default function StylePage() {
         </button>
       </div>
 
-      {activeTab === 'nova' && (
+      {activeTab === 'system' && (
         <div className="space-y-8">
           {/* Generate Strip */}
       <div className="bg-gradient-to-r from-surface-container-low to-surface-container-medium border border-outline-variant/10 rounded-3xl p-6">
@@ -345,7 +345,7 @@ export default function StylePage() {
             className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-2xl bg-pink-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-500/20 hover:bg-pink-400 transition-all active:scale-95 disabled:opacity-60"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-            {isGenerating ? 'Nova Styling...' : 'Generate Look'}
+            {isGenerating ? 'System Styling...' : 'Generate Look'}
           </button>
         </div>
       </div>

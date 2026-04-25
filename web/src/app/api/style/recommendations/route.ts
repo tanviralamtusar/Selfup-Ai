@@ -61,5 +61,5 @@ export async function POST(req: NextRequest) {
     } catch { /* worker may not be running */ }
   }
 
-  return NextResponse.json({ queued: true, message: 'Nova is crafting your look. Check back in a moment!' })
+  return NextResponse.json({ queued: true, message: 'System is crafting your look. Check back in a moment!' })
 }

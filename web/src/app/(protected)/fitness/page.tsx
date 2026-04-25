@@ -67,7 +67,7 @@ export default function FitnessPage() {
       const data = await res.json();
       
       if (res.ok && data.queueId) {
-        toast.success('Nova is drafting your plan. Please wait...');
+        toast.success('System is drafting your plan. Please wait...');
         
         // Start polling
         const intervalId = setInterval(async () => {
@@ -127,7 +127,7 @@ export default function FitnessPage() {
             ) : (
               <Sparkles size={18} className="text-indigo-400 group-hover:rotate-12 transition-transform" />
             )}
-            {isGenerating ? 'Nova Generating...' : 'Nova AI Plan'}
+            {isGenerating ? 'System Generating...' : 'System AI Plan'}
           </button>
           
           <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-900/40 transition-all">

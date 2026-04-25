@@ -45,8 +45,11 @@ export async function POST(req: NextRequest) {
     .eq('is_active', true)
 
   // 5. Construct AI Prompt
+  const rawPersonaName = profile?.ai_persona_name || 'System'
+  const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+
   const prompt = `
-    You are ${profile?.ai_persona_name || 'Nova'}, the user's elite AI strategist. 
+    You are ${personaName}, the user's elite AI strategist. 
     Your persona style is: ${profile?.ai_persona_style || 'professional and tactical'}.
     
     User Preferences from Memory:
@@ -75,7 +78,7 @@ export async function POST(req: NextRequest) {
   `
 
   try {
-    const aiResponse = await generateResponse(prompt, [], `You are ${profile?.ai_persona_name || 'Nova'}. Return strictly JSON.`)
+    const aiResponse = await generateResponse(prompt, [], `You are ${personaName}. Return strictly JSON.`)
     const result = JSON.parse(aiResponse.replace(/```json|```/g, '').trim())
 
     return NextResponse.json(result)

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       The user has selected the following goals for their self-improvement journey:
       ${goals.join(', ')}
 
-      As Nova, their AI life-coach, generate 3 essential and concise follow-up questions to understand their current status, previous experience, and any immediate obstacles related to these goals.
+      As System, their AI life-coach, generate 3 essential and concise follow-up questions to understand their current status, previous experience, and any immediate obstacles related to these goals.
       
       Requirements:
       1. Be encouraging and concise.

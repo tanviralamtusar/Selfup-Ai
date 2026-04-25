@@ -139,7 +139,7 @@ export default function SkillsPage() {
         body: JSON.stringify(newSkill)
       })
       if (res.ok) {
-        toast.success('Skill added! Nova is crafting your roadmap.')
+        toast.success('Skill added! System is crafting your roadmap.')
         setIsAddModalOpen(false)
         setNewSkill({ name: '', category: 'General', generateRoadmap: true })
         fetchSkills()
@@ -242,7 +242,7 @@ export default function SkillsPage() {
                  <Sparkles size={32} className="text-on-surface-variant/20" />
               </div>
               <h2 className="text-xl font-black mb-2 uppercase tracking-tight">Empty Repository</h2>
-              <p className="text-sm text-on-surface-variant/40 max-w-xs mb-8">You haven't defined any masteries yet. Let Nova help you choose a path.</p>
+              <p className="text-sm text-on-surface-variant/40 max-w-xs mb-8">You haven't defined any masteries yet. Let System help you choose a path.</p>
               <button 
                 onClick={() => setIsAddModalOpen(true)}
                 className="px-8 py-3 bg-surface-container-high hover:bg-surface-container-highest transition-colors rounded-xl font-bold uppercase text-[10px] tracking-widest border border-outline-variant/10"
@@ -426,7 +426,7 @@ export default function SkillsPage() {
                    </div>
                    <div className="flex-1">
                       <p className="text-xs font-black uppercase tracking-widest text-primary">AI Roadmap Architect</p>
-                      <p className="text-[10px] text-primary/60">Nova will build a custom milestone path.</p>
+                      <p className="text-[10px] text-primary/60">System will build a custom milestone path.</p>
                    </div>
                    <input 
                     type="checkbox" 

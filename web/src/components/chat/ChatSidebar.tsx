@@ -16,9 +16,10 @@ interface ChatSidebarProps {
   activeId: string | null
   onSelect: (id: string) => void
   onNew: () => void
+  aiName?: string
 }
 
-export function ChatSidebar({ conversations, activeId, onSelect, onNew }: ChatSidebarProps) {
+export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName = 'System' }: ChatSidebarProps) {
   return (
     <div className="w-80 flex flex-col bg-surface border-r border-outline-variant/10 h-full">
       <div className="p-4">
@@ -27,7 +28,7 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew }: ChatSi
           className="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl border border-primary/20 transition-all font-bold text-sm btn-press"
         >
           <Plus size={18} />
-          New Quest with Nova
+          New Quest with {aiName}
         </button>
       </div>
 

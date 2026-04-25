@@ -216,7 +216,7 @@ export function setupAiWorker() {
             break
           }
           case 'initial_plan': {
-            const prompt = `You are Nova, an elite AI life coach.
+            const prompt = `You are System, an elite AI life coach.
             A new user has just completed onboarding.
             Their goals: ${(payload.goals || []).join(', ')}.
             Their preferred interaction style: ${payload.persona}.

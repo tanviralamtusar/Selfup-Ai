@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
 interface ChatInputProps {
   onSend: (content: string) => void
   isDisabled?: boolean
+  aiName?: string
 }
 
-export function ChatInput({ onSend, isDisabled }: ChatInputProps) {
+export function ChatInput({ onSend, isDisabled, aiName = 'System' }: ChatInputProps) {
   const [input, setInput] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +29,7 @@ export function ChatInput({ onSend, isDisabled }: ChatInputProps) {
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask Nova anything..."
+        placeholder={`Ask ${aiName} anything...`}
         disabled={isDisabled}
         className="flex-1 bg-transparent py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none"
       />

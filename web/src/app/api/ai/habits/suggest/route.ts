@@ -35,8 +35,11 @@ export async function POST(req: NextRequest) {
       .eq('user_id', user.id)
 
     // 2. Build Suggestion Prompt
+    const rawPersonaName = profile?.ai_persona_name || 'System'
+    const personaName = rawPersonaName === 'Nova' ? 'System' : rawPersonaName
+    
     const systemPrompt = `
-      You are "${profile?.ai_persona_name || 'Nova'}", a high-performance AI coach.
+      You are "${personaName}", a high-performance AI coach.
       Your task is to suggest 3 highly relevant, high-impact habits (imperatives) for the user.
       
       User Memory/Context:

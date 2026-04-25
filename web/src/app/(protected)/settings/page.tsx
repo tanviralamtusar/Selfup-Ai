@@ -46,7 +46,7 @@ export default function SettingsPage() {
   const [isPublic, setIsPublic] = useState(profile?.is_public || false)
 
   // AI persona state
-  const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'Nova')
+  const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'System')
   const [personaStyle, setPersonaStyle] = useState<PersonaStyle>((profile?.ai_persona_style as PersonaStyle) || 'friendly')
 
   const [savedSection, setSavedSection] = useState<string | null>(null)
@@ -61,7 +61,7 @@ export default function SettingsPage() {
       setDisplayName(profile.display_name || '')
       setBio(profile.bio || '')
       setIsPublic(profile.is_public || false)
-      setPersonaName(profile.ai_persona_name || 'Nova')
+      setPersonaName(profile.ai_persona_name || 'System')
       setPersonaStyle((profile.ai_persona_style as PersonaStyle) || 'friendly')
     }
   }, [profile])
@@ -231,7 +231,7 @@ export default function SettingsPage() {
             <motion.div key="ai" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
               className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-8 space-y-6"
             >
-              <SectionHeader icon={Sparkles} title="AI Companion" subtitle="Customize Nova's behavior" color="text-secondary" />
+              <SectionHeader icon={Sparkles} title="AI Companion" subtitle="Customize System's behavior" color="text-secondary" />
 
               <div>
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2">Companion Name</label>
@@ -239,7 +239,7 @@ export default function SettingsPage() {
                   type="text"
                   value={personaName}
                   onChange={e => setPersonaName(e.target.value)}
-                  placeholder="Nova"
+                  placeholder="System"
                   className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary/40"
                 />
               </div>

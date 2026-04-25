@@ -32,7 +32,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                 <Sparkles size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-black tracking-tight text-on-surface">Nova Fitness</h2>
+                <h2 className="text-lg font-black tracking-tight text-on-surface">System Fitness</h2>
                 <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">AI Plan Generator</p>
               </div>
             </div>

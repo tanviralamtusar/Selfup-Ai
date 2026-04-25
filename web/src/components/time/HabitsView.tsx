@@ -168,11 +168,11 @@ export function HabitsView() {
             frequency_days: first.frequency_days,
             reminder_time: first.reminder_time
           })
-          toast.success('Nova has formulated a suggestion.')
+          toast.success('System has formulated a suggestion.')
         }
       }
     } catch {
-      toast.error('Nova is currently recalibrating.')
+      toast.error('System is currently recalibrating.')
     } finally {
       setIsSuggesting(false)
     }

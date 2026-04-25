@@ -32,6 +32,7 @@ export default function OnboardingPage() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     goals: [] as string[],
     persona: 'balanced', // balanced, tough-love, analytical, cheerleader
+    personaName: 'System',
     answers: {} as Record<string, string>
   })
 
@@ -56,7 +57,7 @@ export default function OnboardingPage() {
         throw new Error(data.error)
       }
     } catch (err) {
-      toast.error('Nova failed to analyze goals. Using default questions.')
+      toast.error('System failed to analyze goals. Using default questions.')
       setAiQuestions([
         { id: 'experience', text: 'What is your current experience level with these goals?' },
         { id: 'commitment', text: 'How many hours per week can you realistically dedicate to your growth?' },
@@ -94,7 +95,7 @@ export default function OnboardingPage() {
     } else if (currentStep === 'questions') {
       const unanswered = aiQuestions.some(q => !formData.answers[q.id])
       if (unanswered) {
-        toast.error('Please answer all questions for Nova')
+        toast.error('Please answer all questions for System')
         return
       }
       setCurrentStep('persona')
@@ -130,6 +131,7 @@ export default function OnboardingPage() {
           timezone: formData.timezone,
           goals: formData.goals,
           persona: formData.persona,
+          personaName: formData.personaName,
           answers: formData.answers
         })
       })
@@ -269,7 +271,7 @@ export default function OnboardingPage() {
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-2xl font-bold font-display mb-2">Tell us about yourself</h2>
-                    <p className="text-foreground-secondary">This helps Nova personalize your experience.</p>
+                    <p className="text-foreground-secondary">This helps System personalize your experience.</p>
                   </div>
                   
                   <div className="space-y-4">
@@ -362,7 +364,7 @@ export default function OnboardingPage() {
                         <Brain className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-xl font-bold font-display">Nova is analyzing your goals...</h3>
+                        <h3 className="text-xl font-bold font-display">System is analyzing your goals...</h3>
                         <p className="text-sm text-foreground-secondary max-w-[280px]">Architecting your personalized follow-up experience.</p>
                       </div>
                     </div>
@@ -370,7 +372,7 @@ export default function OnboardingPage() {
                     <>
                       <div>
                         <h2 className="text-2xl font-bold font-display mb-2">Deep Dive</h2>
-                        <p className="text-foreground-secondary">Nova wants to understand your context better.</p>
+                        <p className="text-foreground-secondary">System wants to understand your context better.</p>
                       </div>
                       
                       <div className="space-y-6">
@@ -399,13 +401,24 @@ export default function OnboardingPage() {
 
               {/* ─── STEP 3: PERSONA ─── */}
               {currentStep === 'persona' && (
-                <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold font-display mb-2">Choose Nova's Personality</h2>
-                    <p className="text-foreground-secondary">How do you want your AI coach to talk to you?</p>
+                    <h2 className="text-2xl font-bold font-display mb-2">Configure Your AI</h2>
+                    <p className="text-foreground-secondary mb-6">Give your coach a name and choose their personality.</p>
+                    
+                    <div className="mb-8">
+                      <label className="block text-xs font-black uppercase tracking-widest text-foreground-secondary mb-2">Companion Name</label>
+                      <input
+                        type="text"
+                        value={formData.personaName}
+                        onChange={(e) => setFormData({ ...formData, personaName: e.target.value })}
+                        className={inputClasses}
+                        placeholder="e.g. System, Jarvis, Aria..."
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-3">
+                    <p className="text-xs font-black uppercase tracking-widest text-foreground-secondary mb-2">Interaction Style</p>
                     {[
                       { id: 'balanced', title: 'Balanced & Supportive', desc: 'Friendly, helpful, and logical. The standard coach.' },
                       { id: 'tough-love', title: 'Tough Love (Drill Sergeant)', desc: 'Direct, pushing you hard, no excuses accepted.' },
@@ -453,7 +466,7 @@ export default function OnboardingPage() {
                   <div>
                     <h2 className="text-3xl font-bold font-display mb-2">All Set!</h2>
                     <p className="text-foreground-secondary max-w-sm mx-auto">
-                      Nova is analyzing your goals and preparing your first roadmap. Let's get to work!
+                      System is analyzing your goals and preparing your first roadmap. Let's get to work!
                     </p>
                   </div>
                 </div>

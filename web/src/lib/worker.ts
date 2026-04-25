@@ -215,6 +215,103 @@ export function setupAiWorker() {
             result = `Success: Generated fitness plan ${planData.name}.`
             break
           }
+          case 'initial_plan': {
+            const prompt = `You are Nova, an elite AI life coach.
+            A new user has just completed onboarding.
+            Their goals: ${(payload.goals || []).join(', ')}.
+            Their preferred interaction style: ${payload.persona}.
+            Their answers to your onboarding questions: ${JSON.stringify(payload.answers || {})}.
+
+            Generate an initial starter plan consisting of a few easy-to-start habits, tasks, and quests.
+            Return ONLY a valid JSON object with the following structure:
+            {
+              "habits": [
+                { "title": "Drink Water", "description": "Start the day with a glass of water", "frequency": "daily", "target_days": [0,1,2,3,4,5,6] }
+              ],
+              "tasks": [
+                { "title": "Setup workspace", "category": "productivity" }
+              ],
+              "quests": [
+                { "title": "First Steps", "description": "Complete your first task and habit to earn this." }
+              ]
+            }
+            Generate 2-3 habits, 2-3 tasks, and 1 starter quest.
+            Do not include any markdown blocks or text outside JSON. Strictly valid JSON.`
+
+            const rawResponse = await generateResponse(prompt)
+            if (!rawResponse) throw new Error('No response from AI');
+            const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
+            let initPlan = null
+            try {
+              initPlan = JSON.parse(cleanJson)
+            } catch (err) {
+              console.error('[AI Worker] Initial Plan JSON Parse Error:', err, cleanJson)
+              throw new Error('Failed to parse initial plan AI response')
+            }
+
+            // Insert Habits
+            if (initPlan.habits && initPlan.habits.length > 0) {
+              const habitEntries = initPlan.habits.map((h: any) => ({
+                user_id: userId,
+                title: h.title,
+                description: h.description,
+                frequency: h.frequency || 'daily',
+                target_days: h.target_days || [0,1,2,3,4,5,6],
+                xp_reward: 5,
+                coin_reward: 2,
+                is_active: true
+              }))
+              await supabase.from('habits').insert(habitEntries)
+            }
+
+            // Insert Tasks
+            if (initPlan.tasks && initPlan.tasks.length > 0) {
+              const taskEntries = initPlan.tasks.map((t: any) => ({
+                user_id: userId,
+                title: t.title,
+                category: t.category,
+                priority: 'medium',
+                status: 'pending',
+                xp_reward: 5,
+                coin_reward: 1
+              }))
+              await supabase.from('tasks').insert(taskEntries)
+            }
+
+            // Insert Quests
+            if (initPlan.quests && initPlan.quests.length > 0) {
+              for (const q of initPlan.quests) {
+                // Insert Quest
+                const { data: questRow, error: questError } = await supabase
+                  .from('quests')
+                  .insert({
+                    user_id: userId, // assigning directly to user
+                    title: q.title,
+                    description: q.description,
+                    category: 'general',
+                    quest_type: 'solo',
+                    is_ai_generated: true,
+                    xp_reward: 50,
+                    coin_reward: 20,
+                    duration_days: 3
+                  })
+                  .select()
+                  .single()
+
+                if (!questError && questRow) {
+                  // Assign Quest
+                  await supabase.from('user_quests').insert({
+                    user_id: userId,
+                    quest_id: questRow.id,
+                    status: 'active'
+                  })
+                }
+              }
+            }
+
+            result = 'Success: Initial plan generated.'
+            break
+          }
           default:
             result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`)) || 'No response';
         }

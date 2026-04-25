@@ -315,7 +315,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end px-1">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    Life Force
+                    Hp
                   </span>
                   <span className="text-[10px] font-black text-on-surface tabular-nums">{health} / {maxHealth}</span>
                 </div>
@@ -333,7 +333,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end px-1">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-500 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                    Ascension
+                    Xp
                   </span>
                   <span className="text-[10px] font-black text-on-surface tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
                 </div>
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end px-1">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    Cognition
+                    mana
                   </span>
                   <span className="text-[10px] font-black text-on-surface tabular-nums">{mana} / {maxMana}</span>
                 </div>

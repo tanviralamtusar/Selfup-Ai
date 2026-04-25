@@ -22,6 +22,7 @@ import {
   Sparkles,
   Search,
   Settings,
+  User,
 } from 'lucide-react'
 
 const navItems = [
@@ -121,7 +122,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover opacity-80" />
               ) : (
-                username?.[0]?.toUpperCase() || 'U'
+                <User size={14} className="text-blue-400/80 system-text-glow" />
               )}
             </div>
           </div>

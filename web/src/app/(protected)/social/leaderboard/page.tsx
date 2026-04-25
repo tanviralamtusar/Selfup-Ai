@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Flame, Star, Crown, Medal, Shield, Loader2, Users, UserPlus, Check, X, Clock } from 'lucide-react'
+import { Trophy, Flame, Star, Crown, Medal, Shield, Loader2, Users, UserPlus, Check, X, Clock, User } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn, formatNumber } from '@/lib/utils'
@@ -73,7 +73,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
       <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 flex items-center justify-center font-black text-blue-400 text-sm border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)] relative z-10">
         {entry.avatar_url
           ? <img src={entry.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-          : displayName[0]?.toUpperCase()
+          : <User size={16} className="text-blue-400/80 system-text-glow" />
         }
       </div>
 

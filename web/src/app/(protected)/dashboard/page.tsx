@@ -18,6 +18,8 @@ import {
   Minus, 
   Check,
   ArrowRight,
+  User,
+  History,
   Gamepad2,
   Shield,
   Filter,
@@ -293,7 +295,7 @@ export default function DashboardPage() {
                         src={profile.avatar_url}
                       />
                     ) : (
-                      displayName[0]?.toUpperCase()
+                      <User size={48} className="text-blue-400/80 system-text-glow" />
                     )}
                   </div>
                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow">

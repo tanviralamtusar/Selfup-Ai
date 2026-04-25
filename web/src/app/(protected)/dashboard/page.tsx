@@ -389,7 +389,7 @@ export default function DashboardPage() {
           <div className="w-4 h-px bg-amber-400" />
           <p className="text-[8px] font-black uppercase tracking-[0.4em] text-amber-400/80">Achievements</p>
         </div>
-        <BadgeShowcase badges={badges} isLoading={badgesLoading} />
+        <BadgeShowcase />
       </motion.div>
 
       {/* ─── Main Content: 4-Column Grid + Activity Feed ─── */}
@@ -549,7 +549,7 @@ export default function DashboardPage() {
             <div className="w-4 h-px bg-primary" />
             <p className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/80">Activity Feed</p>
           </div>
-          <ActivityFeed activities={activities} isLoading={activitiesLoading} />
+          <ActivityFeed />
         </motion.div>
       </div>
 

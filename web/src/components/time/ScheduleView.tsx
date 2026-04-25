@@ -15,7 +15,9 @@ import {
   Zap,
   Target,
   Clock3,
-  CheckCircle2
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -75,19 +77,24 @@ export function ScheduleView() {
   const [hoveredHour, setHoveredHour] = useState<number | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [expandedPanel, setExpandedPanel] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const selectedDateStr = selectedDate.toISOString().split('T')[0]
   const todayStr = new Date().toISOString().split('T')[0]
+  const isToday = selectedDateStr === todayStr
 
   const scheduledTasks = allTasks.filter(t => 
     t.scheduled_start && 
     t.scheduled_end && 
-    t.scheduled_start.startsWith(todayStr)
+    t.scheduled_start.startsWith(selectedDateStr)
   )
   
   const unscheduledTasks = allTasks.filter(t => 
-    !t.scheduled_start || 
-    !t.scheduled_start.startsWith(todayStr)
+    t.status !== 'done' && (
+      !t.scheduled_start || 
+      !t.scheduled_start.startsWith(selectedDateStr)
+    )
   )
 
   const fetchData = useCallback(async () => {
@@ -127,9 +134,27 @@ export function ScheduleView() {
   }
 
   const getCurrentTimeTop = () => {
+    // Only show current time if viewing today
+    if (!isToday) return -100
     const hour = currentTime.getHours() + currentTime.getMinutes() / 60
     if (hour < 6 || hour > 24) return -100
     return (hour - 6) * HOUR_HEIGHT
+  }
+
+  const handlePreviousDay = () => {
+    const prev = new Date(selectedDate)
+    prev.setDate(prev.getDate() - 1)
+    setSelectedDate(prev)
+  }
+
+  const handleNextDay = () => {
+    const next = new Date(selectedDate)
+    next.setDate(next.getDate() + 1)
+    setSelectedDate(next)
+  }
+
+  const handleToday = () => {
+    setSelectedDate(new Date())
   }
 
   const handleTimelineMouseEnter = (hour: number) => {
@@ -145,7 +170,7 @@ export function ScheduleView() {
     e.preventDefault()
     if (!dragState.id) return
 
-    const startDate = new Date()
+    const startDate = new Date(selectedDate)
     startDate.setHours(targetHour, 0, 0, 0)
     
     // Determine duration
@@ -205,11 +230,11 @@ export function ScheduleView() {
       const updates = schedule
         .filter((item: any) => item.type === 'task')
         .map((item: any) => {
-          const start = new Date()
+          const start = new Date(selectedDate)
           const [h, m] = item.start.split(':')
           start.setHours(parseInt(h), parseInt(m), 0, 0)
           
-          const end = new Date()
+          const end = new Date(selectedDate)
           const [eh, em] = item.end.split(':')
           end.setHours(parseInt(eh), parseInt(em), 0, 0)
 
@@ -301,21 +326,38 @@ export function ScheduleView() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-surface-container-low border border-outline-variant/10 p-6 rounded-3xl relative overflow-hidden gap-4">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-linear-to-l from-secondary/10 to-transparent pointer-events-none" />
-        <div className="relative z-10">
-          <h2 className="text-2xl font-black uppercase tracking-tighter text-on-surface flex items-center gap-3">
-            <div className="p-2 bg-secondary/20 rounded-xl">
-              <Calendar className="text-secondary" size={24} />
+      {/* Header with Date Navigation */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant/10 rounded-2xl px-4 py-3">
+            <button
+              onClick={handlePreviousDay}
+              className="p-1 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="min-w-48 text-center">
+              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-1">Selected Date</p>
+              <p className="text-lg font-black text-on-surface">
+                {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
             </div>
-            Tactical Timeline
-          </h2>
-          <p className="text-sm text-on-surface-variant/70 font-medium mt-1 ml-11">
-            Command your day. Structure is the foundation of mastery.
-          </p>
+            <button
+              onClick={handleNextDay}
+              className="p-1 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant hover:text-on-surface"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+          {!isToday && (
+            <button
+              onClick={handleToday}
+              className="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-secondary/20 transition-all"
+            >
+              Back to Today
+            </button>
+          )}
         </div>
-
         <button
           onClick={handleAutoSchedule}
           disabled={isOptimizing}
@@ -464,10 +506,17 @@ export function ScheduleView() {
           <div className="bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] relative overflow-hidden flex flex-col shadow-xl">
             {/* Timeline Header */}
             <div className="bg-surface-container-highest/50 backdrop-blur-md border-b border-outline-variant/10 p-5 sticky top-0 z-20 flex items-center justify-between">
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface">Time Grid (06:00 - 00:00)</p>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/50 mb-1">Schedule</p>
+                <p className="text-sm font-black text-on-surface">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+              </div>
               <div className="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant/50">
-                <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                LIVE
+                {isToday && (
+                  <>
+                    <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                    LIVE
+                  </>
+                )}
               </div>
             </div>
 

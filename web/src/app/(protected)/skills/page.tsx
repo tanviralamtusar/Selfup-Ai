@@ -301,8 +301,6 @@ export default function SkillsPage() {
                       skillName={activeSkill.name}
                       milestones={activeRoadmap?.skill_milestones || []} 
                       onToggleMilestone={handleToggleMilestone}
-                      status={roadmapStatus}
-                      error={roadmapError}
                     />
                   )}
                 </div>

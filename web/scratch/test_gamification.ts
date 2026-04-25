@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js'
-import { GamificationService } from './src/lib/gamification.service'
+import { GamificationService } from '../src/lib/gamification.service'
 import * as dotenv from 'dotenv'
 
 dotenv.config()

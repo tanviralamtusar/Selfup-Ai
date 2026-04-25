@@ -56,16 +56,50 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 4. Save AI Memory (Follow-up Answers)
+    // 4. Save AI Memory (Follow-up Answers - Mapped to Standard Keys)
     if (answers && typeof answers === 'object') {
-      const memoryEntries = Object.entries(answers).map(([key, val]) => ({
-        user_id: user.id,
-        memory_key: `onboarding_answer_${key}`,
-        memory_val: val as string,
-        source: 'onboarding'
-      }))
+      const memories: Array<{ key: string; val: string }> = []
+      
+      Object.entries(answers).forEach(([key, val]) => {
+        const value = val as string
+        if (!value) return
 
-      if (memoryEntries.length > 0) {
+        // Generic save
+        memories.push({ key: `onboarding_answer_${key}`, val: value })
+
+        // Standardized mapping
+        if (key === 'exp' || key === 'experience') {
+          if (goals.includes('build_muscle') || goals.includes('lose_weight')) {
+            memories.push({ key: 'fitness_level', val: value })
+          } else if (goals.includes('learn_skills')) {
+            memories.push({ key: 'learning_style', val: value })
+          }
+        }
+        
+        if (key === 'time' || key === 'commitment') {
+          if (goals.includes('build_muscle') || goals.includes('lose_weight')) {
+            memories.push({ key: 'workout_frequency', val: value })
+          } else {
+            memories.push({ key: 'work_hours', val: value })
+          }
+        }
+
+        if (key === 'obstacle' || key === 'motivation') {
+          memories.push({ key: 'user_challenges', val: value })
+        }
+      })
+
+      // Goal specific mappings
+      if (goals.includes('better_sleep')) memories.push({ key: 'sleep_schedule', val: 'Improving via onboarding' })
+      if (goals.includes('style')) memories.push({ key: 'style_preference', val: 'Updating via onboarding' })
+
+      if (memories.length > 0) {
+        const memoryEntries = memories.map(m => ({
+          user_id: user.id,
+          memory_key: m.key,
+          memory_val: m.val,
+          source: 'onboarding'
+        }))
         await supabase.from('ai_memory').upsert(memoryEntries, { onConflict: 'user_id,memory_key' })
       }
     }

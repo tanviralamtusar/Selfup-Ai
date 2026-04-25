@@ -20,10 +20,10 @@ interface UserBadge {
 }
 
 const RARITY_COLORS = {
-  common: 'text-on-surface-variant',
-  rare: 'text-primary',
-  epic: 'text-pink-500',
-  legendary: 'text-amber-500'
+  common: 'text-blue-500/50',
+  rare: 'text-blue-400',
+  epic: 'text-purple-400',
+  legendary: 'text-amber-400'
 }
 
 export function BadgeShowcase() {
@@ -58,7 +58,7 @@ export function BadgeShowcase() {
     return (
       <div className="flex items-center gap-4 py-2">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="w-12 h-12 rounded-xl bg-surface-container animate-pulse" />
+          <div key={i} className="w-12 h-12 rounded-xl bg-slate-900 border border-blue-500/10 animate-pulse shadow-[inset_0_0_15px_rgba(59,130,246,0.05)]" />
         ))}
       </div>
     )
@@ -67,28 +67,28 @@ export function BadgeShowcase() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60 flex items-center gap-2">
-          <Trophy size={12} className="text-amber-500" /> Earned Badges
+        <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2 italic">
+          <Trophy size={12} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" /> Earned Badges
         </h3>
-        <Link href={ROUTES.LEADERBOARD} className="text-[8px] font-black uppercase text-primary hover:underline flex items-center gap-1">
+        <Link href={ROUTES.LEADERBOARD} className="text-[8px] font-black uppercase text-blue-400/80 hover:text-blue-300 transition-colors flex items-center gap-1 italic">
           Full Collection <ChevronRight size={10} />
         </Link>
       </div>
 
       {badges.length === 0 ? (
-        <div className="p-4 rounded-2xl bg-surface-container-highest/20 border border-dashed border-outline-variant/10 text-center">
-          <p className="text-[9px] font-black text-on-surface-variant/30 uppercase tracking-widest">No badges earned yet</p>
+        <div className="p-4 rounded-xl bg-slate-900/50 border border-dashed border-blue-500/20 text-center">
+          <p className="text-[9px] font-black text-blue-500/40 uppercase tracking-widest italic">No badges earned yet</p>
         </div>
       ) : (
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar -mx-1 px-1">
           {badges.slice(0, 8).map((ub) => (
             <motion.div
               key={ub.id}
               whileHover={{ scale: 1.1, rotate: 5 }}
               className={cn(
-                "flex-shrink-0 w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center border border-outline-variant/10 shadow-lg relative cursor-help group",
-                ub.badges.rarity === 'legendary' ? 'ring-2 ring-amber-500/30' : 
-                ub.badges.rarity === 'epic' ? 'ring-2 ring-pink-500/30' : ''
+                "flex-shrink-0 w-14 h-14 rounded-xl bg-slate-900 flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)] relative cursor-help group",
+                ub.badges.rarity === 'legendary' ? 'ring-2 ring-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.2)]' : 
+                ub.badges.rarity === 'epic' ? 'ring-2 ring-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : ''
               )}
             >
               <span className="text-2xl filter drop-shadow-sm group-hover:drop-shadow-lg transition-all">
@@ -96,13 +96,13 @@ export function BadgeShowcase() {
               </span>
               
               {/* Tooltip on hover */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 shadow-xl border border-outline-variant/10">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-950 text-blue-50 px-2 py-1.5 rounded border border-blue-500/40 text-[8px] font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                 <span className={cn(RARITY_COLORS[ub.badges.rarity])}>{ub.badges.rarity}</span>: {ub.badges.name}
               </div>
             </motion.div>
           ))}
           {badges.length > 8 && (
-            <Link href={ROUTES.LEADERBOARD} className="flex-shrink-0 w-14 h-14 rounded-2xl bg-surface-container-highest/50 flex flex-col items-center justify-center border border-outline-variant/10 text-on-surface-variant/40 hover:text-primary transition-colors">
+            <Link href={ROUTES.LEADERBOARD} className="flex-shrink-0 w-14 h-14 rounded-xl bg-slate-900/50 flex flex-col items-center justify-center border border-blue-500/10 text-blue-500/40 hover:text-blue-400 hover:border-blue-500/30 transition-all shadow-inner">
               <span className="text-[10px] font-black">+{badges.length - 8}</span>
               <span className="text-[6px] font-black uppercase tracking-tighter">More</span>
             </Link>

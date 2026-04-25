@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
-import { fetchUserMemory, saveMemory, clearUserMemory } from '@/lib/ai-memory'
+import { supabaseServer } from '@/lib/supabase-server'
 
+/**
+ * GET /api/ai/memory
+ * Fetches all memory entries for the authenticated user.
+ */
 export async function GET(req: NextRequest) {
   try {
     const { user, error: authError } = await verifyAuth(req)
@@ -9,71 +13,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
 
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    const memory = await fetchUserMemory(user.id, token!)
+    const supabase = await supabaseServer()
+    const { data: memories, error } = await supabase
+      .from('ai_memory')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
 
-    return NextResponse.json(memory)
+    if (error) throw error
+
+    return NextResponse.json(memories)
   } catch (err: any) {
-    console.error('[AI Memory Get Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+    console.error('[AI Memory API GET Error]:', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const { user, error: authError } = await verifyAuth(req)
-    if (authError || !user) {
-      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    const { memoryKey, memoryValue, source } = await req.json()
-
-    if (!memoryKey || !memoryValue) {
-      return NextResponse.json({ error: 'memoryKey and memoryValue are required' }, { status: 400 })
-    }
-
-    await saveMemory(user.id, memoryKey, memoryValue, token!, source || 'user-input')
-
-    return NextResponse.json({
-      success: true,
-      message: `Memory '${memoryKey}' saved successfully`
-    })
-  } catch (err: any) {
-    console.error('[AI Memory Save Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  try {
-    const { user, error: authError } = await verifyAuth(req)
-    if (authError || !user) {
-      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    const { memories } = await req.json()
-
-    if (!Array.isArray(memories)) {
-      return NextResponse.json({ error: 'memories must be an array' }, { status: 400 })
-    }
-
-    // Batch save multiple memories
-    for (const mem of memories) {
-      await saveMemory(user.id, mem.key, mem.value, token!, mem.source || 'batch-update')
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: `${memories.length} memories saved successfully`
-    })
-  } catch (err: any) {
-    console.error('[AI Memory Batch Save Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
-  }
-}
-
+/**
+ * DELETE /api/ai/memory?key=...
+ * Deletes a specific memory entry by key.
+ */
 export async function DELETE(req: NextRequest) {
   try {
     const { user, error: authError } = await verifyAuth(req)
@@ -81,25 +40,25 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
 
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const { searchParams } = new URL(req.url)
+    const key = searchParams.get('key')
 
-    // Add confirmation header to prevent accidental deletion
-    const confirm = req.headers.get('x-confirm-memory-clear')
-    if (confirm !== 'true') {
-      return NextResponse.json(
-        { error: 'Confirmation required. Set header x-confirm-memory-clear: true' },
-        { status: 400 }
-      )
+    if (!key) {
+      return NextResponse.json({ error: 'Memory key is required' }, { status: 400 })
     }
 
-    await clearUserMemory(user.id, token!)
+    const supabase = await supabaseServer()
+    const { error } = await supabase
+      .from('ai_memory')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('memory_key', key)
 
-    return NextResponse.json({
-      success: true,
-      message: 'All user memory cleared'
-    })
+    if (error) throw error
+
+    return NextResponse.json({ success: true, message: `Memory '${key}' purged from core cognition.` })
   } catch (err: any) {
-    console.error('[AI Memory Clear Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+    console.error('[AI Memory API DELETE Error]:', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

@@ -174,11 +174,36 @@ export async function extractAndSaveMemory(
     }
 
     // Extract motivation type from AI suggestions
-    if (/strict|motivational|encouraging|pushing|gentle/i.test(aiResponse)) {
-      if (/strict/i.test(aiResponse)) {
+    if (/strict|motivational|encouraging|pushing|gentle|tough/i.test(aiResponse)) {
+      if (/strict|tough/i.test(aiResponse)) {
         memories.push({ key: 'motivation_type', value: 'strict accountability' })
       } else if (/motivational|encouraging/i.test(aiResponse)) {
         memories.push({ key: 'motivation_type', value: 'supportive & motivational' })
+      }
+    }
+
+    // NEW: Extract Diet/Nutrition
+    if (/eat|diet|food|calories|protein|vegan|keto|carb/i.test(userMessage)) {
+      const dietMatch = userMessage.match(/(?:i am|on a|following|eat)\s+([^.,]+)/i)
+      if (dietMatch) {
+        memories.push({ key: 'dietary_preference', value: dietMatch[1].trim() })
+      }
+    }
+
+    // NEW: Extract Productivity Tools
+    if (/using|app|tool|calendar|notion|obsidian|todoist/i.test(userMessage)) {
+      const toolMatch = userMessage.match(/(?:use|using|my tool is)\s+([^.,]+)/i)
+      if (toolMatch) {
+        memories.push({ key: 'productivity_tools', value: toolMatch[1].trim() })
+      }
+    }
+
+    // NEW: Extract Workplace/Environment
+    if (/work|office|home|remote|desk|commute/i.test(userMessage)) {
+      if (/work from home|remote/i.test(userMessage)) {
+        memories.push({ key: 'work_environment', value: 'Remote / WFH' })
+      } else if (/office|commute/i.test(userMessage)) {
+        memories.push({ key: 'work_environment', value: 'Office / Commute' })
       }
     }
 

@@ -28,6 +28,7 @@ import {
   Loader2,
   Activity,
   Award,
+  Brain
 } from 'lucide-react'
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 import { StreakCard } from '@/components/gamification/StreakCard'
@@ -35,6 +36,7 @@ import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
+import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -154,6 +156,7 @@ export default function DashboardPage() {
 
   // Wallet state
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [showSystemKnowledge, setShowSystemKnowledge] = useState(false)
 
   // Streak Stats
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
@@ -494,6 +497,31 @@ export default function DashboardPage() {
 
             {/* Column: To-Dos + Rewards */}
             <div className="space-y-6">
+               {/* Core Cognition Status */}
+               <div className="space-y-4 mb-6">
+                <div className="flex items-center justify-between px-2">
+                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                    Cognitive Status
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => setShowSystemKnowledge(true)}
+                  className="w-full group relative overflow-hidden bg-slate-900/40 p-4 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] text-left italic"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-2xl rounded-full -mr-8 -mt-8" />
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-blue-500/10 rounded border border-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
+                      <Brain size={16} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Core Cognition</p>
+                      <p className="text-[8px] text-blue-500/60 uppercase tracking-widest mt-0.5 group-hover:text-blue-400 transition-colors">Access Memory Fragments</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
               {/* To-Dos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -597,6 +625,11 @@ export default function DashboardPage() {
         newLevel={levelUpData.newLevel}
         totalXp={levelUpData.totalXp}
         coinsReward={levelUpData.coinsRewarded}
+      />
+
+      <SystemKnowledge 
+        isOpen={showSystemKnowledge} 
+        onClose={() => setShowSystemKnowledge(false)} 
       />
 
       <AiCoinWalletModal

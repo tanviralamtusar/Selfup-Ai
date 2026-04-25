@@ -72,48 +72,48 @@ export function AiCoinWalletModal({ isOpen, onClose }: AiCoinWalletModalProps) {
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-surface-container-low border border-primary/20 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="relative w-full max-w-md bg-slate-950 border border-blue-500/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(59,130,246,0.15)] flex flex-col max-h-[85vh]"
           >
             {/* Header / Current Balance */}
             <div className="relative p-8 pb-10 text-center flex-shrink-0">
-              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
+              <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
 
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors z-10"
+                className="absolute top-4 right-4 p-2 rounded hover:bg-blue-500/10 text-blue-500/60 hover:text-blue-400 transition-colors z-10 border border-transparent hover:border-blue-500/20"
               >
                 <X size={20} />
               </button>
 
               <div className="relative z-10 mt-2">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary/10 border border-primary/20 text-primary mb-4 shadow-inner">
-                  <Sparkles size={32} />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-slate-900 border border-blue-500/30 text-blue-400 mb-4 shadow-[inset_0_0_15px_rgba(59,130,246,0.2)]">
+                  <Sparkles size={32} className="animate-pulse" />
                 </div>
-                <h2 className="text-on-surface-variant text-sm font-black uppercase tracking-widest mb-1">Your Balance</h2>
+                <h2 className="text-blue-500/60 text-[10px] font-black uppercase tracking-[0.4em] mb-1 italic">Vessel Treasury</h2>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-5xl font-black text-on-surface font-headline tracking-tighter">
+                  <span className="text-5xl font-black text-blue-50 font-headline tracking-tighter system-text-glow">
                     {formatNumber(coins)}
                   </span>
-                  <span className="text-primary font-black tracking-widest text-lg">AiC</span>
+                  <span className="text-blue-400/80 font-black tracking-[0.2em] text-lg uppercase italic">AiC</span>
                 </div>
               </div>
             </div>
 
             {/* Transactions List */}
-            <div className="flex-1 overflow-y-auto bg-surface-container-lowest p-6 border-t border-outline-variant/10">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant mb-4">Transaction History</h3>
+            <div className="flex-1 overflow-y-auto bg-slate-900/50 p-6 border-t border-blue-500/10 custom-scrollbar">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-4 italic">Ledger History</h3>
               
               {loading ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="animate-spin text-primary" size={24} />
+                  <Loader2 className="animate-spin text-blue-500" size={24} />
                 </div>
               ) : transactions.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-on-surface-variant/50 text-sm font-medium">No transactions yet.</p>
+                <div className="text-center py-8 border border-dashed border-blue-500/20 rounded-xl bg-slate-900/30">
+                  <p className="text-blue-500/40 text-[10px] font-black uppercase tracking-[0.2em] italic">No transactions synchronized.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -121,23 +121,23 @@ export function AiCoinWalletModal({ isOpen, onClose }: AiCoinWalletModalProps) {
                     const isPositive = tx.amount > 0
                     const date = new Date(tx.created_at)
                     return (
-                      <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant/5">
+                      <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-blue-500/10 hover:border-blue-500/30 transition-colors group">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isPositive ? 'bg-green-500/10 text-green-500' : 'bg-surface-container-high text-on-surface-variant'}`}>
+                          <div className={`w-10 h-10 rounded border flex items-center justify-center shadow-inner ${isPositive ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
                             {isPositive ? <Plus size={16} /> : <Minus size={16} />}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-on-surface">{tx.reason}</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">
+                            <p className="text-xs font-black text-blue-50 uppercase tracking-widest">{tx.reason}</p>
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-500/40 mt-0.5">
                               {date.toLocaleDateString()} • {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className={`text-sm font-black ${isPositive ? 'text-green-500' : 'text-on-surface'}`}>
+                          <p className={`text-sm font-black font-headline tracking-wider ${isPositive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : 'text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]'}`}>
                             {isPositive ? '+' : ''}{tx.amount}
                           </p>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/50">
+                          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-500/30">
                             Bal: {tx.balance_after}
                           </p>
                         </div>

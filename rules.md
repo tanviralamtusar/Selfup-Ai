@@ -271,7 +271,7 @@ git push origin feature/skill-roadmap
 
 ---
 
-## AI IDE (Claude Code / Cursor) Rules
+## AI IDE Rules
 
 When using AI IDE assistance:
 1. Always provide the relevant `.md` file as context before asking for code

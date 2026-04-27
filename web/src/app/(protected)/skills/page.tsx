@@ -40,7 +40,7 @@ export default function SkillsPage() {
 
   // Add Skill Form
   const [newSkill, setNewSkill] = useState({ name: '', category: 'General', generateRoadmap: true })
-  
+
   // Log Session Form
   const [sessionData, setSessionData] = useState({ duration: 30, notes: '' })
 
@@ -99,7 +99,7 @@ export default function SkillsPage() {
         setActiveRoadmap(data.roadmap)
         setRoadmapStatus(data.status)
         setRoadmapError(data.error)
-        
+
         if (data.status === 'completed' && !silent) {
           // fetchSkills() // Refresh progress stats if roadmap just completed
         }
@@ -218,7 +218,7 @@ export default function SkillsPage() {
           <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Architect your path to mastery with Selfup guidance.</p>
         </div>
 
-        <button 
+        <button
           onClick={() => setIsAddModalOpen(true)}
           className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-500/20 text-blue-400 rounded-2xl font-black uppercase text-xs tracking-[0.2em] italic border border-blue-500/50 shadow-lg shadow-blue-500/10 hover:bg-blue-500/30 transition-all btn-press"
         >
@@ -231,32 +231,32 @@ export default function SkillsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Skill Cards */}
         <div className="lg:col-span-7 space-y-6">
-            {isLoading && skills.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed backdrop-blur-md">
-                <Loader2 className="animate-spin text-blue-400 mb-4" />
-                <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with Selfup Database...</p>
+          {isLoading && skills.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed backdrop-blur-md">
+              <Loader2 className="animate-spin text-blue-400 mb-4" />
+              <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with Selfup Database...</p>
+            </div>
+          ) : skills.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed text-center px-6 backdrop-blur-md">
+              <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20">
+                <Sparkles size={32} className="text-blue-400/40" />
               </div>
-            ) : skills.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed text-center px-6 backdrop-blur-md">
-                <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20">
-                   <Sparkles size={32} className="text-blue-400/40" />
-                </div>
-                <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">Empty Registry</h2>
-                <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let Selfup help you choose a path.</p>
-                <button 
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="px-8 py-3 bg-blue-500/10 hover:bg-blue-500/20 transition-colors rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/30 text-blue-400"
-                >
-                  Begin Your Journey
-                </button>
-              </div>
+              <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">Empty Registry</h2>
+              <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let Selfup help you choose a path.</p>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-8 py-3 bg-blue-500/10 hover:bg-blue-500/20 transition-colors rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/30 text-blue-400"
+              >
+                Begin Your Journey
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {skills.map(skill => (
-                <SkillCard 
-                  key={skill.id} 
-                  skill={skill} 
-                  onClick={() => setActiveSkillId(skill.id)} 
+                <SkillCard
+                  key={skill.id}
+                  skill={skill}
+                  onClick={() => setActiveSkillId(skill.id)}
                 />
               ))}
             </div>
@@ -276,7 +276,7 @@ export default function SkillsPage() {
               >
                 {/* Detail Header */}
                 <div className="p-8 border-b border-blue-500/20 relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-slate-950">
-                  <button 
+                  <button
                     onClick={() => setActiveSkillId(null)}
                     className="absolute top-4 right-4 p-2 hover:bg-blue-500/10 rounded-full text-blue-400/40 transition-colors"
                   >
@@ -304,7 +304,7 @@ export default function SkillsPage() {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => setIsLoggingSession(true)}
                     className="w-full mt-6 py-4 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl font-black uppercase text-xs tracking-[0.3em] italic border border-blue-500/30 transition-all btn-press shadow-[0_0_15px_rgba(59,130,246,0.1)]"
                   >
@@ -314,7 +314,7 @@ export default function SkillsPage() {
 
                 {/* Tabs */}
                 <div className="flex items-center border-b border-outline-variant/10 bg-surface-container-low sticky top-0 z-10">
-                  <button 
+                  <button
                     onClick={() => setActiveTab('roadmap')}
                     className={cn(
                       "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
@@ -323,7 +323,7 @@ export default function SkillsPage() {
                   >
                     Roadmap
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('history')}
                     className={cn(
                       "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
@@ -343,11 +343,10 @@ export default function SkillsPage() {
                         <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Accessing Archives...</p>
                       </div>
                     ) : (
-                      <RoadmapTimeline 
+                      <RoadmapTimeline
                         skillName={activeSkill.name}
-                        milestones={activeRoadmap?.skill_milestones || []} 
-                        onToggleMilestone={handleToggleMilestone}
-                      />
+                        milestones={activeRoadmap?.skill_milestones || []}
+                        onToggleMilestone={handleToggleMilestone} roadmapStatus={'not_started'} roadmapError={null} />
                     )
                   ) : (
                     <SkillSessionsHistory sessions={sessions} isLoading={isLoadingSessions} />
@@ -377,12 +376,12 @@ export default function SkillsPage() {
       <AnimatePresence>
         {isAddModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm" 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -391,25 +390,25 @@ export default function SkillsPage() {
               className="w-full max-w-md bg-surface-container-high rounded-[32px] p-8 border border-outline-variant/10 shadow-2xl relative z-10"
             >
               <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Craft New Mastery</h2>
-              
+
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Skill Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="e.g. Quantum Physics, Piano, Chess..."
                     className="w-full h-14 px-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium"
                     value={newSkill.name}
-                    onChange={e => setNewSkill({...newSkill, name: e.target.value})}
+                    onChange={e => setNewSkill({ ...newSkill, name: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Category</label>
-                  <select 
-                     className="w-full h-14 px-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium appearance-none"
-                     value={newSkill.category}
-                     onChange={e => setNewSkill({...newSkill, category: e.target.value})}
+                  <select
+                    className="w-full h-14 px-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium appearance-none"
+                    value={newSkill.category}
+                    onChange={e => setNewSkill({ ...newSkill, category: e.target.value })}
                   >
                     <option value="General">General</option>
                     <option value="Mental">Mental / Logic</option>
@@ -421,30 +420,30 @@ export default function SkillsPage() {
                 </div>
 
                 <div className="flex items-center gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10">
-                   <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
-                      <Sparkles size={20} />
-                   </div>
-                   <div className="flex-1">
-                      <p className="text-xs font-black uppercase tracking-widest text-primary">AI Roadmap Architect</p>
-                      <p className="text-[10px] text-primary/60">Selfup will build a custom milestone path.</p>
-                   </div>
-                   <input 
-                    type="checkbox" 
+                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-primary">AI Roadmap Architect</p>
+                    <p className="text-[10px] text-primary/60">Selfup will build a custom milestone path.</p>
+                  </div>
+                  <input
+                    type="checkbox"
                     checked={newSkill.generateRoadmap}
-                    onChange={e => setNewSkill({...newSkill, generateRoadmap: e.target.checked})}
+                    onChange={e => setNewSkill({ ...newSkill, generateRoadmap: e.target.checked })}
                     className="w-6 h-6 rounded-lg bg-primary/20 border-primary/40 text-primary focus:ring-primary/40 transition-all cursor-pointer"
-                   />
+                  />
                 </div>
               </div>
 
               <div className="flex gap-4 mt-10">
-                <button 
+                <button
                   onClick={() => setIsAddModalOpen(false)}
                   className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-on-surface-variant hover:bg-surface-container-highest transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleAddSkill}
                   className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
                 >
@@ -457,12 +456,12 @@ export default function SkillsPage() {
 
         {isLoggingSession && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsLoggingSession(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm" 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -471,19 +470,19 @@ export default function SkillsPage() {
               className="w-full max-w-md bg-surface-container-high rounded-[32px] p-8 border border-outline-variant/10 shadow-2xl relative z-10"
             >
               <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Log Practice Session</h2>
-              
+
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Duration (Minutes)</label>
                   <div className="flex items-center gap-4">
-                     <span className="text-2xl font-black italic text-primary w-20">{sessionData.duration}m</span>
-                     <input 
-                      type="range" 
-                      min="5" 
+                    <span className="text-2xl font-black italic text-primary w-20">{sessionData.duration}m</span>
+                    <input
+                      type="range"
+                      min="5"
                       max="300"
                       step="5"
                       value={sessionData.duration}
-                      onChange={e => setSessionData({...sessionData, duration: Number(e.target.value)})}
+                      onChange={e => setSessionData({ ...sessionData, duration: Number(e.target.value) })}
                       className="flex-1 h-2 bg-surface-container-lowest rounded-full appearance-none cursor-pointer accent-primary"
                     />
                   </div>
@@ -492,24 +491,24 @@ export default function SkillsPage() {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Session Notes</label>
-                  <textarea 
+                  <textarea
                     placeholder="What did you learn today?"
                     rows={3}
                     className="w-full p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium resize-none"
                     value={sessionData.notes}
-                    onChange={e => setSessionData({...sessionData, notes: e.target.value})}
+                    onChange={e => setSessionData({ ...sessionData, notes: e.target.value })}
                   />
                 </div>
               </div>
 
               <div className="flex gap-4 mt-10">
-                <button 
+                <button
                   onClick={() => setIsLoggingSession(false)}
                   className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-on-surface-variant hover:bg-surface-container-highest transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleLogSession}
                   className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
                 >

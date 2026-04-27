@@ -3,6 +3,7 @@
 import React from 'react';
 import { Dumbbell, Calendar, ChevronRight, Play } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface WorkoutPlan {
   id: string;

@@ -249,7 +249,7 @@ export function ScheduleView() {
         })
 
         if (!batchRes.ok) throw new Error('Batch update failed')
-        setLastBatchIds(updates.map(u => u.id))
+        setLastBatchIds(updates.map((u: any) => u.id))
       }
       
       toast.success('System optimized your schedule!')
@@ -446,7 +446,7 @@ export function ScheduleView() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       draggable
-                      onDragStart={(e) => handleDragStart(e, task.id, 'task')}
+                      onDragStart={(e: any) => handleDragStart(e, task.id, 'task')}
                       className="group p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative overflow-hidden"
                     >
                       <div className="flex items-start gap-4">

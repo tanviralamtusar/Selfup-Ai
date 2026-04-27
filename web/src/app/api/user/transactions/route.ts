@@ -1,12 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
+import { createClient } from '@supabase/supabase-js'
 
-export async function GET(request: Request) {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export async function GET(request: NextRequest) {
   try {
-    const { user, supabase } = await verifyAuth(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { user, error: authError } = await verifyAuth(request)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
+
+    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
 
     const { data: transactions, error } = await supabase
       .from('ai_coin_transactions')

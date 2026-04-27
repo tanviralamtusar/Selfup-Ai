@@ -41,6 +41,7 @@ interface AuthState {
   // Actions
   setUser: (user: User | null) => void
   setProfile: (profile: UserProfile | null) => void
+  updateProfile: (partial: Partial<UserProfile>) => void
   setSession: (session: Session | null) => void
   setLoading: (loading: boolean) => void
   logout: () => void
@@ -62,6 +63,9 @@ export const useAuthStore = create<AuthState>()(
         }
         set({ profile });
       },
+      updateProfile: (partial) => set((state) => ({
+        profile: state.profile ? { ...state.profile, ...partial } : null
+      })),
       setSession: (session) => set({ session, isAuthenticated: !!session }),
       setLoading: (isLoading) => set({ isLoading }),
       logout: () => set({ user: null, profile: null, session: null, isAuthenticated: false }),

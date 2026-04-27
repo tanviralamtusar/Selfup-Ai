@@ -66,6 +66,10 @@ export async function POST(req: NextRequest) {
     `
 
     const aiResponse = await generateResponse("Suggest 3 impactful habits based on my profile.", [], systemPrompt)
+
+    if (!aiResponse) {
+      return NextResponse.json({ success: false, error: 'AI failed to generate suggestions' }, { status: 502 })
+    }
     
     // Clean up potential markdown formatting if the model ignored instructions
     const jsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim()

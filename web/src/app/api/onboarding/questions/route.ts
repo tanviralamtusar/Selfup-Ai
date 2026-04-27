@@ -35,11 +35,20 @@ export async function POST(req: NextRequest) {
 
     const responseText = await generateResponse(prompt, [], SYSTEM_PROMPT)
     
+    if (!responseText) {
+      throw new Error('AI returned an empty response')
+    }
+    
     // Attempt to parse JSON from response
     try {
       const jsonStart = responseText.indexOf('[')
-      const jsonEnd = responseText.lastIndexOf(']') + 1
-      const jsonString = responseText.substring(jsonStart, jsonEnd)
+      const jsonEnd = responseText.lastIndexOf(']')
+      
+      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd < jsonStart) {
+        throw new Error('Invalid JSON format in AI response')
+      }
+
+      const jsonString = responseText.substring(jsonStart, jsonEnd + 1)
       const questions = JSON.parse(jsonString)
       
       return NextResponse.json({ questions })

@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Fetch User Memory for Cross-Session Context
-    const userMemory = await fetchUserMemory(user.id, token!)
+    const userMemory = await fetchUserMemory(user.id, token || '')
     const memoryContext = await formatMemoryContext(userMemory)
 
     // 6. Build System Prompt with Profile Context + Memory + Persona
@@ -138,7 +138,7 @@ ${memoryContext}
 `
 
     // 7. Generate Response
-    const aiResponse = await generateResponse(content, history as any, contextualPrompt)
+    const aiResponse = (await generateResponse(content, history as any, contextualPrompt)) || ''
 
     // 8. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
@@ -160,9 +160,11 @@ ${memoryContext}
     if (saveAiMsgError) throw saveAiMsgError
 
     // 9. Extract and Save Memory from Conversation (non-blocking)
-    extractAndSaveMemory(user.id, content, aiResponse, token!).catch(err => 
-      console.error('[AI Memory Extraction Failed]:', err)
-    )
+    if (token) {
+      extractAndSaveMemory(user.id, content as string, aiResponse, token).catch(err => 
+        console.error('[AI Memory Extraction Failed]:', err)
+      )
+    }
 
     // 10. Deduct Coin
     const { error: updateProfileError } = await authSupabase

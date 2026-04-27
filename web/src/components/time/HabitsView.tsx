@@ -92,7 +92,7 @@ export function HabitsView() {
       if (res.ok) {
         toast.success('Habit created!')
         setIsAddingHabit(false)
-        setNewHabit({ name: '', description: '', pillar: 'general', frequency: 'daily' })
+        setNewHabit({ name: '', description: '', pillar: 'general', frequency: 'daily', frequency_days: [1, 2, 3, 4, 5, 6, 7], reminder_time: '08:00' })
         fetchHabits()
       }
     } catch { toast.error('Failed to create habit') }

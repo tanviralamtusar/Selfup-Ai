@@ -79,7 +79,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const aiResponse = await generateResponse(prompt, [], `You are ${personaName}. Return strictly JSON.`)
-    const result = JSON.parse(aiResponse.replace(/```json|```/g, '').trim())
+    
+    if (!aiResponse) {
+      throw new Error('AI returned an empty response')
+    }
+
+    // Robust JSON extraction
+    const jsonStart = aiResponse.indexOf('{')
+    const jsonEnd = aiResponse.lastIndexOf('}')
+    
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd < jsonStart) {
+      throw new Error('Invalid JSON format in AI response')
+    }
+
+    const jsonString = aiResponse.substring(jsonStart, jsonEnd + 1)
+    const result = JSON.parse(jsonString)
 
     return NextResponse.json(result)
   } catch (err) {

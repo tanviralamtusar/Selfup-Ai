@@ -138,7 +138,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex bg-background h-[calc(100vh-100px)] -m-6 rounded-3xl overflow-hidden border border-outline-variant/10 shadow-2xl">
+    <div className="flex bg-background h-full w-full overflow-hidden">
       {/* ─── Sidebar ─── */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (

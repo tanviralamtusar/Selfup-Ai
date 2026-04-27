@@ -223,7 +223,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* ─── Main Content ─── */}
       <main className="lg:pl-56 pt-14 min-h-screen">
-        <div className="p-4 md:p-8 max-w-7xl mx-auto">
+        <div className={cn(
+          "mx-auto",
+          pathname === ROUTES.CHAT ? "p-0 max-w-none h-[calc(100vh-136px)] lg:h-[calc(100vh-56px)]" : "p-4 md:p-8 max-w-7xl"
+        )}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -231,6 +234,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               {children}
             </motion.div>

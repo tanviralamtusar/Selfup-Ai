@@ -8,14 +8,14 @@ import { xpToNextLevel } from '@/constants/gamification'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
-import { 
-  PlusCircle, 
-  Bolt, 
-  Calendar, 
-  CheckCircle, 
-  Trophy, 
-  Plus, 
-  Minus, 
+import {
+  PlusCircle,
+  Bolt,
+  Calendar,
+  CheckCircle,
+  Trophy,
+  Plus,
+  Minus,
   Check,
   ArrowRight,
   User,
@@ -28,7 +28,8 @@ import {
   Loader2,
   Activity,
   Award,
-  Brain
+  Brain,
+  Zap
 } from 'lucide-react'
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 import { StreakCard } from '@/components/gamification/StreakCard'
@@ -51,33 +52,33 @@ const itemAnim = {
 function Gauge({ percent, colorClass, label, title }: { percent: number, colorClass: string, label: string, title: string }) {
   const dasharray = 364.4;
   const dashoffset = dasharray - (dasharray * percent) / 100;
-  
+
   return (
     <div className="flex flex-col items-center gap-3 group">
       <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center p-1.5">
         <div className="absolute inset-0 border border-blue-500/10 rounded-full animate-[spin_10s_linear_infinite]" />
         <div className="absolute inset-2 border border-blue-500/5 rounded-full animate-[spin_15s_linear_reverse_infinite]" />
-        
-        <svg 
-          className="w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" 
-          viewBox="0 0 128 128" 
+
+        <svg
+          className="w-full h-full -rotate-90 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+          viewBox="0 0 128 128"
           preserveAspectRatio="xMidYMid meet"
         >
           {/* Track */}
-          <circle 
-            className="text-blue-500/10" 
-            cx="64" cy="64" r="58" 
-            fill="transparent" 
-            stroke="currentColor" 
+          <circle
+            className="text-blue-500/10"
+            cx="64" cy="64" r="58"
+            fill="transparent"
+            stroke="currentColor"
             strokeWidth="4"
           />
           {/* Progress */}
-          <motion.circle 
-            className={cn('transition-all duration-1000', colorClass)} 
-            cx="64" cy="64" r="58" 
-            fill="transparent" 
-            stroke="currentColor" 
-            strokeDasharray={dasharray} 
+          <motion.circle
+            className={cn('transition-all duration-1000', colorClass)}
+            cx="64" cy="64" r="58"
+            fill="transparent"
+            stroke="currentColor"
+            strokeDasharray={dasharray}
             initial={{ strokeDashoffset: dasharray }}
             animate={{ strokeDashoffset: dashoffset }}
             strokeWidth="4"
@@ -221,7 +222,7 @@ export default function DashboardPage() {
       const data = await res.json()
       if (res.ok) {
         toast.success(`+${data.xpEarned} XP — Habit logged! 🔥`)
-        
+
         if (data.leveledUp && data.levelUpDetails) {
           setLevelUpData(data.levelUpDetails)
           setShowLevelUp(true)
@@ -236,7 +237,7 @@ export default function DashboardPage() {
             streak_last_date: new Date().toISOString().split('T')[0],
           })
         }
-        
+
         fetchHabits()
         fetchActivities() // Refresh feed
       } else if (res.status === 409) {
@@ -277,14 +278,14 @@ export default function DashboardPage() {
       {/* ─── SYSTEM STATUS HEADER ─── */}
       <motion.section variants={itemAnim} className="relative group">
         <div className="absolute inset-0 bg-blue-500/5 blur-3xl rounded-[2.5rem] pointer-events-none" />
-        
+
         <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-6 md:p-8 border border-blue-500/20 shadow-2xl">
           {/* Decorative Corner Lines */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-blue-400/50" />
           <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-blue-400/50" />
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-blue-400/50" />
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
             {/* Left: Avatar & Basic Stats */}
             <div className="lg:col-span-8 space-y-8">
@@ -292,9 +293,9 @@ export default function DashboardPage() {
                 <div className="relative">
                   <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-3xl">
                     {profile?.avatar_url ? (
-                      <img 
-                        className="w-full h-full object-cover rounded-xl" 
-                        alt="Avatar" 
+                      <img
+                        className="w-full h-full object-cover rounded-xl"
+                        alt="Avatar"
                         src={profile.avatar_url}
                       />
                     ) : (
@@ -305,7 +306,7 @@ export default function DashboardPage() {
                     LVL {level}
                   </div>
                 </div>
-                
+
                 <div className="flex-1 text-center md:text-left space-y-1">
                   <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
                     <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
@@ -313,7 +314,7 @@ export default function DashboardPage() {
                   </div>
                   <h1 className="text-3xl md:text-4xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
-                    <button 
+                    <button
                       onClick={() => setShowWalletModal(true)}
                       className="bg-blue-500/10 px-4 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
                     >
@@ -336,14 +337,14 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{health} / {maxHealth}</span>
                   </div>
                   <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }} 
-                      animate={{ width: `${healthPct}%` }} 
-                      className="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]" 
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${healthPct}%` }}
+                      className="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]"
                     />
                   </div>
                 </div>
-                
+
                 {/* Experience (XP) */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-end px-1">
@@ -351,10 +352,10 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
                   </div>
                   <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }} 
-                      animate={{ width: `${xpPercent}%` }} 
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]" 
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${xpPercent}%` }}
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
                     />
                   </div>
                 </div>
@@ -366,10 +367,10 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{mana} / {maxMana}</span>
                   </div>
                   <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }} 
-                      animate={{ width: `${manaPct}%` }} 
-                      className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]" 
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${manaPct}%` }}
+                      className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
                     />
                   </div>
                 </div>
@@ -378,7 +379,7 @@ export default function DashboardPage() {
 
             {/* Right: Streak Card Area */}
             <div className="lg:col-span-4">
-              <StreakCard 
+              <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}
                 freezeCount={profile?.streak_freeze_count ?? 0}
@@ -443,7 +444,7 @@ export default function DashboardPage() {
                         )}
                       >
                         {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> :
-                         habit.completed_today ? <Check size={14} /> : <Plus size={14} />}
+                          habit.completed_today ? <Check size={14} /> : <Plus size={14} />}
                       </button>
                       <div className="flex-1">
                         <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.name}</p>
@@ -497,15 +498,15 @@ export default function DashboardPage() {
 
             {/* Column: To-Dos + Rewards */}
             <div className="space-y-6">
-               {/* Core Cognition Status */}
-               <div className="space-y-4 mb-6">
+              {/* Core Cognition Status */}
+              <div className="space-y-4 mb-6">
                 <div className="flex items-center justify-between px-2">
                   <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                     Cognitive Status
                   </h2>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowSystemKnowledge(true)}
                   className="w-full group relative overflow-hidden bg-slate-900/40 p-4 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] text-left italic"
                 >
@@ -542,7 +543,7 @@ export default function DashboardPage() {
                         <span className="inline-flex px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 text-[7px] font-black uppercase tracking-[0.3em] border border-rose-500/20">PRIORITY: HIGH</span>
                       </div>
                       <div className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all group-hover:border-blue-400">
-                         <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
+                        <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
                       </div>
                     </div>
                   </div>
@@ -610,7 +611,7 @@ export default function DashboardPage() {
             DETAILED ANALYSIS <ArrowRight size={14} />
           </Link>
         </div>
-        
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 relative z-10">
           <Gauge percent={75} colorClass="text-blue-400" label="STR" title="STRENGTH" />
           <Gauge percent={60} colorClass="text-cyan-400" label="INT" title="INTELLIGENCE" />
@@ -627,9 +628,9 @@ export default function DashboardPage() {
         coinsReward={levelUpData.coinsRewarded}
       />
 
-      <SystemKnowledge 
-        isOpen={showSystemKnowledge} 
-        onClose={() => setShowSystemKnowledge(false)} 
+      <SystemKnowledge
+        isOpen={showSystemKnowledge}
+        onClose={() => setShowSystemKnowledge(false)}
       />
 
       <AiCoinWalletModal

@@ -110,20 +110,87 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="h-6 w-px bg-blue-500/20 mx-1" />
 
-          <div className="flex items-center gap-3 pl-1">
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-black text-blue-50 truncate max-w-[100px] uppercase tracking-wider italic">{username}</p>
-              <div className="flex items-center justify-end gap-1 mt-0.5">
-                <span className="w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
-                <p className="text-[8px] font-black uppercase text-cyan-400/80 tracking-[0.2em] italic">AWAKENED</p>
+          <div className="relative group pl-1">
+            <div className="flex items-center gap-3 cursor-pointer">
+              <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-black text-blue-50 truncate max-w-[100px] uppercase tracking-wider italic">{username}</p>
+                <div className="flex items-center justify-end gap-1 mt-0.5">
+                  <span className="w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
+                  <p className="text-[8px] font-black uppercase text-cyan-400/80 tracking-[0.2em] italic">AWAKENED</p>
+                </div>
+              </div>
+              <div className="w-8 h-8 rounded bg-slate-900 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black shadow-[inset_0_0_10px_rgba(59,130,246,0.2)] overflow-hidden text-xs">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover opacity-80" />
+                ) : (
+                  <User size={14} className="text-blue-400/80 system-text-glow" />
+                )}
               </div>
             </div>
-            <div className="w-8 h-8 rounded bg-slate-900 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black shadow-[inset_0_0_10px_rgba(59,130,246,0.2)] overflow-hidden text-xs">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover opacity-80" />
-              ) : (
-                <User size={14} className="text-blue-400/80 system-text-glow" />
-              )}
+
+            {/* ─── Profile Hover Card ─── */}
+            <div className="absolute top-full right-0 mt-2 w-64 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100]">
+              <div className="bg-slate-950/95 backdrop-blur-2xl border border-blue-500/20 rounded-xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_20px_rgba(59,130,246,0.1)] overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+                
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 rounded bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-xl shadow-[inset_0_0_15px_rgba(59,130,246,0.2)]">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
+                    ) : (
+                      username[0].toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-blue-50 uppercase tracking-tighter italic">{username}</h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[9px] font-black text-cyan-400 uppercase tracking-[0.2em] italic">LVL {level}</span>
+                      <div className="h-2 w-px bg-blue-500/20" />
+                      <span className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em] italic">AWAKENED</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-5">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.3em] text-blue-500/40">
+                      <span>SYNC PROGRESS</span>
+                      <span className="text-blue-200">{xp} / {maxXP} XP</span>
+                    </div>
+                    <div className="h-1 bg-slate-900 rounded-full overflow-hidden border border-blue-500/5 shadow-inner">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.6)]" 
+                        style={{ width: `${progress}%` }} 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10 group/coin hover:border-blue-500/30 transition-colors">
+                    <div className="flex items-center gap-2">
+                       <Sparkles size={12} className="text-cyan-400 group-hover/coin:animate-pulse" />
+                       <span className="text-[9px] font-black text-blue-300 uppercase tracking-[0.2em] italic">AiCoins</span>
+                    </div>
+                    <span className="text-sm font-black text-cyan-400 tabular-nums">{profile?.ai_coins || 0}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => router.push(ROUTES.SETTINGS)}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-slate-900 border border-blue-500/10 text-[9px] font-black uppercase tracking-[0.2em] text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all italic"
+                  >
+                    <Settings size={12} />
+                    System
+                  </button>
+                  <button 
+                    onClick={handleSignOut}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-rose-500/5 border border-rose-500/10 text-[9px] font-black uppercase tracking-[0.2em] text-rose-500/60 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 transition-all italic"
+                  >
+                    <LogOut size={12} />
+                    Logout
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

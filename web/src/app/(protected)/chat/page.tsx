@@ -23,8 +23,11 @@ interface Conversation {
 
 const AI_MODELS = [
   { id: 'gemma-4-31b-it', name: 'Gemma 4 31B' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+  { id: 'gemma-4-26b-a4b-it', name: 'Gemma 4 26B (A4B)' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+  { id: 'gemini-3.1-flash-lite-preview', name: 'Gemini 3.1 Flash Lite' },
+  { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
 ]
 
 export default function ChatPage() {

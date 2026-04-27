@@ -6,7 +6,8 @@ const ai = new GoogleGenAI({ apiKey })
 export async function generateResponse(
   prompt: string, 
   history: { role: 'user' | 'model', parts: { text: string }[] }[] = [],
-  systemInstruction?: string
+  systemInstruction?: string,
+  modelName: string = 'gemma-4-31b-it'
 ) {
   if (!apiKey) {
     throw new Error('GOOGLE_AI_API_KEY is not set')
@@ -25,7 +26,7 @@ export async function generateResponse(
   ];
 
   const response = await ai.models.generateContent({
-    model: 'gemma-4-31b-it',
+    model: modelName,
     contents,
     config: {
       temperature: 0.7,

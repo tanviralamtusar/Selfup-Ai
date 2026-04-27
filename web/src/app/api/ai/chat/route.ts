@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       global: { headers: { Authorization: `Bearer ${token}` } }
     })
 
-    const { content, conversationId } = await req.json()
+    const { content, conversationId, modelName } = await req.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Message content is required' }, { status: 400 })
@@ -138,7 +138,7 @@ ${memoryContext}
 `
 
     // 7. Generate Response
-    const aiResponse = (await generateResponse(content, history as any, contextualPrompt)) || ''
+    const aiResponse = (await generateResponse(content, history as any, contextualPrompt, modelName)) || ''
 
     // 8. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
@@ -181,6 +181,40 @@ ${memoryContext}
 
   } catch (err: any) {
     console.error('[AI Chat Error]:', err)
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const authSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+
+    const { searchParams } = new URL(req.url)
+    const conversationId = searchParams.get('conversationId')
+
+    if (!conversationId) {
+      return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 })
+    }
+
+    const { error } = await authSupabase
+      .from('ai_conversations')
+      .delete()
+      .eq('id', conversationId)
+      .eq('user_id', user.id) // Ensure the user owns this conversation
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true })
+  } catch (err: any) {
+    console.error('[AI Chat Delete Error]:', err)
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }

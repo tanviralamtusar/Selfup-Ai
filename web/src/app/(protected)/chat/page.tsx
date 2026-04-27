@@ -21,6 +21,12 @@ interface Conversation {
   updated_at: string
 }
 
+const AI_MODELS = [
+  { id: 'gemma-4-31b-it', name: 'Gemma 4 31B' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+]
+
 export default function ChatPage() {
   const { profile, session, setProfile } = useAuthStore()
   const [messages, setMessages] = useState<Message[]>([])
@@ -28,6 +34,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [selectedModel, setSelectedModel] = useState(AI_MODELS[0].id)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Fetch initial conversations
@@ -105,7 +112,7 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ content, conversationId: activeConversationId })
+        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel })
       })
 
       const data = await res.json()
@@ -137,6 +144,27 @@ export default function ChatPage() {
     }])
   }
 
+  const handleDeleteChat = async (id: string) => {
+    if (!session?.access_token) return
+    try {
+      const res = await fetch(`/api/ai/chat?conversationId=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      
+      if (!res.ok) throw new Error('Failed to delete conversation')
+      
+      setConversations(prev => prev.filter(c => c.id !== id))
+      
+      if (activeConversationId === id) {
+        startNewChat()
+      }
+      toast.success('Conversation deleted')
+    } catch (err: any) {
+      toast.error(err.message)
+    }
+  }
+
   return (
     <div className="flex bg-background h-full w-full overflow-hidden">
       {/* ─── Sidebar ─── */}
@@ -154,6 +182,7 @@ export default function ChatPage() {
               activeId={activeConversationId}
               onSelect={setActiveConversationId}
               onNew={startNewChat}
+              onDelete={handleDeleteChat}
               aiName={profile?.ai_persona_name || 'SYSTEM'}
             />
           </motion.div>
@@ -189,6 +218,17 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-4">
+             <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="hidden md:block bg-surface-container-highest/50 border border-outline-variant/10 rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant outline-none focus:border-primary/50 transition-colors cursor-pointer"
+             >
+                {AI_MODELS.map(m => (
+                  <option key={m.id} value={m.id} className="bg-surface-container-highest text-on-surface">
+                    {m.name}
+                  </option>
+                ))}
+             </select>
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
                 <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">AiC:</span>
                 <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>

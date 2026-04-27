@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { MessageSquare, MoreVertical, Plus } from 'lucide-react'
+import { MessageSquare, Trash2, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
 
@@ -16,10 +16,11 @@ interface ChatSidebarProps {
   activeId: string | null
   onSelect: (id: string) => void
   onNew: () => void
+  onDelete: (id: string) => void
   aiName?: string
 }
 
-export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName = 'SYSTEM' }: ChatSidebarProps) {
+export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, aiName = 'SYSTEM' }: ChatSidebarProps) {
   return (
     <div className="w-80 flex flex-col bg-surface border-r border-outline-variant/10 h-full">
       <div className="p-4">
@@ -41,11 +42,11 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName =
           </div>
         ) : (
           conversations.map((conv) => (
-            <button
+            <div
               key={conv.id}
               onClick={() => onSelect(conv.id)}
               className={cn(
-                "w-full flex items-start gap-3 p-3 rounded-xl transition-all group text-left",
+                "w-full flex items-start gap-3 p-3 rounded-xl transition-all group text-left cursor-pointer",
                 activeId === conv.id 
                   ? "bg-surface-container-high border border-outline-variant/10 shadow-sm" 
                   : "hover:bg-surface-container-low border border-transparent"
@@ -70,10 +71,13 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, aiName =
                 </p>
               </div>
 
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreVertical size={14} className="text-on-surface-variant/40" />
-              </div>
-            </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onDelete(conv.id) }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-red-500/10 rounded-md text-on-surface-variant/40 hover:text-red-500"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           ))
         )}
       </div>

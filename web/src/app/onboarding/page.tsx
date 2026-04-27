@@ -401,6 +401,7 @@ export default function OnboardingPage() {
 
               {/* ─── STEP 3: PERSONA ─── */}
               {currentStep === 'persona' && (
+                <>
                   <div>
                     <h2 className="text-2xl font-bold font-display mb-2">Configure Your AI</h2>
                     <p className="text-foreground-secondary mb-6">Give your coach a name and choose their personality.</p>
@@ -453,7 +454,7 @@ export default function OnboardingPage() {
                       )
                     })}
                   </div>
-                </div>
+                </>
               )}
 
               {/* ─── STEP 4: READY ─── */}

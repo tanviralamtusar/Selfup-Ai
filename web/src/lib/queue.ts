@@ -12,10 +12,11 @@ export interface AiJobData {
 
 const AI_QUEUE_NAME = 'ai-tasks'
 
+import { executeAiTask } from './worker'
 // Singleton for the queue
 const globalForQueue = global as unknown as { aiQueue: Queue | undefined }
 
-export const aiQueue = globalForQueue.aiQueue ?? new Queue(AI_QUEUE_NAME, {
+export const aiQueue = globalForQueue.aiQueue ?? (redis ? new Queue(AI_QUEUE_NAME, {
   connection: redis,
   defaultJobOptions: {
     attempts: 3,
@@ -25,17 +26,24 @@ export const aiQueue = globalForQueue.aiQueue ?? new Queue(AI_QUEUE_NAME, {
     },
     removeOnComplete: true,
   },
-})
+}) : null)
 
-if (process.env.NODE_ENV !== 'production') globalForQueue.aiQueue = aiQueue
+if (process.env.NODE_ENV !== 'production') globalForQueue.aiQueue = aiQueue as any
 
-aiQueue.on('error', (err) => {
-  // Silent - let the redis singleton handle the throttled logging
-})
+if (aiQueue) {
+  aiQueue.on('error', (err) => {
+    // Silent
+  })
+}
 
 /**
  * Helper to add a job to the AI queue
+ * UPDATED: Now executes directly to remove Redis dependency for now
  */
 export async function addAiTask(data: AiJobData) {
-  return await aiQueue.add(`${data.type}:${data.userId}`, data)
+  console.log(`[Queue Bypass] Executing ${data.type} directly...`)
+  // We don't await this if we want it to be "background", 
+  // but in serverless/Next.js it's safer to await or use a different mechanism.
+  // For now, let's await it to ensure completion.
+  return await executeAiTask(data)
 }

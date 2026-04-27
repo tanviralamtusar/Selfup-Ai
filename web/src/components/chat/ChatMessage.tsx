@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Brain, User } from 'lucide-react'
+import { MarkdownRenderer } from './MarkdownRenderer'
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -53,7 +54,11 @@ export function ChatMessage({ role, content, isLast, name = 'SYSTEM', style = 'f
               )
             : "bg-secondary/10 border-secondary/20 text-on-surface rounded-tr-sm"
         )}>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+          {isAssistant ? (
+            <MarkdownRenderer content={content} />
+          ) : (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+          )}
           
           {isLast && isAssistant && (
             <div className="flex gap-1 mt-2">

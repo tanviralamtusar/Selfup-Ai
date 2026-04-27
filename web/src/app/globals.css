@@ -160,3 +160,19 @@
 .animate-slide-up {
   animation: slide-up 0.4s ease-out forwards;
 }
+
+/* ─── CHAT MARKDOWN ─── */
+@layer utilities {
+  .prose-chat {
+    @apply break-words;
+  }
+  
+  .prose-chat > *:first-child {
+    @apply mt-0;
+  }
+  
+  .prose-chat > *:last-child {
+    @apply mb-0;
+  }
+}
+

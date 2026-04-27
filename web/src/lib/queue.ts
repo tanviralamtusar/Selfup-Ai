@@ -1,4 +1,6 @@
-import { Queue } from 'bullmq'
+// import { Queue } from 'bullmq'
+import type { Queue } from 'bullmq'
+
 import { redis } from '@/lib/redis'
 
 export type AiJobType = 'roadmap' | 'fitness_plan' | 'nutrition_plan' | 'style_advice' | 'chat_analysis' | 'initial_plan'
@@ -16,7 +18,7 @@ import { executeAiTask } from './worker'
 // Singleton for the queue
 const globalForQueue = global as unknown as { aiQueue: Queue | undefined }
 
-export const aiQueue = globalForQueue.aiQueue ?? (redis ? new Queue(AI_QUEUE_NAME, {
+export const aiQueue = globalForQueue.aiQueue ?? (redis ? null /* new Queue(AI_QUEUE_NAME, {
   connection: redis,
   defaultJobOptions: {
     attempts: 3,
@@ -26,7 +28,7 @@ export const aiQueue = globalForQueue.aiQueue ?? (redis ? new Queue(AI_QUEUE_NAM
     },
     removeOnComplete: true,
   },
-}) : null)
+}) */ : null)
 
 if (process.env.NODE_ENV !== 'production') globalForQueue.aiQueue = aiQueue as any
 

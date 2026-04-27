@@ -15,14 +15,18 @@ export async function fetchUserMemory(
 
     const { data: memories, error } = await supabase
       .from('ai_memory')
-      .select('memory_key, memory_val')
+      .select('*')
       .eq('user_id', userId)
 
     if (error) throw error
 
     const memoryMap: Record<string, string> = {}
-    memories?.forEach(m => {
-      memoryMap[m.memory_key] = m.memory_val
+    memories?.forEach((m: any) => {
+      const key = m.memory_key || m.key
+      const val = m.memory_val || m.value || m.memory_value
+      if (key && val) {
+        memoryMap[key] = val
+      }
     })
 
     return memoryMap

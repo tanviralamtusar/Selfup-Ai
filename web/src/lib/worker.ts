@@ -1,4 +1,6 @@
-import { Worker, Job } from 'bullmq'
+// import { Worker, Job } from 'bullmq'
+import type { Job } from 'bullmq'
+
 import { redis } from '@/lib/redis'
 import { AiJobData } from './queue'
 import { generateResponse } from './gemma'
@@ -338,7 +340,7 @@ export function setupAiWorker() {
     return null
   }
 
-  const worker = new Worker(
+  /* const worker = new Worker(
     AI_QUEUE_NAME,
     async (job: Job<AiJobData>) => {
       return await executeAiTask(job.data)
@@ -357,5 +359,6 @@ export function setupAiWorker() {
     console.error(`[AI Worker] Job ${job?.id} failed with error: ${err.message}`)
   })
 
-  return worker
+  return worker */
+  return null
 }

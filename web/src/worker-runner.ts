@@ -13,12 +13,16 @@ const worker = setupAiWorker()
 
 process.on('SIGINT', async () => {
   console.log('\n🛑 [SelfUp] Gracefully shutting down AI Worker...')
-  await worker.close()
+  if (worker) {
+    await worker.close()
+  }
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
   console.log('\n🛑 [SelfUp] Gracefully shutting down AI Worker...')
-  await worker.close()
+  if (worker) {
+    await worker.close()
+  }
   process.exit(0)
 })

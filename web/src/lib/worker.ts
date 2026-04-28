@@ -1,5 +1,4 @@
-// import { Worker, Job } from 'bullmq'
-import type { Job } from 'bullmq'
+import type { Worker, Job } from 'bullmq'
 
 import { redis } from '@/lib/redis'
 import { AiJobData } from './queue'
@@ -333,7 +332,7 @@ export async function executeAiTask(data: AiJobData) {
   }
 }
 
-export function setupAiWorker() {
+export function setupAiWorker(): Worker<AiJobData> | null {
   // Return null or disable if redis is missing
   if (!redis) {
     console.warn('[AI Worker] Redis connection missing. Worker will not start.')

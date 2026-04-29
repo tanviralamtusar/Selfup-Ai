@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { HabitsView } from '@/components/time/HabitsView'
 import { ScheduleView } from '@/components/time/ScheduleView'
+import { TimeDashboard } from '@/components/time/TimeDashboard'
 
 type TimerState = 'idle' | 'active' | 'break' | 'paused'
 type TaskStatus = 'todo' | 'in_progress' | 'done'
@@ -110,7 +111,7 @@ export default function TimePage() {
   const { session } = useAuthStore()
 
   // ── Timer State ──
-  const [activeTab, setActiveTab] = useState<'focus' | 'habits' | 'schedule'>('focus')
+  const [activeTab, setActiveTab] = useState<'board' | 'focus' | 'habits' | 'schedule'>('board')
   const [timerState, setTimerState] = useState<TimerState>('idle')
   const [workMinutes, setWorkMinutes] = useState(25)
   const [breakMinutes, setBreakMinutes] = useState(5)
@@ -141,8 +142,8 @@ export default function TimePage() {
 
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get('tab')
-    if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus') {
-      setActiveTab(tabParam)
+    if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus' || tabParam === 'board') {
+      setActiveTab(tabParam as any)
     }
   }, [])
 
@@ -292,7 +293,7 @@ export default function TimePage() {
       </div>
 
       <div className="flex border-b border-outline-variant/10 mb-6 overflow-x-auto">
-        {(['focus', 'habits', 'schedule'] as const).map(tab => (
+        {(['board', 'focus', 'habits', 'schedule'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -309,6 +310,7 @@ export default function TimePage() {
         ))}
       </div>
 
+      {activeTab === 'board' && <TimeDashboard />}
       {activeTab === 'focus' && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* ── Left: Pomodoro Timer ── */}

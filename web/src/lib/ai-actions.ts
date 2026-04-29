@@ -1,0 +1,219 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export interface Action {
+  type: string;
+  payload: any;
+}
+
+/**
+ * Parses action tags from AI response text
+ */
+export function parseActions(text: string): { cleanText: string; actions: Action[] } {
+  const actions: Action[] = []
+  
+  // Support both attribute-based (legacy/fallback) and JSON-content tags
+  const actionRegex = /<action\s+type="([^"]+)"([^>]*)>(?:\s*([\s\S]*?)\s*<\/action>|\s*\/>)/g
+  
+  let match
+  let cleanText = text
+
+  while ((match = actionRegex.exec(text)) !== null) {
+    const type = match[1]
+    const attributesRaw = match[2]
+    const contentRaw = match[3]
+
+    let payload: any = {}
+
+    if (contentRaw) {
+      try {
+        // Remove potential markdown code blocks around JSON
+        const jsonStr = contentRaw.replace(/```json/g, '').replace(/```/g, '').trim()
+        payload = JSON.parse(jsonStr)
+      } catch (e) {
+        console.error(`[AI Actions] Failed to parse JSON content for action ${type}:`, contentRaw)
+      }
+    } else if (attributesRaw) {
+      // Basic attribute parsing for simple tags like <action type="create_task" title="Run" />
+      const attrRegex = /(\w+)="([^"]+)"/g
+      let attrMatch
+      while ((attrMatch = attrRegex.exec(attributesRaw)) !== null) {
+        payload[attrMatch[1]] = attrMatch[2]
+      }
+    }
+
+    actions.push({ type, payload })
+  }
+
+  // Remove the tags from the display text
+  cleanText = text.replace(actionRegex, '').trim()
+  
+  return { cleanText, actions }
+}
+
+/**
+ * Executes a list of parsed actions
+ */
+export async function executeActions(
+  userId: string,
+  actions: Action[],
+  authToken: string
+): Promise<void> {
+  if (!actions.length) return
+
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    global: { headers: { Authorization: `Bearer ${authToken}` } }
+  })
+
+  console.log(`[AI Actions] Executing ${actions.length} actions for user ${userId}`)
+
+  for (const action of actions) {
+    try {
+      switch (action.type) {
+        case 'create_task':
+          await handleCreateTask(userId, action.payload, supabase)
+          break
+        case 'skill_roadmap':
+          await handleSkillRoadmap(userId, action.payload, supabase)
+          break
+        case 'memory_update':
+          await handleMemoryUpdate(userId, action.payload, supabase)
+          break
+        default:
+          console.warn(`[AI Actions] Unknown action type: ${action.type}`)
+      }
+    } catch (err) {
+      console.error(`[AI Actions] Error executing action ${action.type}:`, err)
+    }
+  }
+}
+
+async function handleCreateTask(userId: string, payload: any, supabase: any) {
+  const title = payload.title || payload.task_name || payload.name
+  const description = payload.description || payload.notes || ''
+  const priority = payload.priority || 'medium'
+  const due_date = payload.due_date || payload.date || null
+  
+  // Parse duration/estimated_minutes
+  let estimated_minutes = 30
+  if (payload.estimated_minutes) {
+    estimated_minutes = parseInt(payload.estimated_minutes)
+  } else if (payload.duration) {
+    // Handle "60 minutes" or "1 hr"
+    const durationStr = String(payload.duration)
+    const minutesMatch = durationStr.match(/(\d+)\s*min/)
+    const hoursMatch = durationStr.match(/(\d+)\s*hr/)
+    if (minutesMatch) estimated_minutes = parseInt(minutesMatch[1])
+    else if (hoursMatch) estimated_minutes = parseInt(hoursMatch[1]) * 60
+    else {
+      const justNum = parseInt(durationStr)
+      if (!isNaN(justNum)) estimated_minutes = justNum
+    }
+  }
+
+  if (!title) {
+    console.error('[AI Actions] Create task failed: No title found in payload', payload)
+    return
+  }
+
+  const { error } = await supabase.from('tasks').insert({
+    user_id: userId,
+    title,
+    description,
+    priority,
+    due_date: due_date || null,
+    estimated_minutes: estimated_minutes,
+    status: 'todo',
+    is_ai_generated: true
+  })
+
+  if (error) throw error
+  console.log(`[AI Actions] Created task: ${title} (${estimated_minutes} min)`)
+}
+
+async function handleSkillRoadmap(userId: string, payload: any, supabase: any) {
+  const skillName = payload.skillName || payload.skill_name || payload.name
+  const category = payload.category || 'other'
+  const milestones = payload.milestones || []
+
+  if (!skillName || !milestones.length) {
+    console.error('[AI Actions] Skill roadmap failed: Missing skillName or milestones', payload)
+    return
+  }
+
+  // 1. Check if skill exists or create it
+  let skillId: string
+  const { data: existingSkill } = await supabase
+    .from('skills')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('name', skillName)
+    .single()
+
+  if (existingSkill) {
+    skillId = existingSkill.id
+  } else {
+    const { data: newSkill, error: skillError } = await supabase
+      .from('skills')
+      .insert({
+        user_id: userId,
+        name: skillName,
+        category: category || 'other',
+        is_active: true
+      })
+      .select()
+      .single()
+
+    if (skillError) throw skillError
+    skillId = newSkill.id
+  }
+
+  // 2. Create Roadmap
+  const { data: roadmap, error: roadmapError } = await supabase
+    .from('skill_roadmaps')
+    .insert({
+      skill_id: skillId,
+      title: `${skillName} Roadmap`,
+      is_ai_generated: true
+    })
+    .select()
+    .single()
+
+  if (roadmapError) throw roadmapError
+
+  // 3. Create Milestones
+  const milestoneEntries = milestones.map((m: any, idx: number) => ({
+    roadmap_id: roadmap.id,
+    title: m.title,
+    description: m.description,
+    order_index: idx + 1,
+    estimated_hours: m.estimated_hours || 1,
+    is_completed: false
+  }))
+
+  const { error: milestoneError } = await supabase
+    .from('skill_milestones')
+    .insert(milestoneEntries)
+
+  if (milestoneError) throw milestoneError
+  console.log(`[AI Actions] Created roadmap for skill: ${skillName}`)
+}
+
+async function handleMemoryUpdate(userId: string, payload: any, supabase: any) {
+  const category = payload.category || payload.key || 'fact'
+  const content = payload.content || payload.value
+  
+  if (!content) return
+
+  const { error } = await supabase.from('ai_memory').insert({
+    user_id: userId,
+    category: category,
+    content: content,
+    source: 'chat'
+  })
+
+  if (error) throw error
+  console.log(`[AI Actions] Saved memory: ${category} = ${content}`)
+}

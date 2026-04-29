@@ -31,7 +31,7 @@ export default function OnboardingPage() {
     gender: 'prefer_not_to_say',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     goals: [] as string[],
-    persona: 'balanced', // balanced, tough-love, analytical, cheerleader
+    persona: 'friendly', // friendly, strict, neutral, motivational
     personaName: 'SYSTEM',
     answers: {} as Record<string, string>
   })
@@ -421,10 +421,10 @@ export default function OnboardingPage() {
                   <div className="space-y-3">
                     <p className="text-xs font-black uppercase tracking-widest text-foreground-secondary mb-2">Interaction Style</p>
                     {[
-                      { id: 'balanced', title: 'Balanced & Supportive', desc: 'Friendly, helpful, and logical. The standard coach.' },
-                      { id: 'tough-love', title: 'Tough Love (Drill Sergeant)', desc: 'Direct, pushing you hard, no excuses accepted.' },
-                      { id: 'analytical', title: 'Analytical & Data-Driven', desc: 'Focuses on stats, metrics, and structured logic.' },
-                      { id: 'cheerleader', title: 'Enthusiastic Cheerleader', desc: 'High energy, constantly motivating and celebrating wins.' },
+                      { id: 'friendly', title: 'Balanced & Supportive', desc: 'Friendly, helpful, and logical. The standard coach.' },
+                      { id: 'strict', title: 'Tough Love (Drill Sergeant)', desc: 'Direct, pushing you hard, no excuses accepted.' },
+                      { id: 'neutral', title: 'Analytical & Data-Driven', desc: 'Focuses on stats, metrics, and structured logic.' },
+                      { id: 'motivational', title: 'Enthusiastic Cheerleader', desc: 'High energy, constantly motivating and celebrating wins.' },
                     ].map((persona) => {
                       const isSelected = formData.persona === persona.id
                       return (

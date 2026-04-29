@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { generateResponse, SYSTEM_PROMPT, PERSONA_PROMPTS } from '@/lib/gemma'
 import { fetchUserMemory, formatMemoryContext, extractAndSaveMemory } from '@/lib/ai-memory'
+import { parseActions, executeActions } from '@/lib/ai-actions'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -138,7 +139,19 @@ ${memoryContext}
 `
 
     // 7. Generate Response
-    const aiResponse = (await generateResponse(content, history as any, contextualPrompt, modelName)) || ''
+    const rawAiResponse = (await generateResponse(content, history as any, contextualPrompt, modelName)) || ''
+
+    // 8. Parse and Execute Actions
+    const { cleanText, actions } = parseActions(rawAiResponse)
+    
+    if (actions.length > 0 && token) {
+      // Execute actions (non-blocking for the chat response, but we wait a bit to ensure they start)
+      executeActions(user.id, actions, token).catch(err => 
+        console.error('[AI Action Execution Failed]:', err)
+      )
+    }
+
+    const aiResponse = cleanText || rawAiResponse
 
     // 8. Save Messages & Deduct Coin
     const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({

@@ -97,8 +97,8 @@ ${memory.achievements ? `- Recent Wins: ${memory.achievements}` : ''}
 
   // AI Persona preferences
   if (memory.ai_interaction_style || memory.preferred_advice_type) {
-    const personaKey = memory.ai_interaction_style || 'balanced'
-    const detailedPersona = PERSONA_PROMPTS[personaKey] || PERSONA_PROMPTS['balanced']
+    const personaKey = memory.ai_interaction_style || 'friendly'
+    const detailedPersona = PERSONA_PROMPTS[personaKey] || PERSONA_PROMPTS['friendly']
 
     sections.push(`
 REMEMBERED - How to Help:

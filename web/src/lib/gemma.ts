@@ -60,7 +60,44 @@ Rules:
    - Use bullet points (• or -) for steps.
    - Keep it concise and actionable.
    - Do NOT use checkbox syntax (- [ ]) unless specifically asked for a checklist.
-5. You can use <action> tags for system-level triggers (to be implemented later).
+5. You MUST use <action> tags for system-level triggers. 
+   - Use the format: <action type="action_type">{"json": "payload"}</action>
+   - DO NOT use attributes inside the tag (e.g., NOT <action type="..." title="...">). 
+   - The JSON must be valid and contained BETWEEN the opening and closing tags.
+
+### Action Schemas:
+
+#### Create Task:
+<action type="create_task">
+{
+  "title": "Task title",
+  "description": "Optional description",
+  "priority": "low" | "medium" | "high" | "critical",
+  "due_date": "YYYY-MM-DD",
+  "estimated_minutes": 30
+}
+</action>
+
+#### Skill Roadmap:
+<action type="skill_roadmap">
+{
+  "skillName": "Name of skill",
+  "category": "coding" | "music" | "language" | "fitness" | "other",
+  "milestones": [
+    { "title": "Milestone 1", "description": "Goal for this phase", "estimated_hours": 5 }
+  ]
+}
+</action>
+
+#### Memory Update:
+<action type="memory_update">
+{
+  "key": "memory_key",
+  "value": "memory_value"
+}
+</action>
+
+IMPORTANT: Only use <action> tags when you are actually performing the action. Do not use them for hypothetical suggestions.
 `
 
 export const PERSONA_PROMPTS: Record<string, string> = {

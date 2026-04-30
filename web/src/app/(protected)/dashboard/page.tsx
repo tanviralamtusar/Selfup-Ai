@@ -351,7 +351,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
             {/* Left: Avatar & Basic Stats */}
-            <div className="lg:col-span-8 space-y-6">
+            <div className="lg:col-span-7 space-y-6">
               <div className="flex flex-col md:flex-row items-center gap-5">
                 <div className="relative">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
@@ -431,8 +431,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right: Streak Card Area */}
-            <div className="lg:col-span-4">
+            {/* Right: Streak Card */}
+            <div className="lg:col-span-5">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}

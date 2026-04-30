@@ -1,3 +1,7 @@
+---
+description: Turn any folder of files into a navigable knowledge graph
+---
+
 # Workflow: graphify
 **Command:** /graphify
 **Description:** Turn any folder of files into a navigable knowledge graph

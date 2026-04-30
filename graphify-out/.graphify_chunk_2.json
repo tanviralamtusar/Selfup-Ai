@@ -1,0 +1,22 @@
+{
+  "nodes": [
+    {"id": "authstore_ts", "label": "Auth Store", "file_type": "code", "source_file": "web/src/store/authStore.ts"},
+    {"id": "uistore_ts", "label": "UI Store", "file_type": "code", "source_file": "web/src/store/uiStore.ts"},
+    {"id": "gamificationservice_ts", "label": "Gamification Service", "file_type": "code", "source_file": "web/src/lib/gamification.service.ts"},
+    {"id": "questservice_ts", "label": "Quest Service", "file_type": "code", "source_file": "web/src/lib/quest.service.ts"},
+    {"id": "badgeservice_ts", "label": "Badge Service", "file_type": "code", "source_file": "web/src/lib/badge.service.ts"},
+    {"id": "supabase_ts", "label": "Supabase Client", "file_type": "code", "source_file": "web/src/lib/supabase.ts"},
+    {"id": "ai_memory_ts", "label": "AI Memory Utils", "file_type": "code", "source_file": "web/src/lib/ai-memory.ts"},
+    {"id": "streakcard_tsx", "label": "StreakCard Component", "file_type": "code", "source_file": "web/src/components/gamification/StreakCard.tsx"}
+  ],
+  "edges": [
+    {"source": "authstore_ts", "target": "supabase_ts", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0},
+    {"source": "gamificationservice_ts", "target": "supabase_ts", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0},
+    {"source": "questservice_ts", "target": "supabase_ts", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0},
+    {"source": "streakcard_tsx", "target": "gamificationservice_ts", "relation": "references", "confidence": "INFERRED", "confidence_score": 0.8},
+    {"source": "badgeservice_ts", "target": "gamificationservice_ts", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.9}
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

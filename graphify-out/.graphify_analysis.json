@@ -1,0 +1,836 @@
+{
+  "communities": {
+    "0": [
+      "abandon_route_post",
+      "accept_route_post",
+      "batch_route_patch",
+      "complete_route_post",
+      "exercises_route_get",
+      "friends_route_get",
+      "friends_route_post",
+      "generate_route_post",
+      "habits_route_get",
+      "habits_route_post",
+      "leaderboard_route_get",
+      "lib_api_auth_verifyauth",
+      "log_route_post",
+      "logs_route_get",
+      "logs_route_post",
+      "memory_route_delete",
+      "memory_route_get",
+      "memory_route_post",
+      "memory_route_put",
+      "moodboard_route_get",
+      "moodboard_route_post",
+      "outfits_route_get",
+      "outfits_route_post",
+      "plans_route_get",
+      "plans_route_post",
+      "pomodoro_route_get",
+      "pomodoro_route_patch",
+      "pomodoro_route_post",
+      "profile_route_patch",
+      "progress_route_post",
+      "quests_route_get",
+      "roadmap_route_get",
+      "search_route_post",
+      "sessions_route_get",
+      "sessions_route_post",
+      "streak_freeze_route_post",
+      "tasks_route_get",
+      "tasks_route_post",
+      "transactions_route_get",
+      "user_route_get",
+      "web_src_app_api_ai_memory_route_ts",
+      "web_src_app_api_fitness_exercises_route_ts",
+      "web_src_app_api_fitness_logs_route_ts",
+      "web_src_app_api_fitness_plans_route_ts",
+      "web_src_app_api_habits_id_log_route_ts",
+      "web_src_app_api_habits_route_ts",
+      "web_src_app_api_pomodoro_route_ts",
+      "web_src_app_api_quests_generate_route_ts",
+      "web_src_app_api_quests_id_abandon_route_ts",
+      "web_src_app_api_quests_id_accept_route_ts",
+      "web_src_app_api_quests_id_complete_route_ts",
+      "web_src_app_api_quests_id_progress_route_ts",
+      "web_src_app_api_quests_route_ts",
+      "web_src_app_api_settings_profile_route_ts",
+      "web_src_app_api_skills_id_roadmap_route_ts",
+      "web_src_app_api_skills_id_sessions_route_ts",
+      "web_src_app_api_social_friends_route_ts",
+      "web_src_app_api_social_leaderboard_route_ts",
+      "web_src_app_api_style_moodboard_route_ts",
+      "web_src_app_api_style_outfits_route_ts",
+      "web_src_app_api_tasks_batch_route_ts",
+      "web_src_app_api_tasks_route_ts",
+      "web_src_app_api_user_route_ts",
+      "web_src_app_api_user_streak_freeze_route_ts",
+      "web_src_app_api_user_transactions_route_ts",
+      "web_src_app_api_youtube_search_route_ts",
+      "web_src_lib_api_auth_ts"
+    ],
+    "1": [
+      "fitness_nutritionview_fetchdata",
+      "fitness_nutritionview_handleaddwater",
+      "fitness_nutritionview_handlelogfood",
+      "fitness_nutritionview_macrobar",
+      "time_scheduleview_getcurrenttimetop",
+      "time_scheduleview_gettaskstyle",
+      "time_scheduleview_handleautoschedule",
+      "time_scheduleview_handledragstart",
+      "time_scheduleview_handlenextday",
+      "time_scheduleview_handlepreviousday",
+      "time_scheduleview_handlerevertschedule",
+      "time_scheduleview_handletimelinedrop",
+      "time_scheduleview_handletimelinemouseenter",
+      "time_scheduleview_handletoday",
+      "time_scheduleview_handleunscheduletask",
+      "time_timedashboard_handleaddchecklist",
+      "time_timedashboard_handleaddhabit",
+      "time_timedashboard_handleaddtodo",
+      "time_timedashboard_handledeleteitem",
+      "time_timedashboard_handlehabitaction",
+      "time_timedashboard_handleopenadvancedadd",
+      "time_timedashboard_handletaskstatuschange",
+      "time_timedashboard_handleupdateitem",
+      "time_timedashboard_togglechecklist",
+      "web_src_components_fitness_nutritionview_tsx",
+      "web_src_components_time_scheduleview_tsx",
+      "web_src_components_time_timedashboard_tsx"
+    ],
+    "2": [
+      "auto_schedule_route_post",
+      "chat_route_delete",
+      "chat_route_get",
+      "chat_route_post",
+      "lib_ai_actions_executeactions",
+      "lib_ai_actions_handlecreatetask",
+      "lib_ai_actions_handlememoryupdate",
+      "lib_ai_actions_handleskillroadmap",
+      "lib_ai_actions_parseactions",
+      "lib_ai_memory_clearusermemory",
+      "lib_ai_memory_extractandsavememory",
+      "lib_ai_memory_fetchusermemory",
+      "lib_ai_memory_formatmemorycontext",
+      "lib_ai_memory_savememory",
+      "lib_gemma_generateresponse",
+      "questions_route_post",
+      "suggest_route_post",
+      "web_src_app_api_ai_chat_route_ts",
+      "web_src_app_api_ai_habits_suggest_route_ts",
+      "web_src_app_api_onboarding_questions_route_ts",
+      "web_src_app_api_time_auto_schedule_route_ts",
+      "web_src_lib_ai_actions_ts",
+      "web_src_lib_ai_memory_ts",
+      "web_src_lib_gemma_ts"
+    ],
+    "3": [
+      "constants_gamification_calculatehpdamagereduction",
+      "constants_gamification_calculatemaxhp",
+      "constants_gamification_gethpstate",
+      "constants_gamification_getleveltitle",
+      "constants_gamification_getrank",
+      "constants_gamification_getrankletter",
+      "constants_gamification_getxpmodifier",
+      "constants_gamification_xptonextlevel",
+      "lib_gamification_service_gamificationservice",
+      "lib_gamification_service_gamificationservice_addcoins",
+      "lib_gamification_service_gamificationservice_addxp",
+      "lib_gamification_service_gamificationservice_allocatestatpoint",
+      "lib_gamification_service_gamificationservice_constructor",
+      "lib_gamification_service_gamificationservice_damagehp",
+      "lib_gamification_service_gamificationservice_getweeklyactivity",
+      "lib_gamification_service_gamificationservice_healhp",
+      "lib_gamification_service_gamificationservice_purchasestreakfreeze",
+      "lib_gamification_service_gamificationservice_updateoverallstreak",
+      "web_src_constants_gamification_ts",
+      "web_src_lib_gamification_service_ts"
+    ],
+    "4": [
+      "lib_queue_addaitask",
+      "lib_worker_executeaitask",
+      "lib_worker_setupaiworker",
+      "queue_route_get",
+      "queue_route_post",
+      "recommendations_route_get",
+      "recommendations_route_post",
+      "skills_route_get",
+      "skills_route_post",
+      "web_src_app_api_ai_queue_route_ts",
+      "web_src_app_api_skills_route_ts",
+      "web_src_app_api_style_recommendations_route_ts",
+      "web_src_lib_queue_ts",
+      "web_src_lib_worker_ts"
+    ],
+    "5": [
+      "body_route_get",
+      "body_route_post",
+      "lib_supabase_server_supabaseserver",
+      "nutrition_route_get",
+      "nutrition_route_post",
+      "onboarding_route_post",
+      "water_route_get",
+      "water_route_post",
+      "web_src_app_api_fitness_body_route_ts",
+      "web_src_app_api_fitness_nutrition_route_ts",
+      "web_src_app_api_fitness_water_route_ts",
+      "web_src_app_api_onboarding_route_ts",
+      "web_src_lib_supabase_server_ts"
+    ],
+    "6": [
+      "style_page_fetchdata",
+      "style_page_fetchmoodboard",
+      "style_page_fetchoutfits",
+      "style_page_handleaddmoodboard",
+      "style_page_handleaddoutfit",
+      "style_page_handlegenerate",
+      "style_page_recommendationcard",
+      "style_page_togglestyle",
+      "web_src_app_protected_style_page_tsx"
+    ],
+    "7": [
+      "lib_utils_capitalize",
+      "lib_utils_cn",
+      "lib_utils_formatdate",
+      "lib_utils_formatnumber",
+      "lib_utils_formatrelative",
+      "lib_utils_percentage",
+      "lib_utils_sleep",
+      "lib_utils_truncate",
+      "web_src_lib_utils_ts"
+    ],
+    "8": [
+      "quests_page_async",
+      "quests_page_fetchbadges",
+      "quests_page_fetchquests",
+      "quests_page_handleabandon",
+      "quests_page_handleaccept",
+      "quests_page_handlecomplete",
+      "quests_page_questcard",
+      "web_src_app_protected_quests_page_tsx"
+    ],
+    "9": [
+      "time_page_cn",
+      "time_page_fetchall",
+      "time_page_handleaddtask",
+      "time_page_handlepause",
+      "time_page_handlereset",
+      "time_page_handlestart",
+      "time_page_handlestatuschange",
+      "web_src_app_protected_time_page_tsx"
+    ],
+    "10": [
+      "lib_dungeon_service_dungeonservice",
+      "lib_dungeon_service_dungeonservice_checkdungeonprogress",
+      "lib_dungeon_service_dungeonservice_constructor",
+      "lib_dungeon_service_dungeonservice_expireuserdungeons",
+      "lib_dungeon_service_dungeonservice_formatdungeon",
+      "lib_dungeon_service_dungeonservice_getactivedungeons",
+      "lib_dungeon_service_dungeonservice_spawndailydungeon",
+      "web_src_lib_dungeon_service_ts"
+    ],
+    "11": [
+      "skills_page_fetchroadmap",
+      "skills_page_fetchsessions",
+      "skills_page_fetchskills",
+      "skills_page_handleaddskill",
+      "skills_page_handlelogsession",
+      "skills_page_handletogglemilestone",
+      "web_src_app_protected_skills_page_tsx"
+    ],
+    "12": [
+      "lib_attribute_service_attributeservice",
+      "lib_attribute_service_attributeservice_checkattributegain",
+      "lib_attribute_service_attributeservice_constructor",
+      "lib_attribute_service_attributeservice_countqualifyingactions",
+      "lib_attribute_service_attributeservice_getactiontypeforattribute",
+      "lib_attribute_service_attributeservice_getattributeprogress",
+      "web_src_lib_attribute_service_ts"
+    ],
+    "13": [
+      "lib_quest_service_questservice",
+      "lib_quest_service_questservice_checkandupdateprogress",
+      "lib_quest_service_questservice_computeexpiration",
+      "lib_quest_service_questservice_constructor",
+      "lib_quest_service_questservice_expirestalequests",
+      "lib_quest_service_questservice_gettargetvalue",
+      "web_src_lib_quest_service_ts"
+    ],
+    "14": [
+      "coin_economy",
+      "fitness_module",
+      "gamification_system",
+      "habit_tracking",
+      "streak_system",
+      "task_management",
+      "xp_system"
+    ],
+    "15": [
+      "chat_page_fetchconversations",
+      "chat_page_fetchmessages",
+      "chat_page_handledeletechat",
+      "chat_page_handlesendmessage",
+      "chat_page_startnewchat",
+      "web_src_app_protected_chat_page_tsx"
+    ],
+    "16": [
+      "onboarding_page_fetchaiquestions",
+      "onboarding_page_handleback",
+      "onboarding_page_handlecomplete",
+      "onboarding_page_handlenext",
+      "onboarding_page_togglegoal",
+      "web_src_app_onboarding_page_tsx"
+    ],
+    "17": [
+      "time_habitsview_handleaddhabit",
+      "time_habitsview_handleaisuggest",
+      "time_habitsview_handlecompletehabit",
+      "time_habitsview_handledeletehabit",
+      "time_habitsview_handleupdatehabit",
+      "web_src_components_time_habitsview_tsx"
+    ],
+    "18": [
+      "lib_badge_service_badgeservice",
+      "lib_badge_service_badgeservice_awardbadge",
+      "lib_badge_service_badgeservice_checkbadgeunlocks",
+      "lib_badge_service_badgeservice_constructor",
+      "lib_badge_service_badgeservice_getuserbadges",
+      "web_src_lib_badge_service_ts"
+    ],
+    "19": [
+      "authstore_ts",
+      "badgeservice_ts",
+      "gamificationservice_ts",
+      "questservice_ts",
+      "streakcard_tsx",
+      "supabase_ts"
+    ],
+    "20": [
+      "id_route_delete",
+      "id_route_patch",
+      "web_src_app_api_habits_id_route_ts",
+      "web_src_app_api_milestones_id_route_ts",
+      "web_src_app_api_tasks_id_route_ts"
+    ],
+    "21": [
+      "signup_page_handlegooglesignup",
+      "signup_page_handlesignup",
+      "signup_page_updatefield",
+      "web_src_app_auth_signup_page_tsx"
+    ],
+    "22": [
+      "fitness_page_fetchdashboarddata",
+      "fitness_page_handlegenerateplan",
+      "fitness_page_handleopenaimodal",
+      "web_src_app_protected_fitness_page_tsx"
+    ],
+    "23": [
+      "settings_page_handlesaveai",
+      "settings_page_handlesaveprofile",
+      "settings_page_sectionheader",
+      "web_src_app_protected_settings_page_tsx"
+    ],
+    "24": [
+      "gamification_route_get",
+      "gamification_route_getdb",
+      "gamification_route_post",
+      "web_src_app_api_gamification_route_ts"
+    ],
+    "25": [
+      "dashboard_systemknowledge_deletememory",
+      "dashboard_systemknowledge_fetchmemories",
+      "dashboard_systemknowledge_formatkey",
+      "web_src_components_dashboard_systemknowledge_tsx"
+    ],
+    "26": [
+      "login_page_handlegooglelogin",
+      "login_page_handlelogin",
+      "web_src_app_auth_login_page_tsx"
+    ],
+    "27": [
+      "protected_layout_loadingscreen",
+      "protected_layout_protectedlayout",
+      "web_src_app_protected_layout_tsx"
+    ],
+    "28": [
+      "leaderboard_page_fetchall",
+      "leaderboard_page_handleaddfriend",
+      "web_src_app_protected_social_leaderboard_page_tsx"
+    ],
+    "29": [
+      "badges_route_get",
+      "web_src_app_api_gamification_badges_route_ts",
+      "web_src_app_api_user_badges_route_ts"
+    ],
+    "30": [
+      "activities_route_get",
+      "web_src_app_api_social_activities_route_ts",
+      "web_src_app_api_user_activities_route_ts"
+    ],
+    "31": [
+      "fitness_bodyview_fetchmetrics",
+      "fitness_bodyview_handlesubmit",
+      "web_src_components_fitness_bodyview_tsx"
+    ],
+    "32": [
+      "gamification_activityfeed_cn",
+      "gamification_activityfeed_fetchactivities",
+      "web_src_components_gamification_activityfeed_tsx"
+    ],
+    "33": [
+      "layout_appshell_getisactive",
+      "layout_appshell_handlesignout",
+      "web_src_components_layout_appshell_tsx"
+    ],
+    "34": [
+      "store_uistore_applytheme",
+      "store_uistore_getinitialtheme",
+      "web_src_store_uistore_ts"
+    ],
+    "35": [
+      "ai_companion",
+      "ai_memory_system",
+      "skill_roadmaps"
+    ],
+    "36": [
+      "backend_api",
+      "browser_extension",
+      "focus_mode"
+    ],
+    "37": [
+      "scratch_replace_colors_js",
+      "scratch_replace_colors_walk"
+    ],
+    "38": [
+      "scratch_test_gamification_testgamification",
+      "web_scratch_test_gamification_ts"
+    ],
+    "39": [
+      "src_instrumentation_register",
+      "web_src_instrumentation_ts"
+    ],
+    "40": [
+      "app_layout_rootlayout",
+      "web_src_app_layout_tsx"
+    ],
+    "41": [
+      "app_page_home",
+      "web_src_app_page_tsx"
+    ],
+    "42": [
+      "forgot_password_page_handlereset",
+      "web_src_app_auth_forgot_password_page_tsx"
+    ],
+    "43": [
+      "friends_page_friendspage",
+      "web_src_app_protected_social_friends_page_tsx"
+    ],
+    "44": [
+      "ai_route_get",
+      "web_src_app_api_ai_route_ts"
+    ],
+    "45": [
+      "auth_route_get",
+      "web_src_app_api_auth_route_ts"
+    ],
+    "46": [
+      "fitness_route_get",
+      "web_src_app_api_fitness_route_ts"
+    ],
+    "47": [
+      "notifications_route_get",
+      "web_src_app_api_notifications_route_ts"
+    ],
+    "48": [
+      "social_route_get",
+      "web_src_app_api_social_route_ts"
+    ],
+    "49": [
+      "style_route_get",
+      "web_src_app_api_style_route_ts"
+    ],
+    "50": [
+      "time_route_get",
+      "web_src_app_api_time_route_ts"
+    ],
+    "51": [
+      "chat_chatinput_chatinput",
+      "web_src_components_chat_chatinput_tsx"
+    ],
+    "52": [
+      "chat_chatmessage_chatmessage",
+      "web_src_components_chat_chatmessage_tsx"
+    ],
+    "53": [
+      "fitness_exercisepicker_fetchexercises",
+      "web_src_components_fitness_exercisepicker_tsx"
+    ],
+    "54": [
+      "fitness_workoutcard_workoutcard",
+      "web_src_components_fitness_workoutcard_tsx"
+    ],
+    "55": [
+      "gamification_badgegrid_badgeitem",
+      "web_src_components_gamification_badgegrid_tsx"
+    ],
+    "56": [
+      "gamification_badgeshowcase_fetchbadges",
+      "web_src_components_gamification_badgeshowcase_tsx"
+    ],
+    "57": [
+      "gamification_streakcard_handlepurchasefreeze",
+      "web_src_components_gamification_streakcard_tsx"
+    ],
+    "58": [
+      "skills_roadmaptimeline_handlefetchresources",
+      "web_src_components_skills_roadmaptimeline_tsx"
+    ],
+    "59": [
+      "skills_skillcard_skillcard",
+      "web_src_components_skills_skillcard_tsx"
+    ],
+    "60": [
+      "style_moodboard_handlesubmit",
+      "web_src_components_style_moodboard_tsx"
+    ],
+    "61": [
+      "style_outfitlogcard_handlesubmit",
+      "web_src_components_style_outfitlogcard_tsx"
+    ],
+    "62": [
+      "hooks_useaimemory_useaimemory",
+      "web_src_lib_hooks_useaimemory_ts"
+    ],
+    "63": [
+      "web_eslint_config_mjs"
+    ],
+    "64": [
+      "web_next_env_d_ts"
+    ],
+    "65": [
+      "web_next_config_ts"
+    ],
+    "66": [
+      "web_postcss_config_mjs"
+    ],
+    "67": [
+      "web_tailwind_config_ts"
+    ],
+    "68": [
+      "web_src_worker_runner_ts"
+    ],
+    "69": [
+      "web_src_app_providers_tsx"
+    ],
+    "70": [
+      "web_src_app_protected_dashboard_page_tsx"
+    ],
+    "71": [
+      "web_src_components_chat_chatsidebar_tsx"
+    ],
+    "72": [
+      "web_src_components_chat_markdownrenderer_tsx"
+    ],
+    "73": [
+      "web_src_components_fitness_aiplangeneratormodal_tsx"
+    ],
+    "74": [
+      "web_src_components_fitness_workoutview_tsx"
+    ],
+    "75": [
+      "web_src_components_gamification_aicoinwalletmodal_tsx"
+    ],
+    "76": [
+      "web_src_components_gamification_levelupmodal_tsx"
+    ],
+    "77": [
+      "web_src_components_gamification_streakhistory_tsx"
+    ],
+    "78": [
+      "web_src_components_skills_skillsessionshistory_tsx"
+    ],
+    "79": [
+      "web_src_components_time_habitcalendargrid_tsx"
+    ],
+    "80": [
+      "web_src_components_time_habitheatmap_tsx"
+    ],
+    "81": [
+      "web_src_components_ui_systemframe_tsx"
+    ],
+    "82": [
+      "web_src_constants_app_ts"
+    ],
+    "83": [
+      "web_src_constants_routes_ts"
+    ],
+    "84": [
+      "web_src_lib_queryclient_ts"
+    ],
+    "85": [
+      "web_src_lib_redis_ts"
+    ],
+    "86": [
+      "web_src_lib_supabase_ts"
+    ],
+    "87": [
+      "web_src_store_authstore_ts"
+    ],
+    "88": [
+      "architecture_overview"
+    ],
+    "89": [
+      "frontend_web"
+    ],
+    "90": [
+      "database_schema"
+    ],
+    "91": [
+      "uistore_ts"
+    ],
+    "92": [
+      "ai_memory_ts"
+    ]
+  },
+  "cohesion": {
+    "0": 0.04,
+    "1": 0.1,
+    "2": 0.12,
+    "3": 0.16,
+    "4": 0.18,
+    "5": 0.21,
+    "6": 0.28,
+    "7": 0.22,
+    "8": 0.39,
+    "9": 0.32,
+    "10": 0.29,
+    "11": 0.52,
+    "12": 0.43,
+    "13": 0.33,
+    "14": 0.29,
+    "15": 0.47,
+    "16": 0.4,
+    "17": 0.33,
+    "18": 0.4,
+    "19": 0.33,
+    "20": 0.5,
+    "21": 0.5,
+    "22": 0.5,
+    "23": 0.5,
+    "24": 0.83,
+    "25": 0.5,
+    "26": 0.67,
+    "27": 0.67,
+    "28": 1.0,
+    "29": 0.67,
+    "30": 0.67,
+    "31": 1.0,
+    "32": 0.67,
+    "33": 0.67,
+    "34": 0.67,
+    "35": 0.67,
+    "36": 0.67,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0
+  },
+  "gods": [
+    {
+      "id": "lib_api_auth_verifyauth",
+      "label": "verifyAuth()",
+      "degree": 59
+    },
+    {
+      "id": "fitness_nutritionview_fetchdata",
+      "label": "fetchData()",
+      "degree": 12
+    },
+    {
+      "id": "lib_supabase_server_supabaseserver",
+      "label": "supabaseServer()",
+      "degree": 12
+    },
+    {
+      "id": "lib_gamification_service_gamificationservice",
+      "label": "GamificationService",
+      "degree": 10
+    },
+    {
+      "id": "chat_route_post",
+      "label": "POST()",
+      "degree": 9
+    },
+    {
+      "id": "lib_dungeon_service_dungeonservice",
+      "label": "DungeonService",
+      "degree": 7
+    },
+    {
+      "id": "lib_attribute_service_attributeservice",
+      "label": "AttributeService",
+      "degree": 6
+    },
+    {
+      "id": "lib_gemma_generateresponse",
+      "label": "generateResponse()",
+      "degree": 6
+    },
+    {
+      "id": "lib_quest_service_questservice",
+      "label": "QuestService",
+      "degree": 6
+    },
+    {
+      "id": "lib_queue_addaitask",
+      "label": "addAiTask()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "GET()",
+      "target": "verifyAuth()",
+      "source_files": [
+        "web\\src\\app\\api\\ai\\chat\\route.ts",
+        "web\\src\\lib\\api-auth.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "POST()",
+      "target": "verifyAuth()",
+      "source_files": [
+        "web\\src\\app\\api\\ai\\chat\\route.ts",
+        "web\\src\\lib\\api-auth.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "POST()",
+      "target": "parseActions()",
+      "source_files": [
+        "web\\src\\app\\api\\ai\\chat\\route.ts",
+        "web\\src\\lib\\ai-actions.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `parseActions()` unexpectedly reaches hub `POST()`"
+    },
+    {
+      "source": "POST()",
+      "target": "extractAndSaveMemory()",
+      "source_files": [
+        "web\\src\\app\\api\\ai\\chat\\route.ts",
+        "web\\src\\lib\\ai-memory.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `extractAndSaveMemory()` unexpectedly reaches hub `POST()`"
+    },
+    {
+      "source": "DELETE()",
+      "target": "verifyAuth()",
+      "source_files": [
+        "web\\src\\app\\api\\ai\\chat\\route.ts",
+        "web\\src\\lib\\api-auth.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `verifyAuth()` connect `Community 0` to `Community 2`, `Community 4`, `Community 5`, `Community 20`, `Community 24`, `Community 29`, `Community 30`?",
+      "why": "High betweenness centrality (0.098) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `POST()` connect `Community 2` to `Community 0`?",
+      "why": "High betweenness centrality (0.017) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `supabaseServer()` connect `Community 5` to `Community 0`?",
+      "why": "High betweenness centrality (0.016) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 58 inferred relationships involving `verifyAuth()` (e.g. with `GET()` and `POST()`) actually correct?",
+      "why": "`verifyAuth()` has 58 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 10 inferred relationships involving `fetchData()` (e.g. with `handleTimelineDrop()` and `handleAutoSchedule()`) actually correct?",
+      "why": "`fetchData()` has 10 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 11 inferred relationships involving `supabaseServer()` (e.g. with `GET()` and `DELETE()`) actually correct?",
+      "why": "`supabaseServer()` has 11 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 7 inferred relationships involving `POST()` (e.g. with `verifyAuth()` and `fetchUserMemory()`) actually correct?",
+      "why": "`POST()` has 7 INFERRED edges - model-reasoned connections that need verification."
+    }
+  ]
+}

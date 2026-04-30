@@ -351,7 +351,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
             {/* Left: Avatar & Basic Stats */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-4 space-y-6">
               <div className="flex flex-col md:flex-row items-center gap-5">
                 <div className="relative">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 max-w-lg">
+              <div className="flex flex-col gap-4 max-w-sm">
                 {/* Health (HP) */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-end px-1">
@@ -431,7 +431,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right: Streak Card */}
+            {/* Middle: Streak Card */}
             <div className="lg:col-span-5">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
@@ -443,19 +443,20 @@ export default function DashboardPage() {
                 onViewHistory={() => setShowStreakHistory(true)}
               />
             </div>
+
+            {/* Right: Achievements / Badges */}
+            <div className="lg:col-span-3 flex flex-col relative">
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="w-2 h-px bg-blue-400" />
+                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <BadgeShowcase />
+              </div>
+            </div>
           </div>
         </div>
       </motion.section>
-
-      {/* ─── Achievements Row ─── */}
-      <motion.div variants={itemAnim} className="bg-slate-950/40 rounded-xl p-5 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)] relative overflow-hidden group">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
-        <div className="flex items-center gap-1.5 mb-4">
-          <div className="w-4 h-px bg-blue-400" />
-          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-400/80 italic">ACHIEVEMENTS ACQUIRED</p>
-        </div>
-        <BadgeShowcase />
-      </motion.div>
 
       {/* ─── Main Content: 4-Column Grid + Activity Feed ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">

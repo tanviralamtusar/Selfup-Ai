@@ -291,8 +291,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* ─── Main Content ─── */}
       <main className="lg:pl-56 pt-14 min-h-screen">
         <div className={cn(
-          "mx-auto",
-          pathname === ROUTES.CHAT ? "p-0 max-w-none h-[calc(100vh-136px)] lg:h-[calc(100vh-56px)]" : "p-4 md:p-8 max-w-7xl"
+          "w-full",
+          pathname === ROUTES.CHAT ? "p-0 h-[calc(100vh-136px)] lg:h-[calc(100vh-56px)]" : "p-4 md:p-8 lg:p-10"
         )}>
           <AnimatePresence mode="wait">
             <motion.div

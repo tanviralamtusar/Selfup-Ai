@@ -181,6 +181,10 @@ export default function DashboardPage() {
   const [badges, setBadges] = useState<BadgeItem[]>([])
   const [badgesLoading, setBadgesLoading] = useState(true)
 
+  // Quests & Tasks
+  const [quests, setQuests] = useState<any[]>([])
+  const [tasks, setTasks] = useState<any[]>([])
+
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50, statPointsAwarded: 1, rankUp: undefined as { oldRank: string; newRank: string; rankTitle: string } | undefined })
@@ -209,6 +213,8 @@ export default function DashboardPage() {
       fetchBadges()
       fetchStreakStats()
       fetchDungeons()
+      fetchQuests()
+      fetchTasks()
     }
   }, [session])
 
@@ -273,6 +279,20 @@ export default function DashboardPage() {
         const data = await res.json()
         if (data.data?.dungeons) setActiveDungeons(data.data.dungeons)
       }
+    } catch { /* silently fail */ }
+  }
+
+  const fetchQuests = async () => {
+    try {
+      const res = await fetch('/api/quests?type=daily', { headers: headers() })
+      if (res.ok) setQuests(await res.json())
+    } catch { /* silently fail */ }
+  }
+
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch('/api/tasks', { headers: headers() })
+      if (res.ok) setTasks(await res.json())
     } catch { /* silently fail */ }
   }
 
@@ -431,8 +451,19 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Middle: Streak Card */}
-            <div className="lg:col-span-5">
+            {/* Middle: Achievements / Badges */}
+            <div className="lg:col-span-4 flex flex-col relative">
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="w-2 h-px bg-blue-400" />
+                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <BadgeShowcase />
+              </div>
+            </div>
+
+            {/* Right: Streak Card */}
+            <div className="lg:col-span-4">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}
@@ -442,17 +473,6 @@ export default function DashboardPage() {
                 onPurchase={fetchStreakStats}
                 onViewHistory={() => setShowStreakHistory(true)}
               />
-            </div>
-
-            {/* Right: Achievements / Badges */}
-            <div className="lg:col-span-3 flex flex-col relative">
-              <div className="flex items-center gap-1.5 mb-2">
-                <div className="w-2 h-px bg-blue-400" />
-                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <BadgeShowcase />
-              </div>
             </div>
           </div>
         </div>
@@ -529,25 +549,41 @@ export default function DashboardPage() {
                 </button>
               </div>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 bg-slate-900/40 p-3 rounded-lg border border-blue-500/20 hover:bg-slate-900/60 transition-all group cursor-pointer italic relative overflow-hidden">
-                  <div className="w-5 h-5 rounded border border-blue-500/30 group-hover:border-blue-400 flex items-center justify-center transition-all bg-slate-950">
-                    <Check className="text-blue-400 opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" size={12} strokeWidth={3} />
+                {quests.length === 0 ? (
+                  <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active quests</p>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Selfup Maintenance: Read 20 Pgs</p>
-                    <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-blue-500/10">
-                      <div className="bg-blue-500 h-full w-[40%] transition-all duration-700 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                ) : quests.slice(0, 4).map(quest => (
+                  <div key={quest.id} className={cn(
+                    "flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden",
+                    quest.user_status === 'completed' 
+                      ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' 
+                      : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer'
+                  )}>
+                    <div className={cn(
+                      "w-5 h-5 rounded flex items-center justify-center transition-all",
+                      quest.user_status === 'completed'
+                        ? 'bg-cyan-500/20 border border-cyan-500/30'
+                        : 'border border-cyan-500/30 group-hover:border-cyan-400 bg-slate-950'
+                    )}>
+                      <Check className={cn(
+                        "text-cyan-400",
+                        quest.user_status === 'completed' ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
+                      )} size={12} strokeWidth={3} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={cn(
+                        "text-[11px] font-black uppercase tracking-tight",
+                        quest.user_status === 'completed' ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
+                      )}>{quest.title}</p>
+                      {quest.user_status !== 'completed' && quest.target_value > 1 && (
+                        <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-cyan-500/10">
+                          <div className="bg-cyan-500 h-full transition-all duration-700 shadow-[0_0_8px_rgba(34,211,238,0.4)]" style={{ width: `${Math.min(100, (quest.current_value / quest.target_value) * 100)}%` }} />
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 bg-slate-900/20 p-3 rounded-lg border border-blue-500/10 opacity-50 cursor-default italic grayscale">
-                  <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                    <Check className="text-blue-400" size={12} strokeWidth={3} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[11px] font-black text-blue-500/60 uppercase line-through decoration-blue-500/40 tracking-tight">Code Refactoring: Practice</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -590,18 +626,35 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  <div className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic">
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/5 blur-xl rounded-full" />
-                    <div className="flex items-start justify-between gap-3 relative z-10">
-                      <div className="space-y-2">
-                        <p className="text-[11px] font-black leading-snug text-blue-50 group-hover:text-blue-400 transition-colors uppercase tracking-tight">Finalize Core Specs</p>
-                        <span className="inline-flex px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 text-[7px] font-black uppercase tracking-[0.3em] border border-rose-500/20">PRIORITY: HIGH</span>
-                      </div>
-                      <div className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all group-hover:border-blue-400">
-                        <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
+                  {tasks.filter(t => t.status !== 'done').length === 0 ? (
+                    <div className="p-6 rounded border border-dashed border-rose-500/10 text-center bg-slate-900/20">
+                      <p className="text-[10px] text-rose-500/30 font-black uppercase tracking-[0.2em] italic">No pending tasks</p>
+                    </div>
+                  ) : tasks.filter(t => t.status !== 'done').sort((a, b) => {
+                      const pValues = { critical: 3, high: 2, medium: 1, low: 0 };
+                      return (pValues[b.priority as keyof typeof pValues] || 0) - (pValues[a.priority as keyof typeof pValues] || 0);
+                    }).slice(0, 3).map(task => (
+                    <div key={task.id} className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic">
+                      <div className={cn(
+                        "absolute top-0 right-0 w-16 h-16 blur-xl rounded-full",
+                        task.priority === 'critical' ? 'bg-rose-500/5' : task.priority === 'high' ? 'bg-orange-500/5' : 'bg-blue-500/5'
+                      )} />
+                      <div className="flex items-start justify-between gap-3 relative z-10">
+                        <div className="space-y-2">
+                          <p className="text-[11px] font-black leading-snug text-blue-50 group-hover:text-blue-400 transition-colors uppercase tracking-tight">{task.title}</p>
+                          <span className={cn(
+                            "inline-flex px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-[0.3em] border",
+                            task.priority === 'critical' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 
+                            task.priority === 'high' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 
+                            'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          )}>PRIORITY: {task.priority.toUpperCase()}</span>
+                        </div>
+                        <div className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all group-hover:border-blue-400">
+                          <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -617,21 +670,9 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {[
-                    { icon: Gamepad2, title: 'Restoration: 1hr', cost: '150 AiC', color: 'text-blue-400' },
-                    { icon: Shield, title: 'Selfup Guard', cost: '2.5K AiC', color: 'text-cyan-400' }
-                  ].map(reward => (
-                    <div key={reward.title} className="group relative overflow-hidden bg-slate-900/40 p-2.5 rounded-lg border border-blue-500/10 hover:bg-slate-900/60 hover:border-blue-500/30 transition-all flex items-center gap-3 italic cursor-pointer">
-                      <div className={cn("w-9 h-9 rounded bg-slate-950 flex items-center justify-center border border-blue-500/10 shadow-inner group-hover:scale-110 transition-transform", reward.color)}>
-                        <reward.icon size={16} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[11px] font-black tracking-tight text-blue-50 uppercase">{reward.title}</p>
-                        <p className="text-[8px] font-black text-blue-500/60 uppercase tracking-[0.2em]">{reward.cost}</p>
-                      </div>
-                      <button className="px-3 py-1.5 bg-blue-500/10 rounded text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 hover:bg-blue-500 hover:text-white transition-all active:scale-95 border border-blue-500/20 italic">Exchange</button>
-                    </div>
-                  ))}
+                  <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No exchange items available</p>
+                  </div>
                 </div>
               </div>
             </div>

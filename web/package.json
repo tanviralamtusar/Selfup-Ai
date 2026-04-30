@@ -51,6 +51,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.15",
+    "react-rewrite-cli": "^0.1.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

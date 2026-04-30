@@ -64,7 +64,7 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
 
   return (
     <div className={cn(
-      "relative group overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-6 border transition-all duration-500 shadow-2xl",
+      "relative group overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-5 border transition-all duration-500 shadow-2xl",
       isAtRisk ? "border-rose-500/30 shadow-rose-500/5" : "border-blue-500/20 shadow-blue-500/5"
     )}>
       {/* Background Glow */}
@@ -118,7 +118,7 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
       </div>
 
       {/* Weekly Activity Tracker */}
-      <div className="mt-8 space-y-3 relative z-10">
+      <div className="mt-6 space-y-3 relative z-10">
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400/40 flex items-center gap-1.5">
             <Calendar size={10} /> Data Sync
@@ -141,27 +141,27 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 relative z-10">
-        <div className="space-y-1.5 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+      <div className="mt-6 flex flex-col gap-3 relative z-10">
+        <div className="space-y-1 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-blue-400/40 uppercase tracking-widest text-[8px] font-black">
-            <TrendingUp size={10} /> Peak Output
+            <TrendingUp size={10} /> Peak
           </div>
-          <p className="text-lg font-black text-blue-100 tabular-nums italic">{bestStreak} <span className="text-[10px] text-blue-400/20 uppercase not-italic">Days</span></p>
+          <p className="text-sm font-black text-blue-100 tabular-nums italic">{bestStreak} <span className="text-[8px] text-blue-400/20 uppercase not-italic">Days</span></p>
         </div>
 
-        <div className="space-y-1.5 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+        <div className="space-y-1 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-blue-400/40 uppercase tracking-widest text-[8px] font-black">
-            <Shield size={10} /> Buffer Count
+            <Shield size={10} /> Buffer
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-lg font-black text-blue-100 tabular-nums italic">{freezeCount}</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm font-black text-blue-100 tabular-nums italic">{freezeCount}</p>
             <button 
               onClick={handlePurchaseFreeze}
               disabled={isPurchasing}
-              className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center transition-all hover:bg-blue-500/40 hover:text-blue-100 active:scale-95 disabled:opacity-50 border border-blue-400/30"
+              className="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center transition-all hover:bg-blue-500/40 hover:text-blue-100 active:scale-95 disabled:opacity-50 border border-blue-400/30"
               title="Buy Streak Freeze (100 AiC)"
             >
-              {isPurchasing ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+              {isPurchasing ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
             </button>
           </div>
         </div>
@@ -191,7 +191,7 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
       </div>
 
       {/* Footer Actions */}
-      <div className="mt-6 pt-4 border-t border-blue-500/10 flex justify-center relative z-10">
+      <div className="mt-4 pt-3 border-t border-blue-500/10 flex justify-center relative z-10">
         <button 
           onClick={onViewHistory}
           className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400/40 hover:text-blue-300 transition-colors flex items-center gap-1 group"

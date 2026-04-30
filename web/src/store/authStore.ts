@@ -29,6 +29,22 @@ export interface UserProfile {
   theme: 'dark' | 'light'
   is_public: boolean
   created_at: string
+  // Gamification v2.0
+  hp: number
+  max_hp: number
+  hp_state: 'healthy' | 'weakened' | 'critical' | 'collapse'
+  attr_str: number
+  attr_int: number
+  attr_agi: number
+  attr_vit: number
+  attr_cha: number
+  stat_points: number
+  rank: string
+  rpg_class: string[]
+  streak_fitness: number
+  streak_skills: number
+  streak_habits: number
+  streak_tasks: number
 }
 
 interface AuthState {

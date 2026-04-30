@@ -4,9 +4,9 @@ import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
 import { cn, formatNumber } from '@/lib/utils'
-import { xpToNextLevel } from '@/constants/gamification'
+import { xpToNextLevel, getRank, getRankLetter, getHpState, ATTRIBUTES, type HpState, type AttributeKey } from '@/constants/gamification'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import {
   PlusCircle,
@@ -121,8 +121,22 @@ interface BadgeItem {
   name: string
   icon: string
   category: string
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'secret'
   earned_at: string
+}
+
+interface ActiveDungeon {
+  id: string
+  tier: string
+  title: string
+  description: string
+  objectives: { action: string; target: number; label: string }[]
+  progress: Record<string, number>
+  xpReward: number
+  coinReward: number
+  status: string
+  expiresAt: string
+  timeRemainingMs: number
 }
 
 export default function DashboardPage() {
@@ -135,9 +149,25 @@ export default function DashboardPage() {
   const coins = profile?.ai_coins ?? 20
   const displayName = profile?.display_name || profile?.username || 'Pathfinder'
 
-  // Dummy values for Health and Mana to match visual requirements
-  const health = 27; const maxHealth = 50; const healthPct = (health / maxHealth) * 100;
-  const mana = 82; const maxMana = 100; const manaPct = (mana / maxMana) * 100;
+  // Real HP from profile
+  const hp = profile?.hp ?? 100
+  const maxHp = profile?.max_hp ?? 100
+  const hpPct = maxHp > 0 ? (hp / maxHp) * 100 : 0
+  const hpState = (profile?.hp_state as HpState) ?? 'healthy'
+
+  // Rank from profile
+  const rankInfo = useMemo(() => getRank(level), [level])
+  const rankLetter = profile?.rank ?? getRankLetter(level)
+
+  // Attributes from profile
+  const attrs = useMemo(() => ({
+    str: profile?.attr_str ?? 0,
+    int: profile?.attr_int ?? 0,
+    agi: profile?.attr_agi ?? 0,
+    vit: profile?.attr_vit ?? 0,
+    cha: profile?.attr_cha ?? 0,
+  }), [profile])
+  const statPoints = profile?.stat_points ?? 0
 
   // Live habits
   const [habits, setHabits] = useState<Habit[]>([])
@@ -153,7 +183,11 @@ export default function DashboardPage() {
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
-  const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50 })
+  const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50, statPointsAwarded: 1, rankUp: undefined as { oldRank: string; newRank: string; rankTitle: string } | undefined })
+
+  // Active dungeons
+  const [activeDungeons, setActiveDungeons] = useState<ActiveDungeon[]>([])
+  const [dungeonCountdown, setDungeonCountdown] = useState<string>('')
 
   // Wallet state
   const [showWalletModal, setShowWalletModal] = useState(false)
@@ -174,8 +208,26 @@ export default function DashboardPage() {
       fetchActivities()
       fetchBadges()
       fetchStreakStats()
+      fetchDungeons()
     }
   }, [session])
+
+  // Dungeon countdown timer
+  useEffect(() => {
+    const activeDungeon = activeDungeons.find(d => d.status === 'active')
+    if (!activeDungeon) { setDungeonCountdown(''); return }
+
+    const interval = setInterval(() => {
+      const remaining = new Date(activeDungeon.expiresAt).getTime() - Date.now()
+      if (remaining <= 0) { setDungeonCountdown('EXPIRED'); clearInterval(interval); return }
+      const h = Math.floor(remaining / 3600000)
+      const m = Math.floor((remaining % 3600000) / 60000)
+      const s = Math.floor((remaining % 60000) / 1000)
+      setDungeonCountdown(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [activeDungeons])
 
   const fetchHabits = async () => {
     try {
@@ -208,7 +260,18 @@ export default function DashboardPage() {
       const res = await fetch('/api/gamification?type=stats', { headers: headers() })
       if (res.ok) {
         const data = await res.json()
-        if (data.weeklyActivity) setWeeklyActivity(data.weeklyActivity)
+        const activity = data.data?.weeklyActivity ?? data.weeklyActivity
+        if (activity) setWeeklyActivity(activity)
+      }
+    } catch { /* silently fail */ }
+  }
+
+  const fetchDungeons = async () => {
+    try {
+      const res = await fetch('/api/gamification?type=dungeons', { headers: headers() })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.data?.dungeons) setActiveDungeons(data.data.dungeons)
       }
     } catch { /* silently fail */ }
   }
@@ -302,15 +365,16 @@ export default function DashboardPage() {
                       <User size={48} className="text-blue-400/80 system-text-glow" />
                     )}
                   </div>
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow">
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow flex items-center gap-2">
+                    <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black border', rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10 shadow-[0_0_10px_rgba(251,191,36,0.3)]' : rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{rankLetter}</span>
                     LVL {level}
                   </div>
                 </div>
 
                 <div className="flex-1 text-center md:text-left space-y-1">
                   <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
-                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Status: Awakened</p>
+                    <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Rank {rankLetter} — {rankInfo.title}</p>
                   </div>
                   <h1 className="text-3xl md:text-4xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
@@ -329,18 +393,23 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Health (HP) */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-end px-1">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 system-text-glow">HP</span>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{health} / {maxHealth}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={cn('text-[10px] font-black uppercase tracking-[0.3em] system-text-glow', hpState === 'healthy' ? 'text-emerald-400' : hpState === 'weakened' ? 'text-amber-400' : 'text-rose-500')}>HP</span>
+                      {hpState !== 'healthy' && (
+                        <span className={cn('text-[7px] font-black uppercase tracking-[0.3em] px-1.5 py-0.5 rounded border', hpState === 'weakened' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : hpState === 'critical' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse' : 'text-rose-500 bg-rose-500/20 border-rose-500/30 animate-pulse')}>{hpState.toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{hp} / {maxHp}</span>
                   </div>
-                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
+                  <div className={cn('h-3 w-full bg-slate-900 rounded-sm p-[1px] border overflow-hidden', hpState === 'critical' || hpState === 'collapse' ? 'border-rose-500/30' : 'border-blue-500/10')}>
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${healthPct}%` }}
-                      className="h-full bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]"
+                      animate={{ width: `${hpPct}%` }}
+                      className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]')}
                     />
                   </div>
                 </div>
@@ -356,21 +425,6 @@ export default function DashboardPage() {
                       initial={{ width: 0 }}
                       animate={{ width: `${xpPercent}%` }}
                       className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
-                    />
-                  </div>
-                </div>
-
-                {/* MP / MANA */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-end px-1">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400 system-text-glow">MP</span>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{mana} / {maxMana}</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${manaPct}%` }}
-                      className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
                     />
                   </div>
                 </div>
@@ -612,13 +666,90 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 relative z-10">
-          <Gauge percent={75} colorClass="text-blue-400" label="STR" title="STRENGTH" />
-          <Gauge percent={60} colorClass="text-cyan-400" label="INT" title="INTELLIGENCE" />
-          <Gauge percent={90} colorClass="text-blue-300" label="AGI" title="AGILITY" />
-          <Gauge percent={30} colorClass="text-rose-500" label="VIT" title="VITALITY" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
+          {ATTRIBUTES.map((attr) => {
+            const value = attrs[attr.key] ?? 0
+            const percent = Math.min(100, (value / 50) * 100)
+            const colorMap: Record<string, string> = { str: 'text-red-400', int: 'text-cyan-400', agi: 'text-blue-300', vit: 'text-green-400', cha: 'text-purple-400' }
+            return (
+              <Gauge
+                key={attr.key}
+                percent={percent}
+                colorClass={colorMap[attr.key] || 'text-blue-400'}
+                label={attr.key.toUpperCase()}
+                title={attr.name.toUpperCase()}
+              />
+            )
+          })}
+          {statPoints > 0 && (
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse">
+                <div className="text-center">
+                  <span className="text-lg font-black text-amber-300">+{statPoints}</span>
+                  <span className="text-[7px] font-black text-amber-400/60 block uppercase tracking-widest">Points</span>
+                </div>
+              </div>
+              <p className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em]">Allocate</p>
+            </div>
+          )}
         </div>
       </motion.section>
+
+      {/* Dungeon Gate Panel */}
+      {activeDungeons.length > 0 && (
+        <motion.section variants={itemAnim} className="relative overflow-hidden rounded-xl bg-slate-950/60 backdrop-blur-xl border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.08)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-rose-500/5 pointer-events-none" />
+          <div className="p-6 relative z-10">
+            <div className="flex items-center gap-1.5 mb-4">
+              <div className="w-5 h-px bg-purple-500" />
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 italic">DUNGEON GATES</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeDungeons.map((dungeon) => {
+                const objectives = dungeon.objectives || []
+                const allCleared = objectives.every((obj, i) => (dungeon.progress[`obj_${i}`] ?? 0) >= obj.target)
+                return (
+                  <div key={dungeon.id} className={cn('p-4 rounded-lg border relative overflow-hidden', dungeon.status === 'cleared' ? 'bg-emerald-500/5 border-emerald-500/20' : dungeon.status === 'expired' || dungeon.status === 'failed' ? 'bg-slate-900/40 border-slate-700/30 opacity-50' : 'bg-slate-900/40 border-purple-500/20 hover:border-purple-400/40 transition-all')}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border', dungeon.tier === 'S' ? 'text-amber-300 border-amber-500/30 bg-amber-500/10' : dungeon.tier === 'A' ? 'text-purple-300 border-purple-500/30 bg-purple-500/10' : dungeon.tier === 'C' ? 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{dungeon.tier}-Rank</span>
+                        <h3 className="text-xs font-black text-blue-50 uppercase tracking-tight italic">{dungeon.title}</h3>
+                      </div>
+                      {dungeon.status === 'active' && dungeonCountdown && (
+                        <span className="text-[10px] font-black text-rose-400 tabular-nums animate-pulse">{dungeonCountdown}</span>
+                      )}
+                      {dungeon.status === 'cleared' && (
+                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">✅ Cleared</span>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {objectives.map((obj, i) => {
+                        const current = dungeon.progress[`obj_${i}`] ?? 0
+                        const pct = Math.min(100, (current / obj.target) * 100)
+                        return (
+                          <div key={i} className="space-y-1">
+                            <div className="flex justify-between">
+                              <span className="text-[9px] font-bold text-blue-200/70 italic">{obj.label}</span>
+                              <span className="text-[9px] font-black text-blue-300/50 tabular-nums">{current}/{obj.target}</span>
+                            </div>
+                            <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-blue-500/10">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} className={cn('h-full rounded-full', pct >= 100 ? 'bg-emerald-500' : 'bg-purple-500')} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="flex items-center gap-3 mt-3 pt-2 border-t border-blue-500/10">
+                      <span className="text-[8px] font-black text-blue-400/60 uppercase tracking-wider">+{dungeon.xpReward} XP</span>
+                      <span className="text-[8px] font-black text-amber-400/60 uppercase tracking-wider">+{dungeon.coinReward} AiC</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       <LevelUpModal
         isOpen={showLevelUp}

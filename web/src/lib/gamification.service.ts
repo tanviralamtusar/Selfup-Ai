@@ -1,13 +1,49 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { xpToNextLevel } from '@/constants/gamification'
+import {
+  xpToNextLevel,
+  getRank,
+  getRankLetter,
+  calculateMaxHp,
+  calculateHpDamageReduction,
+  getHpState,
+  getXpModifier,
+  AICOIN_EARN,
+  STREAK_MILESTONES,
+  HP_DAMAGE,
+  HP_RECOVERY,
+  STREAK_FREEZE,
+  type Rank,
+  type HpState,
+  type AttributeKey,
+  ATTRIBUTE_MAX,
+} from '@/constants/gamification'
+
+// ─── Interfaces ─────────────────────────────────
 
 interface LevelUpInfo {
   newLevel: number
   totalXp: number
   coinsRewarded: number
+  statPointsAwarded: number
+  rankUp?: { oldRank: Rank; newRank: Rank; rankTitle: string }
 }
 
-const STREAK_FREEZE_COST = 100 // AiCoins per freeze
+interface HpChangeResult {
+  hp: number
+  maxHp: number
+  hpState: HpState
+  levelRegression?: { oldLevel: number; newLevel: number }
+}
+
+interface StatAllocationResult {
+  success: boolean
+  attribute?: AttributeKey
+  newValue?: number
+  remainingPoints?: number
+  error?: string
+}
+
+// ─── Service ────────────────────────────────────
 
 export class GamificationService {
   private supabase: SupabaseClient
@@ -16,16 +52,22 @@ export class GamificationService {
     this.supabase = supabaseClient
   }
 
+  // ─── XP & Level ───────────────────────────────
+
   /**
-   * Adds XP to a user and handles level-ups automatically.
-   * Note: This assumes `this.supabase` is initialized with the authenticated user context or as an admin.
+   * Adds XP to a user with attribute bonuses and HP-state modifier.
+   * Handles level-ups, stat point allocation, and rank-up events.
    */
-  async addXp(userId: string, xpAmount: number): Promise<{ leveledUp: boolean, details?: LevelUpInfo }> {
-    if (xpAmount <= 0) return { leveledUp: false }
+  async addXp(
+    userId: string,
+    baseXpAmount: number,
+    options?: { actionType?: string; skipModifier?: boolean }
+  ): Promise<{ leveledUp: boolean; details?: LevelUpInfo }> {
+    if (baseXpAmount <= 0) return { leveledUp: false }
 
     const { data: profile, error } = await this.supabase
       .from('user_profiles')
-      .select('level, xp, total_xp, ai_coins')
+      .select('level, xp, total_xp, ai_coins, hp_state, attr_str, attr_int, stat_points, rank')
       .eq('id', userId)
       .single()
 
@@ -34,25 +76,49 @@ export class GamificationService {
       return { leveledUp: false }
     }
 
-    let { level, xp, total_xp, ai_coins } = profile
-    
+    // Apply HP-state XP modifier (weakened = -15%, critical = -30%, collapse = -50%)
+    let xpAmount = baseXpAmount
+    if (!options?.skipModifier) {
+      const modifier = getXpModifier(profile.hp_state as HpState)
+      xpAmount = Math.floor(baseXpAmount * modifier)
+    }
+
+    // Apply attribute bonuses (STR for physical, INT for learning)
+    if (options?.actionType === 'workout' || options?.actionType === 'fitness') {
+      xpAmount = Math.floor(xpAmount * (1 + profile.attr_str * 0.02))
+    } else if (options?.actionType === 'skill' || options?.actionType === 'learning') {
+      xpAmount = Math.floor(xpAmount * (1 + profile.attr_int * 0.02))
+    }
+
+    let { level, xp, total_xp, ai_coins, stat_points } = profile
+    const oldRank = profile.rank as Rank
+
     total_xp += xpAmount
     xp += xpAmount
     let leveledUp = false
     let coinsRewarded = 0
+    let statPointsAwarded = 0
 
-    // Handle multiple level ups if XP is massive
+    // Handle multiple level ups
     while (xp >= xpToNextLevel(level)) {
       leveledUp = true
       xp -= xpToNextLevel(level)
       level += 1
-      
-      // Reward 50 AiCoins per level up
-      coinsRewarded += 50
-      ai_coins += 50
+
+      // +50 AiCoins per level up
+      coinsRewarded += AICOIN_EARN.LEVEL_UP
+      ai_coins += AICOIN_EARN.LEVEL_UP
+
+      // +1 stat point per level up
+      statPointsAwarded += 1
+      stat_points += 1
     }
 
-    // Update the profile
+    // Check rank change
+    const newRank = getRankLetter(level)
+    const rankChanged = newRank !== oldRank
+
+    // Update profile
     const { error: updateError } = await this.supabase
       .from('user_profiles')
       .update({
@@ -60,7 +126,9 @@ export class GamificationService {
         xp,
         xp_to_next_level: xpToNextLevel(level),
         total_xp,
-        ai_coins
+        ai_coins,
+        stat_points,
+        rank: newRank,
       })
       .eq('id', userId)
 
@@ -69,42 +137,201 @@ export class GamificationService {
       return { leveledUp: false }
     }
 
-    // If leveled up, log a coin transaction
+    // Log coin transaction if leveled up
     if (leveledUp && coinsRewarded > 0) {
       await this.supabase.from('ai_coin_transactions').insert({
         user_id: userId,
         amount: coinsRewarded,
+        type: 'earn',
         reason: `Level up to Level ${level}`,
-        balance_after: ai_coins
+        balance_after: ai_coins,
       })
 
-      // We could also notify the user with the notifications system
+      // Create level-up notification
       await this.supabase.from('notifications').insert({
         user_id: userId,
         type: 'level_up',
         title: `Level Up! You are now Level ${level}`,
-        body: `Congratulations! You've earned ${coinsRewarded} AiCoins.`,
-        data: { newLevel: level, coinsRewarded }
+        body: `You earned ${coinsRewarded} AiCoins and ${statPointsAwarded} Stat Point${statPointsAwarded > 1 ? 's' : ''}. Allocate wisely.`,
+        data: { newLevel: level, coinsRewarded, statPointsAwarded },
+      })
+    }
+
+    // Create rank-up notification
+    if (rankChanged) {
+      const rankInfo = getRank(level)
+      await this.supabase.from('notifications').insert({
+        user_id: userId,
+        type: 'rank_up',
+        title: `Rank Up: ${rankInfo.rank} — ${rankInfo.title}`,
+        body: `The System has acknowledged your growth. New unlocks: ${rankInfo.description}`,
+        data: { oldRank, newRank, rankTitle: rankInfo.title },
       })
     }
 
     return {
       leveledUp,
-      details: leveledUp ? { newLevel: level, totalXp: total_xp, coinsRewarded } : undefined
+      details: leveledUp
+        ? {
+            newLevel: level,
+            totalXp: total_xp,
+            coinsRewarded,
+            statPointsAwarded,
+            rankUp: rankChanged
+              ? { oldRank, newRank, rankTitle: getRank(level).title }
+              : undefined,
+          }
+        : undefined,
     }
   }
 
+  // ─── Stat Allocation ──────────────────────────
+
   /**
-   * Updates the user's overall streak.
-   * - If streak_last_date == today: no change (already counted).
-   * - If streak_last_date == yesterday: increment streak.
-   * - If older: check for streak freeze, otherwise reset to 1.
-   * Returns the new streak value and whether a freeze was consumed.
+   * Allocate a stat point to a chosen attribute.
+   * Called from the System Window after level-up.
    */
-  async updateOverallStreak(userId: string): Promise<{ streak: number, freezeUsed: boolean }> {
+  async allocateStatPoint(userId: string, attribute: AttributeKey): Promise<StatAllocationResult> {
+    const attrColumn = `attr_${attribute}` as const
+
     const { data: profile, error } = await this.supabase
       .from('user_profiles')
-      .select('streak_overall, streak_best, streak_last_date, streak_freeze_count')
+      .select(`stat_points, ${attrColumn}, attr_vit, max_hp`)
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) return { success: false, error: 'Profile not found' }
+    if ((profile.stat_points ?? 0) <= 0) return { success: false, error: 'No stat points available' }
+
+    const currentValue = (profile as any)[attrColumn] ?? 0
+    if (currentValue >= ATTRIBUTE_MAX) return { success: false, error: `${attribute.toUpperCase()} is already at max` }
+
+    const newValue = currentValue + 1
+    const updates: Record<string, unknown> = {
+      [attrColumn]: newValue,
+      stat_points: (profile.stat_points ?? 0) - 1,
+    }
+
+    // If VIT was increased, recalculate max_hp
+    if (attribute === 'vit') {
+      updates.max_hp = calculateMaxHp(newValue)
+    }
+
+    const { error: updateErr } = await this.supabase
+      .from('user_profiles')
+      .update(updates)
+      .eq('id', userId)
+
+    if (updateErr) return { success: false, error: 'Failed to allocate' }
+
+    return {
+      success: true,
+      attribute,
+      newValue,
+      remainingPoints: (profile.stat_points ?? 0) - 1,
+    }
+  }
+
+  // ─── HP System ────────────────────────────────
+
+  /**
+   * Apply HP damage to a user. Respects VIT damage reduction.
+   * If HP reaches 0, triggers level regression.
+   */
+  async damageHp(userId: string, rawAmount: number, reason: string): Promise<HpChangeResult> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('hp, max_hp, attr_vit, level, rank')
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) {
+      return { hp: 0, maxHp: 100, hpState: 'collapse' }
+    }
+
+    // Apply VIT damage reduction
+    const reduction = calculateHpDamageReduction(profile.attr_vit ?? 0)
+    const actualDamage = Math.max(1, Math.floor(rawAmount * (1 - reduction)))
+
+    let newHp = Math.max(0, (profile.hp ?? 100) - actualDamage)
+    let levelRegression: { oldLevel: number; newLevel: number } | undefined
+
+    // Level regression at HP 0
+    if (newHp <= 0 && (profile.level ?? 1) > 1) {
+      const oldLevel = profile.level ?? 1
+      const newLevel = oldLevel - 1
+
+      await this.supabase
+        .from('user_profiles')
+        .update({
+          level: newLevel,
+          hp: 30, // Reset HP to 30 after regression
+          hp_state: 'critical',
+          rank: getRankLetter(newLevel),
+          xp_to_next_level: xpToNextLevel(newLevel),
+        })
+        .eq('id', userId)
+
+      // Create dramatic notification
+      await this.supabase.from('notifications').insert({
+        user_id: userId,
+        type: 'level_regression',
+        title: 'System Alert: Critical Vessel Failure',
+        body: `Accumulated damage has exceeded threshold. Level ${oldLevel} → ${newLevel}. Recovery Quest assigned.`,
+        data: { oldLevel, newLevel, reason },
+      })
+
+      levelRegression = { oldLevel, newLevel }
+      newHp = 30
+
+      return { hp: newHp, maxHp: profile.max_hp ?? 100, hpState: 'critical', levelRegression }
+    }
+
+    // Normal damage — update HP and state
+    const hpState = getHpState(newHp, profile.max_hp ?? 100)
+
+    await this.supabase
+      .from('user_profiles')
+      .update({ hp: newHp, hp_state: hpState })
+      .eq('id', userId)
+
+    return { hp: newHp, maxHp: profile.max_hp ?? 100, hpState }
+  }
+
+  /**
+   * Recover HP for a user, up to max_hp.
+   */
+  async healHp(userId: string, amount: number, reason: string): Promise<HpChangeResult> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('hp, max_hp')
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) return { hp: 0, maxHp: 100, hpState: 'collapse' }
+
+    const maxHp = profile.max_hp ?? 100
+    const newHp = Math.min(maxHp, (profile.hp ?? 0) + amount)
+    const hpState = getHpState(newHp, maxHp)
+
+    await this.supabase
+      .from('user_profiles')
+      .update({ hp: newHp, hp_state: hpState })
+      .eq('id', userId)
+
+    return { hp: newHp, maxHp, hpState }
+  }
+
+  // ─── Streak System ────────────────────────────
+
+  /**
+   * Updates the user's overall streak and category-specific streaks.
+   * Returns the new streak value and whether a freeze was consumed.
+   */
+  async updateOverallStreak(userId: string): Promise<{ streak: number; freezeUsed: boolean }> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('streak_overall, streak_best, streak_last_date, streak_freeze_count, is_pro')
       .eq('id', userId)
       .single()
 
@@ -116,7 +343,7 @@ export class GamificationService {
     const now = new Date()
     const todayStr = now.toISOString().split('T')[0]
 
-    // Already counted today — do nothing but return current
+    // Already counted today
     if (profile.streak_last_date === todayStr) {
       return { streak: profile.streak_overall ?? 0, freezeUsed: false }
     }
@@ -130,25 +357,22 @@ export class GamificationService {
     let freezeCount = profile.streak_freeze_count ?? 0
 
     if (profile.streak_last_date === yesterdayStr) {
-      // Perfect continuity — extend streak
       newStreak = (profile.streak_overall ?? 0) + 1
     } else if (profile.streak_last_date && freezeCount > 0) {
-      // Missed a day (or more), check if we can use a freeze
       const lastDate = new Date(profile.streak_last_date)
       const diffTime = Math.abs(now.getTime() - lastDate.getTime())
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-      // We only allow a freeze to bridge a 1-day gap (diffDays would be 2 if yesterday was missed)
       if (diffDays <= 2) {
         newStreak = (profile.streak_overall ?? 0) + 1
         freezeCount -= 1
         freezeUsed = true
         console.log(`[Streak] Freeze consumed for user ${userId}. New streak: ${newStreak}`)
       } else {
-        console.log(`[Streak] Too many days missed (${diffDays}). Resetting streak for user ${userId}`)
+        console.log(`[Streak] Too many days missed (${diffDays}). Resetting for ${userId}`)
       }
     } else {
-      console.log(`[Streak] Missed day and no freezes. Resetting for user ${userId}`)
+      console.log(`[Streak] Missed day and no freezes. Resetting for ${userId}`)
     }
 
     const newBest = Math.max(newStreak, profile.streak_best ?? 0)
@@ -167,14 +391,37 @@ export class GamificationService {
       console.error('Failed to update streak:', updateError)
     }
 
+    // Check streak milestones
+    for (const milestone of STREAK_MILESTONES) {
+      if (newStreak === milestone.days) {
+        // Award milestone rewards
+        if (milestone.xpReward > 0) {
+          await this.addXp(userId, milestone.xpReward, { skipModifier: true })
+        }
+        if (milestone.coinReward > 0) {
+          await this.addCoins(userId, milestone.coinReward, `Streak milestone: ${milestone.name}`)
+        }
+
+        // Notification
+        await this.supabase.from('notifications').insert({
+          user_id: userId,
+          type: 'streak_milestone',
+          title: `🔥 ${milestone.name}! ${milestone.days}-Day Streak`,
+          body: `You earned +${milestone.xpReward} XP and +${milestone.coinReward} AiCoins!`,
+          data: { days: milestone.days, badgeSlug: milestone.badgeSlug },
+        })
+
+        break // Only one milestone per update
+      }
+    }
+
     return { streak: newStreak, freezeUsed }
   }
 
   /**
    * Purchase a streak freeze using AiCoins.
-   * Returns true if purchase was successful.
    */
-  async purchaseStreakFreeze(userId: string): Promise<{ success: boolean, newBalance?: number, newFreezeCount?: number }> {
+  async purchaseStreakFreeze(userId: string): Promise<{ success: boolean; newBalance?: number; newFreezeCount?: number }> {
     const { data: profile, error } = await this.supabase
       .from('user_profiles')
       .select('ai_coins, streak_freeze_count')
@@ -182,12 +429,9 @@ export class GamificationService {
       .single()
 
     if (error || !profile) return { success: false }
+    if (profile.ai_coins < STREAK_FREEZE.EXTRA_COST) return { success: false }
 
-    if (profile.ai_coins < STREAK_FREEZE_COST) {
-      return { success: false } // Insufficient funds
-    }
-
-    const newBalance = profile.ai_coins - STREAK_FREEZE_COST
+    const newBalance = profile.ai_coins - STREAK_FREEZE.EXTRA_COST
     const newFreezeCount = (profile.streak_freeze_count ?? 0) + 1
 
     const { error: updateErr } = await this.supabase
@@ -200,10 +444,9 @@ export class GamificationService {
 
     if (updateErr) return { success: false }
 
-    // Record transaction
     await this.supabase.from('ai_coin_transactions').insert({
       user_id: userId,
-      amount: -STREAK_FREEZE_COST,
+      amount: -STREAK_FREEZE.EXTRA_COST,
       type: 'spend',
       reason: 'Purchased Streak Freeze',
       balance_after: newBalance,
@@ -211,6 +454,8 @@ export class GamificationService {
 
     return { success: true, newBalance, newFreezeCount }
   }
+
+  // ─── AiCoin System ────────────────────────────
 
   /**
    * Adds or deducts AiCoins for a specific reason.
@@ -227,9 +472,8 @@ export class GamificationService {
     if (error || !profile) return false
 
     const newBalance = profile.ai_coins + amount
-    if (newBalance < 0) return false // Insufficient funds
+    if (newBalance < 0) return false
 
-    // Use RPC or simply chained await (RPC is better for concurrency, but doing chained for simplicity)
     const { error: updateErr } = await this.supabase
       .from('user_profiles')
       .update({ ai_coins: newBalance })
@@ -237,16 +481,18 @@ export class GamificationService {
 
     if (updateErr) return false
 
-    // Record transaction
     await this.supabase.from('ai_coin_transactions').insert({
       user_id: userId,
       amount,
+      type: amount > 0 ? 'earn' : 'spend',
       reason,
-      balance_after: newBalance
+      balance_after: newBalance,
     })
 
     return true
   }
+
+  // ─── Weekly Activity ──────────────────────────
 
   /**
    * Gets the activity status for the current week.
@@ -254,9 +500,8 @@ export class GamificationService {
    */
   async getWeeklyActivity(userId: string): Promise<boolean[]> {
     const now = new Date()
-    const dayOfWeek = now.getDay() // 0 is Sunday, 1 is Monday...
-    
-    // Calculate Monday of the current week
+    const dayOfWeek = now.getDay()
+
     const monday = new Date(now)
     monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
     monday.setHours(0, 0, 0, 0)
@@ -265,7 +510,6 @@ export class GamificationService {
     sunday.setDate(monday.getDate() + 6)
     sunday.setHours(23, 59, 59, 999)
 
-    // Fetch all logs between Monday and Sunday
     const { data: logs } = await this.supabase
       .from('habit_logs')
       .select('completed_at')
@@ -274,7 +518,7 @@ export class GamificationService {
       .lte('completed_at', sunday.toISOString().split('T')[0])
 
     const activityMap = new Array(7).fill(false)
-    const completedDays = new Set(logs?.map(l => l.completed_at))
+    const completedDays = new Set(logs?.map((l) => l.completed_at))
 
     for (let i = 0; i < 7; i++) {
       const current = new Date(monday)

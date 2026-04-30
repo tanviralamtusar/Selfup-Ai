@@ -148,7 +148,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
           {/* Rewards */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <Zap size={12} className="text-blue-400" />
+              <Zap size={12} className="text-blue-400" fill="currentColor" />
               <span className="text-xs font-black text-blue-400">+{quest.xp_reward} <span className="text-[10px] opacity-60">XP</span></span>
             </div>
             {quest.coin_reward > 0 && (

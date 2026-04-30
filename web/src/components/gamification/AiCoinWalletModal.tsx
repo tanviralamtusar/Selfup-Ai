@@ -91,14 +91,14 @@ export function AiCoinWalletModal({ isOpen, onClose }: AiCoinWalletModalProps) {
 
               <div className="relative z-10 mt-2">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-slate-900 border border-blue-500/30 text-blue-400 mb-4 shadow-[inset_0_0_15px_rgba(59,130,246,0.2)]">
-                  <Sparkles size={32} className="animate-pulse" />
+                  <img src="/coin.png" alt="AiCoins" className="w-10 h-10 object-contain animate-pulse" />
                 </div>
                 <h2 className="text-blue-500/60 text-[10px] font-black uppercase tracking-[0.4em] mb-1 italic">Vessel Treasury</h2>
-                <div className="flex items-baseline justify-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <span className="text-5xl font-black text-blue-50 font-headline tracking-tighter system-text-glow">
                     {formatNumber(coins)}
                   </span>
-                  <span className="text-blue-400/80 font-black tracking-[0.2em] text-lg uppercase italic">AiC</span>
+                  <img src="/coin.png" alt="AiCoins" className="w-6 h-6 object-contain" />
                 </div>
               </div>
             </div>

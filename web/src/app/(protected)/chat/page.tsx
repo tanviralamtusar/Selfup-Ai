@@ -233,7 +233,7 @@ export default function ChatPage() {
                 ))}
              </select>
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
-                <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">AiC:</span>
+                <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
                 <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>
              </div>
              <button onClick={startNewChat} className="p-2 hover:bg-surface-container-highest rounded-lg text-on-surface-variant">

@@ -400,8 +400,9 @@ export default function DashboardPage() {
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
                     <button
                       onClick={() => setShowWalletModal(true)}
-                      className="bg-blue-500/10 px-4 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
+                      className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
                     >
+                      <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/wallet:scale-110 transition-transform" />
                       <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
                       <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
                     </button>
@@ -527,7 +528,7 @@ export default function DashboardPage() {
                       </div>
                       {habit.streak > 0 && (
                         <div className="flex items-center gap-1 pr-1">
-                          <Zap size={12} className="text-blue-300" />
+                          <Zap size={12} className="text-blue-300" fill="currentColor" />
                           <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.streak}</span>
                         </div>
                       )}

@@ -167,7 +167,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10 group/coin hover:border-blue-500/30 transition-colors">
                     <div className="flex items-center gap-2">
-                       <Sparkles size={12} className="text-cyan-400 group-hover/coin:animate-pulse" />
+                       <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/coin:scale-110 transition-transform" />
                        <span className="text-[9px] font-black text-blue-300 uppercase tracking-[0.2em] italic">AiCoins</span>
                     </div>
                     <span className="text-sm font-black text-cyan-400 tabular-nums">{profile?.ai_coins || 0}</span>

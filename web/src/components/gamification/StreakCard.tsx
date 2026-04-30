@@ -121,7 +121,7 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
             isAtRisk ? "bg-rose-500/10 text-rose-500 border-rose-500/50" : tier.bg, !isAtRisk && tier.icon, !isAtRisk && tier.border
           )}
         >
-          {isAtRisk ? <AlertTriangle size={28} /> : <Zap size={28} className={cn(isActive && "system-text-glow")} />}
+          {isAtRisk ? <AlertTriangle size={28} /> : <Zap size={28} className={cn(isActive && "system-text-glow")} fill={isActive ? "currentColor" : "none"} />}
         </motion.div>
       </div>
 

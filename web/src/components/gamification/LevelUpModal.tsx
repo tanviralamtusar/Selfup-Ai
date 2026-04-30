@@ -90,17 +90,20 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
                 >
                   <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
                     <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
-                      <Zap size={20} className="text-blue-400" />
+                      <Zap size={20} className="text-blue-400" fill="currentColor" />
                     </div>
                     <p className="text-xl font-black text-blue-100 tabular-nums">{totalXp.toLocaleString()}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40 mt-1">Total XP</p>
                   </div>
                   <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
                     <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
-                      <Star size={20} className="text-blue-400" />
+                      <img src="/coin.png" alt="AiCoins" className="w-6 h-6 object-contain" />
                     </div>
                     <p className="text-xl font-black text-blue-400 tabular-nums">+{coinsReward}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40 mt-1">AiCoins</p>
+                    <div className="mt-1 flex items-center justify-center gap-1.5 opacity-40">
+                      <img src="/coin.png" alt="AiCoins" className="w-3 h-3 object-contain" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">AiCoins</span>
+                    </div>
                   </div>
                 </motion.div>
 

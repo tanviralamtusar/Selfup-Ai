@@ -342,19 +342,19 @@ export default function DashboardPage() {
       <motion.section variants={itemAnim} className="relative group">
         <div className="absolute inset-0 bg-blue-500/5 blur-3xl rounded-[2.5rem] pointer-events-none" />
 
-        <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-6 md:p-8 border border-blue-500/20 shadow-2xl">
+        <div className="relative overflow-hidden rounded-[2rem] bg-slate-950/80 backdrop-blur-xl p-4 md:p-6 border border-blue-500/20 shadow-2xl">
           {/* Decorative Corner Lines */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-blue-400/50" />
           <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-blue-400/50" />
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-blue-400/50" />
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
             {/* Left: Avatar & Basic Stats */}
-            <div className="lg:col-span-8 space-y-8">
-              <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="lg:col-span-8 space-y-6">
+              <div className="flex flex-col md:flex-row items-center gap-5">
                 <div className="relative">
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-3xl">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
                     {profile?.avatar_url ? (
                       <img
                         className="w-full h-full object-cover rounded-xl"
@@ -376,8 +376,8 @@ export default function DashboardPage() {
                     <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Rank {rankLetter} — {rankInfo.title}</p>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
                     <button
                       onClick={() => setShowWalletModal(true)}
                       className="bg-blue-500/10 px-4 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
@@ -393,9 +393,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Health (HP) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex justify-between items-end px-1">
                     <div className="flex items-center gap-2">
                       <span className={cn('text-[10px] font-black uppercase tracking-[0.3em] system-text-glow', hpState === 'healthy' ? 'text-emerald-400' : hpState === 'weakened' ? 'text-amber-400' : 'text-rose-500')}>HP</span>
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Experience (XP) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex justify-between items-end px-1">
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>

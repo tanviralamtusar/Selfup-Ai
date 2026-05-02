@@ -181,9 +181,11 @@ export default function DashboardPage() {
   const [badges, setBadges] = useState<BadgeItem[]>([])
   const [badgesLoading, setBadgesLoading] = useState(true)
 
-  // Quests & Tasks
-  const [quests, setQuests] = useState<any[]>([])
+  // Dailies & Tasks
+  const [dailies, setDailies] = useState<any[]>([])
   const [tasks, setTasks] = useState<any[]>([])
+  const [completingDaily, setCompletingDaily] = useState<string | null>(null)
+  const [completingTask, setCompletingTask] = useState<string | null>(null)
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
@@ -212,7 +214,7 @@ export default function DashboardPage() {
       fetchBadges()
       fetchStreakStats()
       fetchDungeons()
-      fetchQuests()
+      fetchDailies()
       fetchTasks()
     }
   }, [session])
@@ -284,10 +286,13 @@ export default function DashboardPage() {
     } catch { /* silently fail */ }
   }
 
-  const fetchQuests = async () => {
+  const fetchDailies = async () => {
     try {
-      const res = await fetch('/api/quests?type=daily', { headers: headers() })
-      if (res.ok) setQuests(await res.json())
+      const res = await fetch('/api/dailies', { headers: headers() })
+      if (res.ok) {
+        const json = await res.json()
+        setDailies(json.data || [])
+      }
     } catch { /* silently fail */ }
   }
 
@@ -299,6 +304,66 @@ export default function DashboardPage() {
         setTasks(json.data || [])
       }
     } catch { /* silently fail */ }
+  }
+
+  const handleCompleteDaily = async (daily: any) => {
+    if (daily.is_completed || completingDaily) return
+    setCompletingDaily(daily.id)
+    try {
+      const res = await fetch(`/api/dailies/${daily.id}/complete`, {
+        method: 'POST',
+        headers: headers()
+      })
+      if (res.ok) {
+        const result = await res.json()
+        toast.success(`Daily complete! +${result.data.xp_awarded} XP`)
+        // Optimistic update
+        setDailies(prev => prev.map(d => d.id === daily.id ? { ...d, is_completed: true } : d))
+        // Refresh profile for level/XP updates
+        const profileRes = await fetch('/api/user/profile', { headers: headers() })
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData.data)
+        }
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to complete daily')
+      }
+    } catch {
+      toast.error('Network error during synchronization')
+    } finally {
+      setCompletingDaily(null)
+    }
+  }
+
+  const handleCompleteTask = async (task: any) => {
+    if (task.is_completed || completingTask) return
+    setCompletingTask(task.id)
+    try {
+      const res = await fetch(`/api/todos/${task.id}/complete`, {
+        method: 'POST',
+        headers: headers()
+      })
+      if (res.ok) {
+        const result = await res.json()
+        toast.success(`Task complete! +${result.data.xp_awarded} XP`)
+        // Optimistic update
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, is_completed: true } : t))
+        // Refresh profile for level/XP updates
+        const profileRes = await fetch('/api/user/profile', { headers: headers() })
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData.data)
+        }
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to complete task')
+      }
+    } catch {
+      toast.error('Network error during synchronization')
+    } finally {
+      setCompletingTask(null)
+    }
   }
 
   const handleLogHabit = async (habitId: string) => {
@@ -479,7 +544,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                  Habit Protocols
+                  Habit
                 </h2>
                 <Link href={ROUTES.TIME} className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
@@ -533,44 +598,51 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                  Daily Quests
+                  Dailies
                 </h2>
                 <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </button>
               </div>
               <div className="space-y-3">
-                {quests.length === 0 ? (
+                {dailies.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active quests</p>
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active dailies</p>
                   </div>
-                ) : quests.slice(0, 4).map(quest => (
-                  <div key={quest.id} className={cn(
+                ) : dailies.slice(0, 4).map(daily => (
+                  <div 
+                    key={daily.id} 
+                    onClick={() => handleCompleteDaily(daily)}
+                    className={cn(
                     "flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden",
-                    quest.user_status === 'completed' 
+                    daily.is_completed 
                       ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' 
                       : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer'
                   )}>
                     <div className={cn(
                       "w-5 h-5 rounded flex items-center justify-center transition-all",
-                      quest.user_status === 'completed'
+                      daily.is_completed
                         ? 'bg-cyan-500/20 border border-cyan-500/30'
                         : 'border border-cyan-500/30 group-hover:border-cyan-400 bg-slate-950'
                     )}>
-                      <Check className={cn(
-                        "text-cyan-400",
-                        quest.user_status === 'completed' ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
-                      )} size={12} strokeWidth={3} />
+                      {completingDaily === daily.id ? (
+                        <Loader2 className="text-cyan-400 animate-spin" size={10} />
+                      ) : (
+                        <Check className={cn(
+                          "text-cyan-400",
+                          daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
+                        )} size={12} strokeWidth={3} />
+                      )}
                     </div>
                     <div className="flex-1">
                       <p className={cn(
                         "text-[11px] font-black uppercase tracking-tight",
-                        quest.user_status === 'completed' ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
-                      )}>{quest.title}</p>
-                      {quest.user_status !== 'completed' && quest.target_value > 1 && (
-                        <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-cyan-500/10">
-                          <div className="bg-cyan-500 h-full transition-all duration-700 shadow-[0_0_8px_rgba(34,211,238,0.4)]" style={{ width: `${Math.min(100, (quest.current_value / quest.target_value) * 100)}%` }} />
-                        </div>
+                        daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
+                      )}>{daily.title}</p>
+                      {!daily.is_completed && daily.subtasks?.length > 0 && (
+                        <p className="text-[8px] text-blue-500/40 uppercase mt-0.5 tracking-widest">
+                          {daily.subtasks.filter((s: any) => s.is_completed).length} / {daily.subtasks.length} SUBTASKS
+                        </p>
                       )}
                     </div>
                   </div>
@@ -586,7 +658,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between px-2">
                   <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                     <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                    Critical Tasks
+                    To-Do
                   </h2>
                   <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                     <PlusCircle size={16} />
@@ -601,7 +673,16 @@ export default function DashboardPage() {
                       const pValues = { critical: 3, high: 2, medium: 1, low: 0 };
                       return (pValues[b.priority as keyof typeof pValues] || 0) - (pValues[a.priority as keyof typeof pValues] || 0);
                     }).slice(0, 3).map(task => (
-                    <div key={task.id} className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic">
+                    <div 
+                      key={task.id} 
+                      onClick={() => handleCompleteTask(task)}
+                      className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic"
+                    >
+                      {completingTask === task.id && (
+                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-20">
+                          <Loader2 className="text-blue-400 animate-spin" size={20} />
+                        </div>
+                      )}
                       <div className={cn(
                         "absolute top-0 right-0 w-16 h-16 blur-xl rounded-full",
                         task.priority === 'critical' ? 'bg-rose-500/5' : task.priority === 'high' ? 'bg-orange-500/5' : 'bg-blue-500/5'
@@ -625,24 +706,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Rewards */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                    Exchange Hub
-                  </h2>
-                  <button className="text-blue-500/40 hover:text-blue-400 transition-all">
-                    <Filter size={14} />
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No exchange items available</p>
-                  </div>
-                </div>
               </div>
-            </div>
           </motion.div>
         </div>
 

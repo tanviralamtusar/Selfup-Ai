@@ -29,19 +29,19 @@ export async function GET(req: NextRequest) {
   // 1. Habit logs (last 30 days)
   const { data: habitLogs } = await db
     .from('habit_logs')
-    .select('id, completed_at, created_at, habits(name, pillar)')
+    .select('id, completed_at, created_at, habits(title, category)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(15)
 
   if (habitLogs) {
     for (const log of habitLogs) {
-      const habit = log.habits as unknown as { name: string; pillar: string } | null
+      const habit = log.habits as unknown as { title: string; category: string } | null
       activities.push({
         id: log.id,
         type: 'habit',
-        title: `Completed "${habit?.name ?? 'Habit'}"`,
-        pillar: habit?.pillar ?? 'general',
+        title: `Completed "${habit?.title ?? 'Habit'}"`,
+        pillar: habit?.category ?? 'general',
         xp_earned: 10,
         timestamp: log.created_at,
       })
@@ -117,10 +117,10 @@ export async function GET(req: NextRequest) {
   // 4b. Completed dailies
   const { data: completedDailies } = await db
     .from('dailies')
-    .select('id, title, category, xp_reward, last_completed_at')
+    .select('id, title, category, xp_reward, completed_at')
     .eq('user_id', user.id)
-    .not('last_completed_at', 'is', null)
-    .order('last_completed_at', { ascending: false })
+    .not('completed_at', 'is', null)
+    .order('completed_at', { ascending: false })
     .limit(5)
 
   if (completedDailies) {
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
         title: `Completed daily "${daily.title}"`,
         pillar: daily.category ?? 'general',
         xp_earned: daily.xp_reward ?? 0,
-        timestamp: daily.last_completed_at,
+        timestamp: daily.completed_at,
       })
     }
   }

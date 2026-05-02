@@ -426,11 +426,12 @@ export default function DashboardPage() {
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-            {/* Left: Avatar & Basic Stats */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="flex flex-col md:flex-row items-center gap-5">
-                <div className="relative">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
+            {/* Left: Profile Status */}
+            <div className="lg:col-span-12 space-y-5">
+              <div className="flex flex-row gap-4 md:gap-6 items-center">
+                {/* Avatar + Level Pill */}
+                <div className="relative shrink-0">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-slate-950 shadow-[0_0_20px_rgba(59,130,246,0.15)] flex items-center justify-center group-hover:border-blue-400/50 transition-all">
                     {profile?.avatar_url ? (
                       <img
                         className="w-full h-full object-cover rounded-xl"
@@ -438,73 +439,74 @@ export default function DashboardPage() {
                         src={profile.avatar_url}
                       />
                     ) : (
-                      <User size={48} className="text-blue-400/80 system-text-glow" />
+                      <User size={48} className="text-blue-400/40 system-text-glow" />
                     )}
                   </div>
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow flex items-center gap-2">
-                    <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black border', rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10 shadow-[0_0_10px_rgba(251,191,36,0.3)]' : rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{rankLetter}</span>
+                  <div className="absolute -bottom-3 -left-2 bg-slate-950 border border-blue-500/30 text-blue-100 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2">
+                    <span className={cn('w-5 h-5 rounded flex items-center justify-center text-[9px] font-black border', 
+                      rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10' : 
+                      rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 
+                      'text-blue-300 border-blue-500/30 bg-blue-500/20'
+                    )}>
+                      {rankLetter}
+                    </span>
                     LVL {level}
                   </div>
                 </div>
 
-                <div className="flex-1 text-center md:text-left space-y-1">
-                  <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
-                    <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Rank {rankLetter} — {rankInfo.title}</p>
+                {/* HP & XP Bars */}
+                <div className="flex-1 space-y-4 md:space-y-5 mt-1 md:mt-0">
+                  {/* HP */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-emerald-400 system-text-glow">H P</span>
+                      <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{hp} / {maxHp}</span>
+                    </div>
+                    <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${hpPct}%` }}
+                        className="h-full bg-emerald-400 rounded-md shadow-[0_0_10px_rgba(52,211,153,0.3)]"
+                      />
+                    </div>
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                    <button
-                      onClick={() => setShowWalletModal(true)}
-                      className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
-                    >
-                      <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/wallet:scale-110 transition-transform" />
-                      <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
-                      <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
-                    </button>
-                    <div className="bg-blue-500/5 px-4 py-1.5 rounded-lg border border-blue-500/10 flex items-center gap-2">
-                      <Trophy size={10} className="text-blue-400" />
-                      <span className="text-[9px] font-black text-blue-400/40 uppercase tracking-widest">Global Rank: #420</span>
+
+                  {/* XP */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-blue-400 system-text-glow">X P</span>
+                      <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
+                    </div>
+                    <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${xpPercent}%` }}
+                        className="h-full bg-blue-500 rounded-md shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 max-w-sm">
-                {/* Health (HP) */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-end px-1">
-                    <div className="flex items-center gap-2">
-                      <span className={cn('text-[10px] font-black uppercase tracking-[0.3em] system-text-glow', hpState === 'healthy' ? 'text-emerald-400' : hpState === 'weakened' ? 'text-amber-400' : 'text-rose-500')}>HP</span>
-                      {hpState !== 'healthy' && (
-                        <span className={cn('text-[7px] font-black uppercase tracking-[0.3em] px-1.5 py-0.5 rounded border', hpState === 'weakened' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : hpState === 'critical' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse' : 'text-rose-500 bg-rose-500/20 border-rose-500/30 animate-pulse')}>{hpState.toUpperCase()}</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{hp} / {maxHp}</span>
-                  </div>
-                  <div className={cn('h-3 w-full bg-slate-900 rounded-sm p-[1px] border overflow-hidden', hpState === 'critical' || hpState === 'collapse' ? 'border-rose-500/30' : 'border-blue-500/10')}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${hpPct}%` }}
-                      className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]')}
-                    />
-                  </div>
+              <div className="flex flex-row justify-center flex-wrap gap-3 md:gap-4 mt-2">
+                <button
+                  onClick={() => setShowWalletModal(true)}
+                  className="bg-slate-900/90 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-blue-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 group/wallet shadow-lg shrink-0"
+                >
+                  <img src="/coin.png" alt="AiCoins" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
+                  <span className="text-xs md:text-sm font-black text-white tabular-nums tracking-tighter ml-1">{formatNumber(coins)}</span>
+                </button>
+                <div className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-blue-500/20 flex items-center gap-2 shadow-lg shrink-0">
+                  <Trophy size={12} className="text-blue-400/60" />
+                  <span className="text-[10px] md:text-xs font-black text-blue-100 ml-1">#420</span>
                 </div>
-
-                {/* Experience (XP) */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-end px-1">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${xpPercent}%` }}
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
-                    />
-                  </div>
-                </div>
+                <button
+                  onClick={() => setShowStreakHistory(true)}
+                  className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-orange-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 shadow-lg shrink-0"
+                >
+                  <Flame size={12} className="text-orange-400" />
+                  <span className="text-[10px] md:text-xs font-black text-orange-100 ml-1">{profile?.streak_overall ?? 0}</span>
+                </button>
               </div>
             </div>
 

@@ -9327,8 +9327,8 @@
       "source_file": "web\\src\\lib\\task-injection.service.ts",
       "source_location": "L94",
       "weight": 1.0,
-      "_src": "lib_task_injection_service_taskinjectionservice_injectdaily",
-      "_tgt": "lib_task_economy_service_calculatetaskxp",
+      "_src": "lib_task_economy_service_calculatetaskxp",
+      "_tgt": "lib_task_injection_service_taskinjectionservice_injectdaily",
       "source": "lib_task_economy_service_calculatetaskxp",
       "target": "lib_task_injection_service_taskinjectionservice_injectdaily"
     },
@@ -9339,8 +9339,8 @@
       "source_file": "web\\src\\lib\\task-injection.service.ts",
       "source_location": "L213",
       "weight": 1.0,
-      "_src": "lib_task_injection_service_taskinjectionservice_injecttodo",
-      "_tgt": "lib_task_economy_service_calculatetaskxp",
+      "_src": "lib_task_economy_service_calculatetaskxp",
+      "_tgt": "lib_task_injection_service_taskinjectionservice_injecttodo",
       "source": "lib_task_economy_service_calculatetaskxp",
       "target": "lib_task_injection_service_taskinjectionservice_injecttodo"
     },
@@ -9351,8 +9351,8 @@
       "source_file": "web\\src\\lib\\task-injection.service.ts",
       "source_location": "L158",
       "weight": 1.0,
-      "_src": "lib_task_injection_service_taskinjectionservice_injecthabit",
-      "_tgt": "lib_task_economy_service_calculatehppenalty",
+      "_src": "lib_task_economy_service_calculatehppenalty",
+      "_tgt": "lib_task_injection_service_taskinjectionservice_injecthabit",
       "source": "lib_task_economy_service_calculatehppenalty",
       "target": "lib_task_injection_service_taskinjectionservice_injecthabit"
     },

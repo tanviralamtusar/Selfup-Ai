@@ -100,10 +100,11 @@ function Gauge({ percent, colorClass, label, title }: { percent: number, colorCl
 
 interface Habit {
   id: string
-  name: string
-  pillar: string
-  streak: number
-  completed_today: boolean
+  title: string
+  category: string
+  current_streak: number
+  is_completed_this_cycle: boolean
+  xp_reward: number
 }
 
 interface ActivityItem {
@@ -238,7 +239,10 @@ export default function DashboardPage() {
   const fetchHabits = async () => {
     try {
       const res = await fetch('/api/habits', { headers: headers() })
-      if (res.ok) setHabits(await res.json())
+      if (res.ok) {
+        const json = await res.json()
+        setHabits(json.data || [])
+      }
     } catch { /* silently fail — habits are non-critical */ }
   }
 
@@ -291,8 +295,11 @@ export default function DashboardPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('/api/tasks', { headers: headers() })
-      if (res.ok) setTasks(await res.json())
+      const res = await fetch('/api/todos', { headers: headers() })
+      if (res.ok) {
+        const json = await res.json()
+        setTasks(json.data || [])
+      }
     } catch { /* silently fail */ }
   }
 
@@ -303,28 +310,13 @@ export default function DashboardPage() {
         method: 'POST', headers: headers()
       })
       const data = await res.json()
-      if (res.ok) {
-        toast.success(`+${data.xpEarned} XP — Habit logged! 🔥`)
-
-        if (data.leveledUp && data.levelUpDetails) {
-          setLevelUpData(data.levelUpDetails)
-          setShowLevelUp(true)
-        }
-
-        // Update streak in local profile state
-        if (profile && data.streak) {
-          setProfile({
-            ...profile,
-            streak_overall: data.streak,
-            streak_best: Math.max(data.streak, profile.streak_best ?? 0),
-            streak_last_date: new Date().toISOString().split('T')[0],
-          })
-        }
-
+      if (res.ok && data.success) {
+        const xp = data.data?.xp_awarded || 10
+        toast.success(`+${xp} XP — Habit logged! 🔥`)
         fetchHabits()
-        fetchActivities() // Refresh feed
+        fetchActivities()
       } else if (res.status === 409) {
-        toast.info('Already logged today!')
+        toast.info('Already logged this cycle!')
       }
     } catch { toast.error('Failed to log habit') }
     finally { setLoggingHabit(null) }
@@ -506,30 +498,30 @@ export default function DashboardPage() {
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn(
                     "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic",
-                    habit.completed_today ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
+                    habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
                   )}>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => !habit.completed_today && handleLogHabit(habit.id)}
-                        disabled={habit.completed_today || loggingHabit === habit.id}
+                        onClick={() => !habit.is_completed_this_cycle && handleLogHabit(habit.id)}
+                        disabled={habit.is_completed_this_cycle || loggingHabit === habit.id}
                         className={cn(
                           "w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90",
-                          habit.completed_today
+                          habit.is_completed_this_cycle
                             ? 'bg-blue-500/5 text-blue-500/30 border-blue-500/10'
                             : 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500 hover:text-white shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         )}
                       >
                         {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> :
-                          habit.completed_today ? <Check size={14} /> : <Plus size={14} />}
+                          habit.is_completed_this_cycle ? <Check size={14} /> : <Plus size={14} />}
                       </button>
                       <div className="flex-1">
-                        <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.name}</p>
-                        <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+10 EXP</p>
+                        <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.title}</p>
+                        <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+{habit.xp_reward || 10} EXP</p>
                       </div>
-                      {habit.streak > 0 && (
+                      {habit.current_streak > 0 && (
                         <div className="flex items-center gap-1 pr-1">
                           <Zap size={12} className="text-blue-300" fill="currentColor" />
-                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.streak}</span>
+                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.current_streak}</span>
                         </div>
                       )}
                     </div>
@@ -627,11 +619,11 @@ export default function DashboardPage() {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {tasks.filter(t => t.status !== 'done').length === 0 ? (
+                  {tasks.filter((t: any) => !t.is_completed).length === 0 ? (
                     <div className="p-6 rounded border border-dashed border-rose-500/10 text-center bg-slate-900/20">
                       <p className="text-[10px] text-rose-500/30 font-black uppercase tracking-[0.2em] italic">No pending tasks</p>
                     </div>
-                  ) : tasks.filter(t => t.status !== 'done').sort((a, b) => {
+                  ) : tasks.filter((t: any) => !t.is_completed).sort((a: any, b: any) => {
                       const pValues = { critical: 3, high: 2, medium: 1, low: 0 };
                       return (pValues[b.priority as keyof typeof pValues] || 0) - (pValues[a.priority as keyof typeof pValues] || 0);
                     }).slice(0, 3).map(task => (

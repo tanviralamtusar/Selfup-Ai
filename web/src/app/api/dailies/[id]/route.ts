@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
-import { calculateHpPenalty } from '@/lib/task-economy.service'
+import { TaskEconomyService } from '@/lib/task-economy.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -14,7 +14,7 @@ function getDb(req: NextRequest) {
 }
 
 /**
- * PATCH /api/habits/[id] — update a habit
+ * PATCH /api/dailies/[id] — update a daily
  */
 export async function PATCH(
   req: NextRequest,
@@ -27,24 +27,29 @@ export async function PATCH(
   const body = await req.json()
   const db = getDb(req)
 
+  // Only allow updating specific fields
   const allowedFields = [
-    'title', 'description', 'category', 'reset_type',
-    'is_indefinite', 'end_date', 'is_active'
+    'title', 'description', 'priority', 'category', 'repeat_type',
+    'repeat_days', 'scheduled_time', 'expires_on', 'subtasks',
+    'require_all_subtasks'
   ]
-  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  const updates: Record<string, unknown> = {}
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
       updates[field] = body[field]
     }
   }
 
-  // Recalculate HP penalty if reset_type changed
-  if (updates.reset_type) {
-    updates.hp_penalty = calculateHpPenalty(updates.reset_type as 'daily' | 'weekly' | 'monthly')
+  // Recalculate XP if priority changed
+  if (updates.priority) {
+    const { calculateTaskXp } = await import('@/lib/task-economy.service')
+    const { xp_reward, xp_penalty } = calculateTaskXp('daily', updates.priority as 'low' | 'medium' | 'high' | 'critical')
+    updates.xp_reward = xp_reward
+    updates.xp_penalty = xp_penalty
   }
 
   const { data, error: dbErr } = await db
-    .from('habits')
+    .from('dailies')
     .update(updates)
     .eq('id', id)
     .eq('user_id', user.id)
@@ -52,13 +57,13 @@ export async function PATCH(
     .single()
 
   if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
-  if (!data) return NextResponse.json({ success: false, error: 'Habit not found' }, { status: 404 })
+  if (!data) return NextResponse.json({ success: false, error: 'Daily not found' }, { status: 404 })
 
   return NextResponse.json({ success: true, data })
 }
 
 /**
- * DELETE /api/habits/[id] — delete a habit
+ * DELETE /api/dailies/[id] — delete a daily
  */
 export async function DELETE(
   req: NextRequest,
@@ -71,7 +76,7 @@ export async function DELETE(
   const db = getDb(req)
 
   const { error: dbErr } = await db
-    .from('habits')
+    .from('dailies')
     .delete()
     .eq('id', id)
     .eq('user_id', user.id)

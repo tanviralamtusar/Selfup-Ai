@@ -15,17 +15,17 @@ import { ScheduleView } from '@/components/time/ScheduleView'
 import { TimeDashboard } from '@/components/time/TimeDashboard'
 
 type TimerState = 'idle' | 'active' | 'break' | 'paused'
-type TaskStatus = 'todo' | 'in_progress' | 'done'
 type Priority = 'low' | 'medium' | 'high' | 'critical'
 
-interface Task {
+interface Todo {
   id: string
   title: string
-  status: TaskStatus
   priority: Priority
-  pillar: string
-  estimated_minutes: number | null
+  category: string
+  is_completed: boolean
+  is_overdue?: boolean
   completed_at: string | null
+  xp_reward: number
 }
 
 interface PomodoroSession {
@@ -123,10 +123,10 @@ export default function TimePage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ── Task State ──
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [taskTab, setTaskTab] = useState<TaskStatus>('todo')
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [showCompleted, setShowCompleted] = useState(false)
   const [isAddingTask, setIsAddingTask] = useState(false)
-  const [newTask, setNewTask] = useState({ title: '', priority: 'medium', pillar: 'general', estimated_minutes: 25 })
+  const [newTask, setNewTask] = useState({ title: '', priority: 'medium' })
   const [isLoading, setIsLoading] = useState(true)
 
   const headers = useCallback(() => ({
@@ -150,12 +150,12 @@ export default function TimePage() {
   const fetchAll = async () => {
     setIsLoading(true)
     try {
-      const [tasksRes, histRes] = await Promise.all([
-        fetch('/api/tasks', { headers: headers() }),
+      const [todosRes, histRes] = await Promise.all([
+        fetch('/api/todos', { headers: headers() }),
         fetch('/api/pomodoro', { headers: headers() })
       ])
-      const [tasksData, histData] = await Promise.all([tasksRes.json(), histRes.json()])
-      if (tasksRes.ok) setTasks(tasksData)
+      const [todosData, histData] = await Promise.all([todosRes.json(), histRes.json()])
+      if (todosRes.ok) setTodos(todosData.data || [])
       if (histRes.ok) setPomodoroHistory(histData)
     } catch { toast.error('Failed to load data') }
     finally { setIsLoading(false) }
@@ -245,7 +245,7 @@ export default function TimePage() {
   const handleAddTask = async () => {
     if (!newTask.title.trim()) return
     try {
-      const res = await fetch('/api/tasks', {
+      const res = await fetch('/api/todos', {
         method: 'POST',
         headers: headers(),
         body: JSON.stringify(newTask)
@@ -253,27 +253,30 @@ export default function TimePage() {
       if (res.ok) {
         toast.success('Task created!')
         setIsAddingTask(false)
-        setNewTask({ title: '', priority: 'medium', pillar: 'general', estimated_minutes: 25 })
+        setNewTask({ title: '', priority: 'medium' })
         fetchAll()
       }
     } catch { toast.error('Failed to create task') }
   }
 
-  const handleStatusChange = async (id: string, status: TaskStatus) => {
+  const handleCompleteTask = async (id: string) => {
     try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/todos/${id}/complete`, {
+        method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ status })
       })
+      const json = await res.json()
       if (res.ok) {
-        if (status === 'done') toast.success('+50 XP for completing the task!')
+        const xp = json.data?.xp_awarded || 0
+        toast.success(`Task completed! +${xp} XP`)
         fetchAll()
       }
-    } catch { toast.error('Failed to update task') }
+    } catch { toast.error('Failed to complete task') }
   }
 
-  const filteredTasks = tasks.filter(t => t.status === taskTab)
+  const activeTodos = todos.filter(t => !t.is_completed)
+  const completedTodos = todos.filter(t => t.is_completed)
+  const displayedTodos = showCompleted ? completedTodos : activeTodos
   const completedToday = pomodoroHistory.filter(s => s.status === 'completed').length
   const totalFocusMinutes = pomodoroHistory
     .filter(s => s.status === 'completed')
@@ -347,7 +350,7 @@ export default function TimePage() {
             )}
 
             {/* Link Task Dropdown */}
-            {timerState === 'idle' && tasks.filter(t => t.status !== 'done').length > 0 && (
+            {timerState === 'idle' && activeTodos.length > 0 && (
               <div className="relative z-10">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2 ml-1">Link Task (optional)</label>
                 <select
@@ -356,7 +359,7 @@ export default function TimePage() {
                   className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm font-medium appearance-none"
                 >
                   <option value="">No task linked</option>
-                  {tasks.filter(t => t.status !== 'done').map(t => (
+                  {activeTodos.map(t => (
                     <option key={t.id} value={t.id}>{t.title}</option>
                   ))}
                 </select>
@@ -480,13 +483,7 @@ export default function TimePage() {
                           )}
                         >{PRIORITY_CONFIG[p].label}</button>
                       ))}
-                      <input
-                        type="number"
-                        placeholder="Est. min"
-                        value={newTask.estimated_minutes}
-                        onChange={e => setNewTask(t => ({ ...t, estimated_minutes: Number(e.target.value) }))}
-                        className="w-24 h-8 px-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 text-xs font-medium text-on-surface focus:outline-none"
-                      />
+
                     </div>
                     <div className="flex gap-3">
                       <button onClick={handleAddTask} className="flex-1 h-10 bg-primary text-on-primary rounded-xl text-xs font-black uppercase tracking-widest">Add Task</button>
@@ -499,30 +496,27 @@ export default function TimePage() {
 
             {/* Tabs */}
             <div className="flex border-b border-outline-variant/10">
-              {(['todo', 'in_progress', 'done'] as TaskStatus[]).map(tab => {
-                const count = tasks.filter(t => t.status === tab).length
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setTaskTab(tab)}
-                    className={cn(
-                      "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative",
-                      taskTab === tab ? 'text-primary' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
-                    )}
-                  >
-                    {tab.replace('_', ' ')}
-                    {count > 0 && (
-                      <span className={cn(
-                        "ml-2 px-1.5 py-0.5 rounded-full text-[9px]",
-                        taskTab === tab ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-on-surface-variant/40'
-                      )}>{count}</span>
-                    )}
-                    {taskTab === tab && (
-                      <motion.div layoutId="taskTabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                    )}
-                  </button>
-                )
-              })}
+              {[{ key: 'active', label: 'Active', count: activeTodos.length }, { key: 'completed', label: 'Done', count: completedTodos.length }].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setShowCompleted(tab.key === 'completed')}
+                  className={cn(
+                    "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative",
+                    (tab.key === 'completed') === showCompleted ? 'text-primary' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+                  )}
+                >
+                  {tab.label}
+                  {tab.count > 0 && (
+                    <span className={cn(
+                      "ml-2 px-1.5 py-0.5 rounded-full text-[9px]",
+                      (tab.key === 'completed') === showCompleted ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-on-surface-variant/40'
+                    )}>{tab.count}</span>
+                  )}
+                  {(tab.key === 'completed') === showCompleted && (
+                    <motion.div layoutId="taskTabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                  )}
+                </button>
+              ))}
             </div>
 
             {/* Task List */}
@@ -531,16 +525,16 @@ export default function TimePage() {
                 <div className="py-12 flex items-center justify-center">
                   <Loader2 className="animate-spin text-primary" />
                 </div>
-              ) : filteredTasks.length === 0 ? (
+              ) : displayedTodos.length === 0 ? (
                 <div className="py-16 text-center">
                   <Circle size={32} className="text-on-surface-variant/20 mx-auto mb-3" />
                   <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/30">
-                    {taskTab === 'done' ? 'No completed tasks yet' : 'All clear — add a task above'}
+                    {showCompleted ? 'No completed tasks yet' : 'All clear — add a task above'}
                   </p>
                 </div>
               ) : (
                 <AnimatePresence>
-                  {filteredTasks.map(task => (
+                  {displayedTodos.map(task => (
                     <motion.div
                       key={task.id}
                       initial={{ opacity: 0, x: -10 }}
@@ -548,43 +542,33 @@ export default function TimePage() {
                       exit={{ opacity: 0, x: 10 }}
                       className={cn(
                         "flex items-center gap-4 p-5 hover:bg-surface-container-medium/30 transition-all group",
-                        task.status === 'done' && 'opacity-40'
+                        task.is_completed && 'opacity-40'
                       )}
                     >
-                      {/* Status toggle */}
+                      {/* Completion toggle */}
                       <button
-                        onClick={() => {
-                          if (task.status === 'todo') handleStatusChange(task.id, 'in_progress')
-                          else if (task.status === 'in_progress') handleStatusChange(task.id, 'done')
-                        }}
+                        onClick={() => !task.is_completed && handleCompleteTask(task.id)}
+                        disabled={task.is_completed}
                         className={cn(
                           "w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
-                          task.status === 'done'
+                          task.is_completed
                             ? 'bg-tertiary-fixed-dim border-tertiary-fixed-dim text-on-surface'
-                            : task.status === 'in_progress'
-                              ? 'border-primary text-primary hover:bg-primary hover:text-on-primary'
-                              : 'border-outline-variant hover:border-primary'
+                            : 'border-outline-variant hover:border-primary'
                         )}
                       >
-                        {task.status === 'done' && <CheckCircle2 size={16} />}
-                        {task.status === 'in_progress' && <Zap size={12} fill="currentColor" />}
+                        {task.is_completed && <CheckCircle2 size={16} />}
                       </button>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-bold text-on-surface truncate", task.status === 'done' && 'line-through')}>
+                        <p className={cn("text-sm font-bold text-on-surface truncate", task.is_completed && 'line-through')}>
                           {task.title}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={cn("text-[10px] font-black uppercase tracking-widest", PILLAR_COLORS[task.pillar] || 'text-on-surface-variant/40')}>
-                            {task.pillar}
+                          <span className={cn("text-[10px] font-black uppercase tracking-widest", PILLAR_COLORS[task.category] || 'text-on-surface-variant/40')}>
+                            {task.category}
                           </span>
-                          {task.estimated_minutes && (
-                            <span className="flex items-center gap-1 text-[10px] text-on-surface-variant/30">
-                              <Clock size={10} />
-                              {task.estimated_minutes}m
-                            </span>
-                          )}
+                          <span className="text-[10px] text-amber-400/60 font-mono">+{task.xp_reward} XP</span>
                         </div>
                       </div>
 
@@ -594,7 +578,7 @@ export default function TimePage() {
                       </span>
 
                       {/* Link to pomodoro */}
-                      {task.status !== 'done' && timerState === 'idle' && (
+                      {!task.is_completed && timerState === 'idle' && (
                         <button
                           onClick={() => { setLinkedTaskId(task.id); toast.success(`Linked: "${task.title}"`) }}
                           className={cn(

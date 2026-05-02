@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
-import { calculateHpPenalty } from '@/lib/task-economy.service'
+import { calculateTaskXp } from '@/lib/task-economy.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -14,7 +14,7 @@ function getDb(req: NextRequest) {
 }
 
 /**
- * PATCH /api/habits/[id] — update a habit
+ * PATCH /api/todos/[id] — update a todo
  */
 export async function PATCH(
   req: NextRequest,
@@ -28,23 +28,37 @@ export async function PATCH(
   const db = getDb(req)
 
   const allowedFields = [
-    'title', 'description', 'category', 'reset_type',
-    'is_indefinite', 'end_date', 'is_active'
+    'title', 'description', 'priority', 'category', 'due_date',
+    'scheduled_time', 'subtasks', 'require_all_subtasks'
   ]
-  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  const updates: Record<string, unknown> = {}
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
       updates[field] = body[field]
     }
   }
 
-  // Recalculate HP penalty if reset_type changed
-  if (updates.reset_type) {
-    updates.hp_penalty = calculateHpPenalty(updates.reset_type as 'daily' | 'weekly' | 'monthly')
+  // Recalculate XP if priority or due_date changed
+  if (updates.priority || updates.due_date !== undefined) {
+    // Need to fetch current data to know if due_date exists
+    const { data: current } = await db
+      .from('todos')
+      .select('priority, due_date')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (current) {
+      const newPriority = (updates.priority || current.priority) as string
+      const hasDue = updates.due_date !== undefined ? !!updates.due_date : !!current.due_date
+      const { xp_reward, xp_penalty } = calculateTaskXp('todo', newPriority as any, hasDue)
+      updates.xp_reward = xp_reward
+      updates.xp_penalty = xp_penalty
+    }
   }
 
   const { data, error: dbErr } = await db
-    .from('habits')
+    .from('todos')
     .update(updates)
     .eq('id', id)
     .eq('user_id', user.id)
@@ -52,13 +66,13 @@ export async function PATCH(
     .single()
 
   if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
-  if (!data) return NextResponse.json({ success: false, error: 'Habit not found' }, { status: 404 })
+  if (!data) return NextResponse.json({ success: false, error: 'Todo not found' }, { status: 404 })
 
   return NextResponse.json({ success: true, data })
 }
 
 /**
- * DELETE /api/habits/[id] — delete a habit
+ * DELETE /api/todos/[id] — delete a todo
  */
 export async function DELETE(
   req: NextRequest,
@@ -71,7 +85,7 @@ export async function DELETE(
   const db = getDb(req)
 
   const { error: dbErr } = await db
-    .from('habits')
+    .from('todos')
     .delete()
     .eq('id', id)
     .eq('user_id', user.id)

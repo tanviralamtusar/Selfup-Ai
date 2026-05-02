@@ -509,7 +509,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Middle: Achievements / Badges */}
-            <div className="lg:col-span-4 flex flex-col relative">
+            <div className="hidden lg:flex lg:col-span-4 flex-col relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="w-2 h-px bg-blue-400" />
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
@@ -520,7 +520,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Right: Streak Card */}
-            <div className="lg:col-span-4">
+            <div className="hidden lg:block lg:col-span-4">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}

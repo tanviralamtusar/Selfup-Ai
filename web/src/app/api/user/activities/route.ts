@@ -91,25 +91,47 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // 4. Completed tasks
-  const { data: completedTasks } = await db
-    .from('tasks')
-    .select('id, title, pillar, xp_earned, completed_at')
+  // 4. Completed todos
+  const { data: completedTodos } = await db
+    .from('todos')
+    .select('id, title, category, xp_reward, completed_at')
     .eq('user_id', user.id)
-    .eq('status', 'done')
+    .eq('is_completed', true)
     .not('completed_at', 'is', null)
     .order('completed_at', { ascending: false })
     .limit(10)
 
-  if (completedTasks) {
-    for (const task of completedTasks) {
+  if (completedTodos) {
+    for (const todo of completedTodos) {
       activities.push({
-        id: task.id,
+        id: todo.id,
         type: 'task',
-        title: `Completed "${task.title}"`,
-        pillar: task.pillar ?? 'general',
-        xp_earned: task.xp_earned ?? 0,
-        timestamp: task.completed_at,
+        title: `Completed "${todo.title}"`,
+        pillar: todo.category ?? 'general',
+        xp_earned: todo.xp_reward ?? 0,
+        timestamp: todo.completed_at,
+      })
+    }
+  }
+
+  // 4b. Completed dailies
+  const { data: completedDailies } = await db
+    .from('dailies')
+    .select('id, title, category, xp_reward, last_completed_at')
+    .eq('user_id', user.id)
+    .not('last_completed_at', 'is', null)
+    .order('last_completed_at', { ascending: false })
+    .limit(5)
+
+  if (completedDailies) {
+    for (const daily of completedDailies) {
+      activities.push({
+        id: daily.id,
+        type: 'task',
+        title: `Completed daily "${daily.title}"`,
+        pillar: daily.category ?? 'general',
+        xp_earned: daily.xp_reward ?? 0,
+        timestamp: daily.last_completed_at,
       })
     }
   }

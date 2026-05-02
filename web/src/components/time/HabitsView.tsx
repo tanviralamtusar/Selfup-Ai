@@ -11,15 +11,17 @@ import { HabitCalendarGrid } from './HabitCalendarGrid'
 
 interface Habit {
   id: string
-  name: string
+  title: string
   description?: string
-  pillar: string
-  frequency: string
+  category: string
+  reset_type: string
   frequency_days: number[]
   reminder_time?: string
-  streak: number
+  current_streak: number
   best_streak: number
-  completed_today: boolean
+  is_completed_this_cycle: boolean
+  xp_reward: number
+  hp_penalty: number
   habit_logs?: { completed_at: string }[]
 }
 
@@ -33,7 +35,7 @@ const DAYS_OF_WEEK = [
   { id: 7, label: 'S' },
 ]
 
-const PILLAR_COLORS: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   fitness: 'text-green-400 bg-green-400/10 border-green-400/20',
   skills:  'text-primary bg-primary/10 border-primary/20',
   time:    'text-secondary bg-secondary/10 border-secondary/20',
@@ -48,17 +50,17 @@ export function HabitsView() {
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAddingHabit, setIsAddingHabit] = useState(false)
   const [newHabit, setNewHabit] = useState<{
-    name: string;
+    title: string;
     description: string;
-    pillar: string;
-    frequency: string;
+    category: string;
+    reset_type: string;
     frequency_days: number[];
     reminder_time: string;
   }>({ 
-    name: '', 
+    title: '', 
     description: '', 
-    pillar: 'general', 
-    frequency: 'daily',
+    category: 'general', 
+    reset_type: 'daily',
     frequency_days: [1, 2, 3, 4, 5, 6, 7],
     reminder_time: '08:00'
   })
@@ -72,7 +74,10 @@ export function HabitsView() {
     setIsLoading(true)
     try {
       const res = await fetch('/api/habits', { headers: headers() })
-      if (res.ok) setHabits(await res.json())
+      if (res.ok) {
+        const json = await res.json()
+        setHabits(json.data || [])
+      }
     } catch { toast.error('Failed to load habits') }
     finally { setIsLoading(false) }
   }, [headers])
@@ -82,7 +87,7 @@ export function HabitsView() {
   }, [session, fetchHabits])
 
   const handleAddHabit = async () => {
-    if (!newHabit.name.trim()) return
+    if (!newHabit.title.trim()) return
     try {
       const res = await fetch('/api/habits', {
         method: 'POST',
@@ -92,14 +97,14 @@ export function HabitsView() {
       if (res.ok) {
         toast.success('Habit created!')
         setIsAddingHabit(false)
-        setNewHabit({ name: '', description: '', pillar: 'general', frequency: 'daily', frequency_days: [1, 2, 3, 4, 5, 6, 7], reminder_time: '08:00' })
+        setNewHabit({ title: '', description: '', category: 'general', reset_type: 'daily', frequency_days: [1, 2, 3, 4, 5, 6, 7], reminder_time: '08:00' })
         fetchHabits()
       }
     } catch { toast.error('Failed to create habit') }
   }
 
   const handleCompleteHabit = async (habit: Habit) => {
-    if (habit.completed_today) return // already done
+    if (habit.is_completed_this_cycle) return // already done
     try {
       const res = await fetch(`/api/habits/${habit.id}/log`, {
         method: 'POST',
@@ -107,13 +112,14 @@ export function HabitsView() {
       })
       if (res.ok) {
         const data = await res.json()
-        toast.success(`+${data.xpEarned || 10} XP!`)
+        const xp = data.data?.xp_awarded || 10
+        toast.success(`+${xp} XP!`)
         // Optimistic update
         setHabits(prev => prev.map(h => 
           h.id === habit.id ? { 
             ...h, 
-            completed_today: true, 
-            streak: h.streak + 1,
+            is_completed_this_cycle: true, 
+            current_streak: h.current_streak + 1,
             habit_logs: [...(h.habit_logs || []), { completed_at: new Date().toISOString().split('T')[0] }]
           } : h
         ))
@@ -161,12 +167,12 @@ export function HabitsView() {
         if (suggestions && suggestions.length > 0) {
           const first = suggestions[0]
           setNewHabit({
-            name: first.name,
+            title: first.name || first.title,
             description: first.description,
-            pillar: first.pillar,
-            frequency: first.frequency,
-            frequency_days: first.frequency_days,
-            reminder_time: first.reminder_time
+            category: first.pillar || first.category || 'general',
+            reset_type: first.frequency || first.reset_type || 'daily',
+            frequency_days: first.frequency_days || [1,2,3,4,5,6,7],
+            reminder_time: first.reminder_time || '08:00'
           })
           toast.success('System has formulated a suggestion.')
         }
@@ -240,8 +246,8 @@ export function HabitsView() {
                     <input
                       autoFocus
                       placeholder="e.g. CORE STRENGTHENING"
-                      value={newHabit.name}
-                      onChange={e => setNewHabit(p => ({ ...p, name: e.target.value }))}
+                      value={newHabit.title}
+                      onChange={e => setNewHabit(p => ({ ...p, title: e.target.value }))}
                       className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 placeholder:text-blue-900/40 focus:outline-none focus:border-blue-500/60 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] font-black tracking-widest text-sm transition-all"
                     />
                   </div>
@@ -263,10 +269,10 @@ export function HabitsView() {
                       {['fitness', 'skills', 'time', 'style', 'general'].map(p => (
                         <button
                           key={p}
-                          onClick={() => setNewHabit(h => ({ ...h, pillar: p }))}
+                          onClick={() => setNewHabit(h => ({ ...h, category: p }))}
                           className={cn(
                             "px-3 py-2.5 rounded text-[9px] font-black uppercase tracking-[0.2em] transition-all border",
-                            newHabit.pillar === p 
+                            newHabit.category === p 
                               ? "bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
                               : "text-blue-500/40 border-transparent hover:text-blue-400 hover:border-blue-500/20"
                           )}
@@ -277,14 +283,15 @@ export function HabitsView() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Sync Frequency</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Reset Cycle</label>
                       <select 
-                        value={newHabit.frequency}
-                        onChange={e => setNewHabit(h => ({ ...h, frequency: e.target.value }))}
+                        value={newHabit.reset_type}
+                        onChange={e => setNewHabit(h => ({ ...h, reset_type: e.target.value }))}
                         className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 text-xs font-black uppercase tracking-widest focus:outline-none cursor-pointer appearance-none hover:border-blue-500/40 transition-all"
                       >
                         <option value="daily">Daily Loop</option>
                         <option value="weekly">Weekly Cycle</option>
+                        <option value="monthly">Monthly Cycle</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -364,7 +371,7 @@ export function HabitsView() {
                 key={habit.id}
                 className={cn(
                   "relative p-8 rounded-xl transition-all duration-500 overflow-hidden border group",
-                  habit.completed_today 
+                  habit.is_completed_this_cycle 
                     ? "bg-blue-500/5 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
                     : "bg-slate-950 border-blue-500/20 hover:border-blue-500/60 hover:shadow-[0_0_25px_rgba(59,130,246,0.05)]"
                 )}
@@ -378,15 +385,15 @@ export function HabitsView() {
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <span className={cn(
                     "px-3 py-1 rounded text-[8px] font-black uppercase tracking-[0.2em] border",
-                    habit.pillar === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' :
+                    habit.category === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' :
                     'text-blue-400 bg-blue-500/5 border-blue-500/20'
                   )}>
-                    {habit.pillar}
+                    {habit.category}
                   </span>
                   <div className="flex items-center gap-3">
-                    {habit.streak > 2 && (
+                    {habit.current_streak > 2 && (
                       <span className="flex items-center gap-1 text-[10px] font-black text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded border border-blue-400/40 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
-                        <Zap size={10} fill="currentColor" /> {habit.streak}
+                        <Zap size={10} fill="currentColor" /> {habit.current_streak}
                       </span>
                     )}
                     <button 
@@ -401,9 +408,9 @@ export function HabitsView() {
                 <div className="space-y-2 mb-8 relative z-10">
                   <h3 className={cn(
                     "text-lg font-black uppercase tracking-widest transition-all",
-                    habit.completed_today ? "text-blue-400/40 line-through italic" : "text-blue-50 system-text-glow"
+                    habit.is_completed_this_cycle ? "text-blue-400/40 line-through italic" : "text-blue-50 system-text-glow"
                   )}>
-                    {habit.name}
+                    {habit.title}
                   </h3>
                   {habit.description && (
                     <p className="text-[10px] text-blue-500/60 uppercase tracking-wide truncate">{habit.description}</p>
@@ -413,7 +420,7 @@ export function HabitsView() {
                   <div className="pt-4 opacity-60 group-hover:opacity-100 transition-opacity">
                     <HabitCalendarGrid 
                       logs={habit.habit_logs || []} 
-                      pillar={habit.pillar} 
+                      pillar={habit.category} 
                     />
                   </div>
                 </div>
@@ -421,15 +428,15 @@ export function HabitsView() {
                 {/* Check-in button */}
                 <button
                   onClick={() => handleCompleteHabit(habit)}
-                  disabled={habit.completed_today}
+                  disabled={habit.is_completed_this_cycle}
                   className={cn(
                     "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative z-10 border shadow-inner",
-                    habit.completed_today
+                    habit.is_completed_this_cycle
                       ? "bg-blue-500/20 text-blue-400/60 border-blue-500/30 cursor-not-allowed opacity-50"
                       : "bg-slate-900 text-blue-400 border-blue-500/40 hover:bg-blue-500 hover:text-white hover:border-blue-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] active:scale-95"
                   )}
                 >
-                  {habit.completed_today ? (
+                  {habit.is_completed_this_cycle ? (
                     <div className="flex items-center gap-3">
                       <CheckCircle2 size={16} /> Sync Verified
                     </div>

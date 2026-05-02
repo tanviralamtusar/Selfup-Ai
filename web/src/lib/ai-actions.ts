@@ -95,42 +95,33 @@ async function handleCreateTask(userId: string, payload: any, supabase: any) {
   const description = payload.description || payload.notes || ''
   const priority = payload.priority || 'medium'
   const due_date = payload.due_date || payload.date || null
-  
-  // Parse duration/estimated_minutes
-  let estimated_minutes = 30
-  if (payload.estimated_minutes) {
-    estimated_minutes = parseInt(payload.estimated_minutes)
-  } else if (payload.duration) {
-    // Handle "60 minutes" or "1 hr"
-    const durationStr = String(payload.duration)
-    const minutesMatch = durationStr.match(/(\d+)\s*min/)
-    const hoursMatch = durationStr.match(/(\d+)\s*hr/)
-    if (minutesMatch) estimated_minutes = parseInt(minutesMatch[1])
-    else if (hoursMatch) estimated_minutes = parseInt(hoursMatch[1]) * 60
-    else {
-      const justNum = parseInt(durationStr)
-      if (!isNaN(justNum)) estimated_minutes = justNum
-    }
-  }
+  const category = payload.category || payload.pillar || 'general'
 
   if (!title) {
     console.error('[AI Actions] Create task failed: No title found in payload', payload)
     return
   }
 
-  const { error } = await supabase.from('tasks').insert({
+  // Calculate XP based on priority
+  const xpMap: Record<string, number> = { low: 5, medium: 10, high: 20, critical: 35 }
+  const xp_reward = xpMap[priority] || 10
+  const xp_penalty = due_date ? Math.floor(xp_reward * 0.5) : 0
+
+  const { error } = await supabase.from('todos').insert({
     user_id: userId,
     title,
     description,
     priority,
+    category,
     due_date: due_date || null,
-    estimated_minutes: estimated_minutes,
-    status: 'todo',
-    is_ai_generated: true
+    is_completed: false,
+    xp_reward,
+    xp_penalty,
+    source: 'ai'
   })
 
   if (error) throw error
-  console.log(`[AI Actions] Created task: ${title} (${estimated_minutes} min)`)
+  console.log(`[AI Actions] Created todo: ${title} (+${xp_reward} XP)`)
 }
 
 async function handleSkillRoadmap(userId: string, payload: any, supabase: any) {

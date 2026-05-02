@@ -11,8 +11,8 @@ interface HabitLog {
 
 interface Habit {
   id: string
-  name: string
-  pillar: string
+  title: string
+  category: string
   habit_logs?: HabitLog[]
 }
 
@@ -21,7 +21,7 @@ interface HabitHeatmapProps {
   days?: number
 }
 
-const PILLAR_COLORS: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   fitness: 'bg-green-400',
   skills:  'bg-primary',
   time:    'bg-secondary',
@@ -51,7 +51,7 @@ export function HabitHeatmap({ habits, days = 84 }: HabitHeatmapProps) {
           counts[dateStr] = { count: 0, pillars: new Set() }
         }
         counts[dateStr].count += 1
-        counts[dateStr].pillars.add(habit.pillar)
+        counts[dateStr].pillars.add(habit.category)
       })
     })
     
@@ -140,7 +140,7 @@ export function HabitHeatmap({ habits, days = 84 }: HabitHeatmapProps) {
                   
                   if (count > 0) {
                     const primaryPillar = pillars[0]
-                    bgColor = (PILLAR_COLORS[primaryPillar] || PILLAR_COLORS.general) + ' border-white/10'
+                    bgColor = (CATEGORY_COLORS[primaryPillar] || CATEGORY_COLORS.general) + ' border-white/10'
                     
                     if (count === 1) opacity = 'opacity-40'
                     else if (count === 2) opacity = 'opacity-70'

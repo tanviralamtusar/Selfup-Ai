@@ -29,7 +29,8 @@ export async function PATCH(
 
   const allowedFields = [
     'title', 'description', 'priority', 'category', 'due_date',
-    'scheduled_time', 'subtasks', 'require_all_subtasks'
+    'scheduled_time', 'scheduled_start', 'scheduled_end',
+    'subtasks', 'require_all_subtasks'
   ]
   const updates: Record<string, unknown> = {}
   for (const field of allowedFields) {

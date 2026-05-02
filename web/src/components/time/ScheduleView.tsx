@@ -21,22 +21,22 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface Task {
+interface Todo {
   id: string
   title: string
-  status: string
+  is_completed: boolean
   priority: string
-  pillar: string
+  category: string
   scheduled_start: string | null
   scheduled_end: string | null
-  estimated_minutes: number
+  xp_reward: number
 }
 
 interface Habit {
   id: string
-  name: string
-  pillar: string
-  completed_today: boolean
+  title: string
+  category: string
+  is_completed_this_cycle: boolean
 }
 
 interface DragState {
@@ -49,7 +49,7 @@ interface DragState {
 const HOURS = Array.from({ length: 18 }, (_, i) => i + 6)
 const HOUR_HEIGHT = 90
 
-const PILLAR_COLORS: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   fitness: 'rgba(244, 63, 94, 0.1)', // Rose
   skills: 'rgba(59, 130, 246, 0.1)',  // Blue
   time: 'rgba(34, 211, 238, 0.1)',    // Cyan
@@ -57,7 +57,7 @@ const PILLAR_COLORS: Record<string, string> = {
   general: 'rgba(30, 41, 59, 0.1)'    // Slate
 }
 
-const PILLAR_BORDERS: Record<string, string> = {
+const CATEGORY_BORDERS: Record<string, string> = {
   fitness: 'rgba(244, 63, 94, 0.5)',
   skills: 'rgba(59, 130, 246, 0.5)',
   time: 'rgba(34, 211, 238, 0.5)',
@@ -67,7 +67,7 @@ const PILLAR_BORDERS: Record<string, string> = {
 
 export function ScheduleView() {
   const { session } = useAuthStore()
-  const [allTasks, setAllTasks] = useState<Task[]>([])
+  const [allTodos, setAllTodos] = useState<Todo[]>([])
   const [habits, setHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isOptimizing, setIsOptimizing] = useState(false)
@@ -83,14 +83,14 @@ export function ScheduleView() {
   const todayStr = new Date().toISOString().split('T')[0]
   const isToday = selectedDateStr === todayStr
 
-  const scheduledTasks = allTasks.filter(t => 
+  const scheduledTasks = allTodos.filter(t => 
     t.scheduled_start && 
     t.scheduled_end && 
     t.scheduled_start.startsWith(selectedDateStr)
   )
   
-  const unscheduledTasks = allTasks.filter(t => 
-    t.status !== 'done' && (
+  const unscheduledTasks = allTodos.filter(t => 
+    !t.is_completed && (
       !t.scheduled_start || 
       !t.scheduled_start.startsWith(selectedDateStr)
     )
@@ -99,13 +99,19 @@ export function ScheduleView() {
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
-      const [tasksRes, habitsRes] = await Promise.all([
-        fetch('/api/tasks', { headers: { Authorization: `Bearer ${session?.access_token}` } }),
+      const [todosRes, habitsRes] = await Promise.all([
+        fetch('/api/todos', { headers: { Authorization: `Bearer ${session?.access_token}` } }),
         fetch('/api/habits', { headers: { Authorization: `Bearer ${session?.access_token}` } })
       ])
       
-      if (tasksRes.ok) setAllTasks(await tasksRes.json())
-      if (habitsRes.ok) setHabits(await habitsRes.json())
+      if (todosRes.ok) {
+        const json = await todosRes.json()
+        setAllTodos(json.data || [])
+      }
+      if (habitsRes.ok) {
+        const json = await habitsRes.json()
+        setHabits(json.data || [])
+      }
     } catch {
       toast.error('Failed to load schedule data')
     } finally {
@@ -173,15 +179,15 @@ export function ScheduleView() {
     
     let durationMinutes = 60
     if (dragState.type === 'task') {
-      const task = allTasks.find(t => t.id === dragState.id)
-      durationMinutes = task?.estimated_minutes || 60
+      // Todos don't have estimated_minutes, default to 60
+      durationMinutes = 60
     }
 
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
 
     try {
       if (dragState.type === 'task') {
-        const res = await fetch(`/api/tasks/${dragState.id}`, {
+        const res = await fetch(`/api/todos/${dragState.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -239,7 +245,7 @@ export function ScheduleView() {
         })
 
       if (updates.length > 0) {
-        const batchRes = await fetch('/api/tasks/batch', {
+        const batchRes = await fetch('/api/todos/batch', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -263,7 +269,7 @@ export function ScheduleView() {
 
   const handleUnscheduleTask = async (taskId: string) => {
     try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
+      const res = await fetch(`/api/todos/${taskId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +301,7 @@ export function ScheduleView() {
         scheduled_end: null
       }))
 
-      const res = await fetch('/api/tasks/batch', {
+      const res = await fetch('/api/todos/batch', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -457,10 +463,10 @@ export function ScheduleView() {
                           <p className="text-xs font-black text-blue-50 tracking-wider truncate uppercase">{task.title}</p>
                           <div className="flex items-center gap-3">
                             <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/10 rounded text-blue-400 border border-blue-500/20">
-                              {task.pillar}
+                              {task.category}
                             </span>
                             <span className="text-[9px] font-black text-blue-500/40 flex items-center gap-1.5 uppercase">
-                              <Clock3 size={10} /> {task.estimated_minutes || 30}m
+                              <Clock3 size={10} /> +{task.xp_reward} XP
                             </span>
                           </div>
                         </div>
@@ -486,13 +492,13 @@ export function ScheduleView() {
                   onDragStart={(e) => handleDragStart(e, habit.id, 'habit')}
                   className={cn(
                     "flex items-center justify-between p-4 rounded-lg border transition-all cursor-grab relative overflow-hidden group/item",
-                    habit.completed_today 
+                    habit.is_completed_this_cycle 
                       ? "bg-blue-500/5 border-blue-500/20 opacity-40 shadow-inner" 
                       : "bg-slate-950/60 border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10"
                   )}
                 >
-                  <span className="text-[11px] font-black text-blue-100 uppercase tracking-widest">{habit.name}</span>
-                  {habit.completed_today ? (
+                  <span className="text-[11px] font-black text-blue-100 uppercase tracking-widest">{habit.title}</span>
+                  {habit.is_completed_this_cycle ? (
                     <CheckCircle2 size={16} className="text-blue-400" />
                   ) : (
                     <GripHorizontal size={16} className="text-blue-500/20 group-hover/item:text-blue-400 transition-colors" />
@@ -572,8 +578,8 @@ export function ScheduleView() {
                     {scheduledTasks.map(task => {
                       if (!task.scheduled_start || !task.scheduled_end) return null
                       const style = getTaskStyle(task.scheduled_start, task.scheduled_end)
-                      const bgColor = PILLAR_COLORS[task.pillar] || PILLAR_COLORS.general
-                      const borderColor = PILLAR_BORDERS[task.pillar] || PILLAR_BORDERS.general
+                      const bgColor = CATEGORY_COLORS[task.category] || CATEGORY_COLORS.general
+                      const borderColor = CATEGORY_BORDERS[task.category] || CATEGORY_BORDERS.general
 
                       return (
                         <motion.div
@@ -601,7 +607,7 @@ export function ScheduleView() {
                             </div>
                             <div className="flex items-center gap-4 mt-auto">
                               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                                {task.pillar}
+                                {task.category}
                               </span>
                               <div className="flex items-center gap-2 text-[9px] font-black text-blue-500/40 uppercase tracking-widest">
                                 <Clock size={10} />

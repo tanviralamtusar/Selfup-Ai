@@ -218,7 +218,8 @@ export async function extractAndSaveMemory(
           user_id: userId,
           memory_key: mem.key,
           memory_val: mem.value,
-          source: 'chat'
+          source: 'chat',
+          updated_at: new Date().toISOString()
         },
         { onConflict: 'user_id,memory_key' }
       )
@@ -251,7 +252,8 @@ export async function saveMemory(
         user_id: userId,
         memory_key: memoryKey,
         memory_val: memoryValue,
-        source: source
+        source: source,
+        updated_at: new Date().toISOString()
       },
       { onConflict: 'user_id,memory_key' }
     )

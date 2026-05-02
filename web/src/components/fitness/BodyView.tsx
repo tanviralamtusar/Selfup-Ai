@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Activity, Plus, Loader2, TrendingDown } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 
 export default function BodyView() {
   const [metrics, setMetrics] = useState<any[]>([])
@@ -13,7 +14,10 @@ export default function BodyView() {
   const fetchMetrics = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/fitness/body')
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/fitness/body', {
+        headers: { 'Authorization': `Bearer ${session?.access_token}` }
+      })
       const data = await res.json()
       setMetrics(Array.isArray(data) ? data : [])
     } catch(err) {
@@ -33,9 +37,13 @@ export default function BodyView() {
 
     setIsSubmitting(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/fitness/body', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({
           weight_kg: parseFloat(form.weight_kg) || null,
           body_fat_pct: parseFloat(form.body_fat_pct) || null,

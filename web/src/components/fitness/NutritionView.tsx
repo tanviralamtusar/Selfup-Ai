@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Droplet, Utensils, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { supabase } from '@/lib/supabase'
 
 export default function NutritionView() {
   const [foods, setFoods] = useState<any[]>([])
@@ -16,10 +17,11 @@ export default function NutritionView() {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers = { 'Authorization': `Bearer ${session?.access_token}` }
       const [foodRes, waterRes] = await Promise.all([
-        fetch('/api/fitness/nutrition'),
-        fetch('/api/fitness/water')
+        fetch('/api/fitness/nutrition', { headers }),
+        fetch('/api/fitness/water', { headers })
       ])
       const [foodData, waterData] = await Promise.all([foodRes.json(), waterRes.json()])
       
@@ -46,9 +48,13 @@ export default function NutritionView() {
 
     setIsSubmitting(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/fitness/nutrition', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({
           meal_type: form.meal_type,
           food_name: form.food_name,
@@ -77,9 +83,13 @@ export default function NutritionView() {
     try {
       // Optimistic update
       setWaterAmount(prev => prev + amount)
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/fitness/water', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ amount_ml: amount })
       })
 

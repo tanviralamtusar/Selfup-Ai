@@ -193,18 +193,25 @@ async function handleSkillRoadmap(userId: string, payload: any, supabase: any) {
 }
 
 async function handleMemoryUpdate(userId: string, payload: any, supabase: any) {
-  const category = payload.category || payload.key || 'fact'
-  const content = payload.content || payload.value
+  const memoryKey = payload.key || payload.category || 'fact'
+  const memoryValue = payload.value || payload.content
   
-  if (!content) return
+  if (!memoryValue) {
+    console.warn('[AI Actions] Memory update failed: No value found', payload)
+    return
+  }
 
-  const { error } = await supabase.from('ai_memory').insert({
-    user_id: userId,
-    category: category,
-    content: content,
-    source: 'chat'
-  })
+  const { error } = await supabase.from('ai_memory').upsert(
+    {
+      user_id: userId,
+      memory_key: memoryKey,
+      memory_val: memoryValue,
+      source: 'chat',
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: 'user_id,memory_key' }
+  )
 
   if (error) throw error
-  console.log(`[AI Actions] Saved memory: ${category} = ${content}`)
+  console.log(`[AI Actions] Saved memory: ${memoryKey} = ${memoryValue}`)
 }

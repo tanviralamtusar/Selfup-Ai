@@ -186,6 +186,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<any[]>([])
   const [completingDaily, setCompletingDaily] = useState<string | null>(null)
   const [completingTask, setCompletingTask] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'habits' | 'dailies' | 'todo'>('dailies')
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
@@ -538,9 +539,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
         {/* Left 3 columns: Habits, Dailies, To-Dos */}
         <div className="xl:col-span-3">
-          <motion.div variants={itemAnim} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* Mobile Tab Switcher */}
+          <div className="flex lg:hidden bg-slate-900/60 p-1 rounded-lg border border-blue-500/10 mb-4 gap-1">
+            {[
+              { id: 'habits', label: 'Habits', activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+              { id: 'dailies', label: 'Dailies', activeClass: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+              { id: 'todo', label: 'To-Do', activeClass: 'bg-rose-500/20 text-rose-400 border-rose-500/30' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  "flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all italic border border-transparent",
+                  activeTab === tab.id 
+                    ? tab.activeClass
+                    : "text-blue-100/30 hover:text-blue-100/60"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
             {/* Column: Habits */}
-            <div className="space-y-4">
+            <div className={cn("space-y-4", activeTab !== 'habits' && 'hidden lg:block')}>
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
@@ -592,9 +615,9 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-
+            
             {/* Column: Dailies */}
-            <div className="space-y-4">
+            <div className={cn("space-y-4", activeTab !== 'dailies' && 'hidden lg:block')}>
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
@@ -651,7 +674,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Column: To-Dos + Rewards */}
-            <div className="space-y-6">
+            <div className={cn("space-y-6", activeTab !== 'todo' && 'hidden lg:block')}>
 
               {/* To-Dos */}
               <div className="space-y-4">
@@ -739,7 +762,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
           {ATTRIBUTES.map((attr) => {
             const value = attrs[attr.key] ?? 0
             const percent = Math.min(100, (value / 50) * 100)

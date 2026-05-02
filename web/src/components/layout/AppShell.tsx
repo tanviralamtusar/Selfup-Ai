@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -25,6 +26,8 @@ import {
   User,
 } from 'lucide-react'
 
+import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
+
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: ROUTES.DASHBOARD },
   { icon: MessageSquare, label: 'AI Chat', href: ROUTES.CHAT },
@@ -41,6 +44,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { profile, logout: logoutStore } = useAuthStore()
+  const [showSystemKnowledge, setShowSystemKnowledge] = useState(false)
 
   const getIsActive = (href: string) => {
     if (href.includes('?')) {
@@ -96,6 +100,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setShowSystemKnowledge(true)}
+            className="p-2 rounded bg-blue-500/5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all relative border border-blue-500/10 group/brain"
+            title="Cognitive Status"
+          >
+            <Brain size={18} className="group-hover/brain:scale-110 transition-transform" />
+          </button>
+
           <button className="p-2 rounded bg-blue-500/5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all relative border border-blue-500/10">
             <Bell size={18} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-slate-950" />
@@ -334,6 +346,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           )
         })}
       </nav>
+
+      <SystemKnowledge 
+        isOpen={showSystemKnowledge}
+        onClose={() => setShowSystemKnowledge(false)}
+      />
     </div>
   )
 }

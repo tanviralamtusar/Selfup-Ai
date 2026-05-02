@@ -5,6 +5,7 @@ import { Plus, Sparkles, History, Dumbbell, ArrowRight, Loader2 } from 'lucide-r
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 import WorkoutView from '@/components/fitness/WorkoutView';
 import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
@@ -26,9 +27,14 @@ export default function FitnessPage() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = {
+        'Authorization': `Bearer ${session?.access_token}`
+      };
+
       const [plansRes, logsRes] = await Promise.all([
-        fetch('/api/fitness/plans'),
-        fetch('/api/fitness/logs')
+        fetch('/api/fitness/plans', { headers }),
+        fetch('/api/fitness/logs', { headers })
       ]);
       const [plansData, logsData] = await Promise.all([
         plansRes.json(),
@@ -52,9 +58,15 @@ export default function FitnessPage() {
   const handleGeneratePlan = async (goal: string, days: number) => {
     setIsGenerating(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      };
+
       const res = await fetch('/api/ai/queue', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           type: 'fitness_plan',
           payload: {
@@ -72,7 +84,10 @@ export default function FitnessPage() {
         // Start polling
         const intervalId = setInterval(async () => {
           try {
-            const pollRes = await fetch(`/api/ai/queue?queueId=${data.queueId}`);
+            const { data: { session: pollSession } } = await supabase.auth.getSession();
+            const pollRes = await fetch(`/api/ai/queue?queueId=${data.queueId}`, {
+              headers: { 'Authorization': `Bearer ${pollSession?.access_token}` }
+            });
             if (pollRes.ok) {
               const pollData = await pollRes.json();
               

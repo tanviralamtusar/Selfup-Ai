@@ -37,7 +37,6 @@ import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
-import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -100,10 +99,11 @@ function Gauge({ percent, colorClass, label, title }: { percent: number, colorCl
 
 interface Habit {
   id: string
-  name: string
-  pillar: string
-  streak: number
-  completed_today: boolean
+  title: string
+  category: string
+  current_streak: number
+  is_completed_this_cycle: boolean
+  xp_reward: number
 }
 
 interface ActivityItem {
@@ -181,9 +181,12 @@ export default function DashboardPage() {
   const [badges, setBadges] = useState<BadgeItem[]>([])
   const [badgesLoading, setBadgesLoading] = useState(true)
 
-  // Quests & Tasks
-  const [quests, setQuests] = useState<any[]>([])
+  // Dailies & Tasks
+  const [dailies, setDailies] = useState<any[]>([])
   const [tasks, setTasks] = useState<any[]>([])
+  const [completingDaily, setCompletingDaily] = useState<string | null>(null)
+  const [completingTask, setCompletingTask] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'habits' | 'dailies' | 'todo'>('dailies')
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
@@ -195,7 +198,6 @@ export default function DashboardPage() {
 
   // Wallet state
   const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showSystemKnowledge, setShowSystemKnowledge] = useState(false)
 
   // Streak Stats
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
@@ -213,7 +215,7 @@ export default function DashboardPage() {
       fetchBadges()
       fetchStreakStats()
       fetchDungeons()
-      fetchQuests()
+      fetchDailies()
       fetchTasks()
     }
   }, [session])
@@ -238,7 +240,10 @@ export default function DashboardPage() {
   const fetchHabits = async () => {
     try {
       const res = await fetch('/api/habits', { headers: headers() })
-      if (res.ok) setHabits(await res.json())
+      if (res.ok) {
+        const json = await res.json()
+        setHabits(json.data || [])
+      }
     } catch { /* silently fail — habits are non-critical */ }
   }
 
@@ -282,18 +287,84 @@ export default function DashboardPage() {
     } catch { /* silently fail */ }
   }
 
-  const fetchQuests = async () => {
+  const fetchDailies = async () => {
     try {
-      const res = await fetch('/api/quests?type=daily', { headers: headers() })
-      if (res.ok) setQuests(await res.json())
+      const res = await fetch('/api/dailies', { headers: headers() })
+      if (res.ok) {
+        const json = await res.json()
+        setDailies(json.data || [])
+      }
     } catch { /* silently fail */ }
   }
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('/api/tasks', { headers: headers() })
-      if (res.ok) setTasks(await res.json())
+      const res = await fetch('/api/todos', { headers: headers() })
+      if (res.ok) {
+        const json = await res.json()
+        setTasks(json.data || [])
+      }
     } catch { /* silently fail */ }
+  }
+
+  const handleCompleteDaily = async (daily: any) => {
+    if (daily.is_completed || completingDaily) return
+    setCompletingDaily(daily.id)
+    try {
+      const res = await fetch(`/api/dailies/${daily.id}/complete`, {
+        method: 'POST',
+        headers: headers()
+      })
+      if (res.ok) {
+        const result = await res.json()
+        toast.success(`Daily complete! +${result.data.xp_awarded} XP`)
+        // Optimistic update
+        setDailies(prev => prev.map(d => d.id === daily.id ? { ...d, is_completed: true } : d))
+        // Refresh profile for level/XP updates
+        const profileRes = await fetch('/api/user/profile', { headers: headers() })
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData.data)
+        }
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to complete daily')
+      }
+    } catch {
+      toast.error('Network error during synchronization')
+    } finally {
+      setCompletingDaily(null)
+    }
+  }
+
+  const handleCompleteTask = async (task: any) => {
+    if (task.is_completed || completingTask) return
+    setCompletingTask(task.id)
+    try {
+      const res = await fetch(`/api/todos/${task.id}/complete`, {
+        method: 'POST',
+        headers: headers()
+      })
+      if (res.ok) {
+        const result = await res.json()
+        toast.success(`Task complete! +${result.data.xp_awarded} XP`)
+        // Optimistic update
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, is_completed: true } : t))
+        // Refresh profile for level/XP updates
+        const profileRes = await fetch('/api/user/profile', { headers: headers() })
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData.data)
+        }
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to complete task')
+      }
+    } catch {
+      toast.error('Network error during synchronization')
+    } finally {
+      setCompletingTask(null)
+    }
   }
 
   const handleLogHabit = async (habitId: string) => {
@@ -303,28 +374,13 @@ export default function DashboardPage() {
         method: 'POST', headers: headers()
       })
       const data = await res.json()
-      if (res.ok) {
-        toast.success(`+${data.xpEarned} XP — Habit logged! 🔥`)
-
-        if (data.leveledUp && data.levelUpDetails) {
-          setLevelUpData(data.levelUpDetails)
-          setShowLevelUp(true)
-        }
-
-        // Update streak in local profile state
-        if (profile && data.streak) {
-          setProfile({
-            ...profile,
-            streak_overall: data.streak,
-            streak_best: Math.max(data.streak, profile.streak_best ?? 0),
-            streak_last_date: new Date().toISOString().split('T')[0],
-          })
-        }
-
+      if (res.ok && data.success) {
+        const xp = data.data?.xp_awarded || 10
+        toast.success(`+${xp} XP — Habit logged! 🔥`)
         fetchHabits()
-        fetchActivities() // Refresh feed
+        fetchActivities()
       } else if (res.status === 409) {
-        toast.info('Already logged today!')
+        toast.info('Already logged this cycle!')
       }
     } catch { toast.error('Failed to log habit') }
     finally { setLoggingHabit(null) }
@@ -370,11 +426,12 @@ export default function DashboardPage() {
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-            {/* Left: Avatar & Basic Stats */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="flex flex-col md:flex-row items-center gap-5">
-                <div className="relative">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
+            {/* Left: Profile Status */}
+            <div className="lg:col-span-12 space-y-5">
+              <div className="flex flex-row gap-4 md:gap-6 items-center">
+                {/* Avatar + Level Pill */}
+                <div className="relative shrink-0">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-slate-950 shadow-[0_0_20px_rgba(59,130,246,0.15)] flex items-center justify-center group-hover:border-blue-400/50 transition-all">
                     {profile?.avatar_url ? (
                       <img
                         className="w-full h-full object-cover rounded-xl"
@@ -382,78 +439,79 @@ export default function DashboardPage() {
                         src={profile.avatar_url}
                       />
                     ) : (
-                      <User size={48} className="text-blue-400/80 system-text-glow" />
+                      <User size={48} className="text-blue-400/40 system-text-glow" />
                     )}
                   </div>
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow flex items-center gap-2">
-                    <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black border', rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10 shadow-[0_0_10px_rgba(251,191,36,0.3)]' : rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{rankLetter}</span>
+                  <div className="absolute -bottom-3 -left-2 bg-slate-950 border border-blue-500/30 text-blue-100 font-black px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2">
+                    <span className={cn('w-5 h-5 rounded flex items-center justify-center text-[9px] font-black border', 
+                      rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10' : 
+                      rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 
+                      'text-blue-300 border-blue-500/30 bg-blue-500/20'
+                    )}>
+                      {rankLetter}
+                    </span>
                     LVL {level}
                   </div>
                 </div>
 
-                <div className="flex-1 text-center md:text-left space-y-1">
-                  <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
-                    <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Rank {rankLetter} — {rankInfo.title}</p>
+                {/* HP & XP Bars */}
+                <div className="flex-1 space-y-4 md:space-y-5 mt-1 md:mt-0">
+                  {/* HP */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-emerald-400 system-text-glow">H P</span>
+                      <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{hp} / {maxHp}</span>
+                    </div>
+                    <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${hpPct}%` }}
+                        className="h-full bg-emerald-400 rounded-md shadow-[0_0_10px_rgba(52,211,153,0.3)]"
+                      />
+                    </div>
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                    <button
-                      onClick={() => setShowWalletModal(true)}
-                      className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
-                    >
-                      <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/wallet:scale-110 transition-transform" />
-                      <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
-                      <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
-                    </button>
-                    <div className="bg-blue-500/5 px-4 py-1.5 rounded-lg border border-blue-500/10 flex items-center gap-2">
-                      <Trophy size={10} className="text-blue-400" />
-                      <span className="text-[9px] font-black text-blue-400/40 uppercase tracking-widest">Global Rank: #420</span>
+
+                  {/* XP */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-blue-400 system-text-glow">X P</span>
+                      <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
+                    </div>
+                    <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${xpPercent}%` }}
+                        className="h-full bg-blue-500 rounded-md shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 max-w-sm">
-                {/* Health (HP) */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-end px-1">
-                    <div className="flex items-center gap-2">
-                      <span className={cn('text-[10px] font-black uppercase tracking-[0.3em] system-text-glow', hpState === 'healthy' ? 'text-emerald-400' : hpState === 'weakened' ? 'text-amber-400' : 'text-rose-500')}>HP</span>
-                      {hpState !== 'healthy' && (
-                        <span className={cn('text-[7px] font-black uppercase tracking-[0.3em] px-1.5 py-0.5 rounded border', hpState === 'weakened' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : hpState === 'critical' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse' : 'text-rose-500 bg-rose-500/20 border-rose-500/30 animate-pulse')}>{hpState.toUpperCase()}</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{hp} / {maxHp}</span>
-                  </div>
-                  <div className={cn('h-3 w-full bg-slate-900 rounded-sm p-[1px] border overflow-hidden', hpState === 'critical' || hpState === 'collapse' ? 'border-rose-500/30' : 'border-blue-500/10')}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${hpPct}%` }}
-                      className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]')}
-                    />
-                  </div>
+              <div className="flex flex-row justify-center flex-wrap gap-3 md:gap-4 mt-2">
+                <button
+                  onClick={() => setShowWalletModal(true)}
+                  className="bg-slate-900/90 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-blue-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 group/wallet shadow-lg shrink-0"
+                >
+                  <img src="/coin.png" alt="AiCoins" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
+                  <span className="text-xs md:text-sm font-black text-white tabular-nums tracking-tighter ml-1">{formatNumber(coins)}</span>
+                </button>
+                <div className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-blue-500/20 flex items-center gap-2 shadow-lg shrink-0">
+                  <Trophy size={12} className="text-blue-400/60" />
+                  <span className="text-[10px] md:text-xs font-black text-blue-100 ml-1">#420</span>
                 </div>
-
-                {/* Experience (XP) */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-end px-1">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
-                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${xpPercent}%` }}
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
-                    />
-                  </div>
-                </div>
+                <button
+                  onClick={() => setShowStreakHistory(true)}
+                  className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-orange-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 shadow-lg shrink-0"
+                >
+                  <Flame size={12} className="text-orange-400" />
+                  <span className="text-[10px] md:text-xs font-black text-orange-100 ml-1">{profile?.streak_overall ?? 0}</span>
+                </button>
               </div>
             </div>
 
             {/* Middle: Achievements / Badges */}
-            <div className="lg:col-span-4 flex flex-col relative">
+            <div className="hidden lg:flex lg:col-span-4 flex-col relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="w-2 h-px bg-blue-400" />
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
@@ -464,7 +522,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Right: Streak Card */}
-            <div className="lg:col-span-4">
+            <div className="hidden lg:block lg:col-span-4">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}
@@ -483,13 +541,35 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
         {/* Left 3 columns: Habits, Dailies, To-Dos */}
         <div className="xl:col-span-3">
-          <motion.div variants={itemAnim} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* Mobile Tab Switcher */}
+          <div className="flex lg:hidden bg-slate-900/60 p-1 rounded-lg border border-blue-500/10 mb-4 gap-1">
+            {[
+              { id: 'habits', label: 'Habits', activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+              { id: 'dailies', label: 'Dailies', activeClass: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+              { id: 'todo', label: 'To-Do', activeClass: 'bg-rose-500/20 text-rose-400 border-rose-500/30' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={cn(
+                  "flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all italic border border-transparent",
+                  activeTab === tab.id 
+                    ? tab.activeClass
+                    : "text-blue-100/30 hover:text-blue-100/60"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
             {/* Column: Habits */}
-            <div className="space-y-4">
+            <div className={cn("space-y-4", activeTab !== 'habits' && 'hidden lg:block')}>
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                  Habit Protocols
+                  Habit
                 </h2>
                 <Link href={ROUTES.TIME} className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
@@ -506,30 +586,30 @@ export default function DashboardPage() {
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn(
                     "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic",
-                    habit.completed_today ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
+                    habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
                   )}>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => !habit.completed_today && handleLogHabit(habit.id)}
-                        disabled={habit.completed_today || loggingHabit === habit.id}
+                        onClick={() => !habit.is_completed_this_cycle && handleLogHabit(habit.id)}
+                        disabled={habit.is_completed_this_cycle || loggingHabit === habit.id}
                         className={cn(
                           "w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90",
-                          habit.completed_today
+                          habit.is_completed_this_cycle
                             ? 'bg-blue-500/5 text-blue-500/30 border-blue-500/10'
                             : 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500 hover:text-white shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         )}
                       >
                         {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> :
-                          habit.completed_today ? <Check size={14} /> : <Plus size={14} />}
+                          habit.is_completed_this_cycle ? <Check size={14} /> : <Plus size={14} />}
                       </button>
                       <div className="flex-1">
-                        <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.name}</p>
-                        <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+10 EXP</p>
+                        <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.title}</p>
+                        <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+{habit.xp_reward || 10} EXP</p>
                       </div>
-                      {habit.streak > 0 && (
+                      {habit.current_streak > 0 && (
                         <div className="flex items-center gap-1 pr-1">
                           <Zap size={12} className="text-blue-300" fill="currentColor" />
-                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.streak}</span>
+                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.current_streak}</span>
                         </div>
                       )}
                     </div>
@@ -537,50 +617,57 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-
+            
             {/* Column: Dailies */}
-            <div className="space-y-4">
+            <div className={cn("space-y-4", activeTab !== 'dailies' && 'hidden lg:block')}>
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                  Daily Quests
+                  Dailies
                 </h2>
                 <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </button>
               </div>
               <div className="space-y-3">
-                {quests.length === 0 ? (
+                {dailies.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active quests</p>
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active dailies</p>
                   </div>
-                ) : quests.slice(0, 4).map(quest => (
-                  <div key={quest.id} className={cn(
+                ) : dailies.slice(0, 4).map(daily => (
+                  <div 
+                    key={daily.id} 
+                    onClick={() => handleCompleteDaily(daily)}
+                    className={cn(
                     "flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden",
-                    quest.user_status === 'completed' 
+                    daily.is_completed 
                       ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' 
                       : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer'
                   )}>
                     <div className={cn(
                       "w-5 h-5 rounded flex items-center justify-center transition-all",
-                      quest.user_status === 'completed'
+                      daily.is_completed
                         ? 'bg-cyan-500/20 border border-cyan-500/30'
                         : 'border border-cyan-500/30 group-hover:border-cyan-400 bg-slate-950'
                     )}>
-                      <Check className={cn(
-                        "text-cyan-400",
-                        quest.user_status === 'completed' ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
-                      )} size={12} strokeWidth={3} />
+                      {completingDaily === daily.id ? (
+                        <Loader2 className="text-cyan-400 animate-spin" size={10} />
+                      ) : (
+                        <Check className={cn(
+                          "text-cyan-400",
+                          daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
+                        )} size={12} strokeWidth={3} />
+                      )}
                     </div>
                     <div className="flex-1">
                       <p className={cn(
                         "text-[11px] font-black uppercase tracking-tight",
-                        quest.user_status === 'completed' ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
-                      )}>{quest.title}</p>
-                      {quest.user_status !== 'completed' && quest.target_value > 1 && (
-                        <div className="w-full h-1 bg-slate-950 rounded-full mt-1.5 overflow-hidden border border-cyan-500/10">
-                          <div className="bg-cyan-500 h-full transition-all duration-700 shadow-[0_0_8px_rgba(34,211,238,0.4)]" style={{ width: `${Math.min(100, (quest.current_value / quest.target_value) * 100)}%` }} />
-                        </div>
+                        daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
+                      )}>{daily.title}</p>
+                      {!daily.is_completed && daily.subtasks?.length > 0 && (
+                        <p className="text-[8px] text-blue-500/40 uppercase mt-0.5 tracking-widest">
+                          {daily.subtasks.filter((s: any) => s.is_completed).length} / {daily.subtasks.length} SUBTASKS
+                        </p>
                       )}
                     </div>
                   </div>
@@ -589,53 +676,38 @@ export default function DashboardPage() {
             </div>
 
             {/* Column: To-Dos + Rewards */}
-            <div className="space-y-6">
-              {/* Core Cognition Status */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                    Cognitive Status
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setShowSystemKnowledge(true)}
-                  className="w-full group relative overflow-hidden bg-slate-900/40 p-4 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] text-left italic"
-                >
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-2xl rounded-full -mr-8 -mt-8" />
-                  <div className="flex items-center gap-3 relative z-10">
-                    <div className="p-2 bg-blue-500/10 rounded border border-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
-                      <Brain size={16} />
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-black text-blue-50 uppercase tracking-tight">Selfup Cognition</p>
-                      <p className="text-[8px] text-blue-500/60 uppercase tracking-widest mt-0.5 group-hover:text-blue-400 transition-colors">Access Memory Fragments</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
+            <div className={cn("space-y-6", activeTab !== 'todo' && 'hidden lg:block')}>
 
               {/* To-Dos */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                     <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                    Critical Tasks
+                    To-Do
                   </h2>
                   <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                     <PlusCircle size={16} />
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {tasks.filter(t => t.status !== 'done').length === 0 ? (
+                  {tasks.filter((t: any) => !t.is_completed).length === 0 ? (
                     <div className="p-6 rounded border border-dashed border-rose-500/10 text-center bg-slate-900/20">
                       <p className="text-[10px] text-rose-500/30 font-black uppercase tracking-[0.2em] italic">No pending tasks</p>
                     </div>
-                  ) : tasks.filter(t => t.status !== 'done').sort((a, b) => {
+                  ) : tasks.filter((t: any) => !t.is_completed).sort((a: any, b: any) => {
                       const pValues = { critical: 3, high: 2, medium: 1, low: 0 };
                       return (pValues[b.priority as keyof typeof pValues] || 0) - (pValues[a.priority as keyof typeof pValues] || 0);
                     }).slice(0, 3).map(task => (
-                    <div key={task.id} className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic">
+                    <div 
+                      key={task.id} 
+                      onClick={() => handleCompleteTask(task)}
+                      className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic"
+                    >
+                      {completingTask === task.id && (
+                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-20">
+                          <Loader2 className="text-blue-400 animate-spin" size={20} />
+                        </div>
+                      )}
                       <div className={cn(
                         "absolute top-0 right-0 w-16 h-16 blur-xl rounded-full",
                         task.priority === 'critical' ? 'bg-rose-500/5' : task.priority === 'high' ? 'bg-orange-500/5' : 'bg-blue-500/5'
@@ -659,24 +731,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Rewards */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                    Exchange Hub
-                  </h2>
-                  <button className="text-blue-500/40 hover:text-blue-400 transition-all">
-                    <Filter size={14} />
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No exchange items available</p>
-                  </div>
-                </div>
               </div>
-            </div>
           </motion.div>
         </div>
 
@@ -709,7 +764,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
           {ATTRIBUTES.map((attr) => {
             const value = attrs[attr.key] ?? 0
             const percent = Math.min(100, (value / 50) * 100)
@@ -802,10 +857,6 @@ export default function DashboardPage() {
         coinsReward={levelUpData.coinsRewarded}
       />
 
-      <SystemKnowledge
-        isOpen={showSystemKnowledge}
-        onClose={() => setShowSystemKnowledge(false)}
-      />
 
       <AiCoinWalletModal
         isOpen={showWalletModal}

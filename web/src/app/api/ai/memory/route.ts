@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
         user_id: user.id,
         memory_key: memoryKey,
         memory_val: memoryValue,
-        source: source || 'system'
+        source: source || 'system',
+        updated_at: new Date().toISOString()
       },
       { onConflict: 'user_id,memory_key' }
     )
@@ -122,7 +123,8 @@ export async function PUT(req: NextRequest) {
       user_id: user.id,
       memory_key: m.key,
       memory_val: m.value,
-      source: m.source || 'batch-update'
+      source: m.source || 'batch-update',
+      updated_at: new Date().toISOString()
     }))
 
     const { error } = await supabase.from('ai_memory').upsert(memoryEntries, { 

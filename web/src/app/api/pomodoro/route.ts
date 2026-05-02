@@ -77,12 +77,10 @@ export async function PATCH(req: NextRequest) {
       await db.from('user_profiles').update({ xp: profile.xp + xpEarned }).eq('id', user.id)
     }
 
-    // Also move task to in_progress if linked
+    // Also mark linked todo as in-progress (not completed yet)
     if (session?.task_id) {
-      await db.from('tasks')
-        .update({ status: 'in_progress' })
-        .eq('id', session.task_id)
-        .eq('status', 'todo') // only advance if still todo
+      // Pomodoro completion doesn't auto-complete the todo,
+      // but we could track progress via metadata if needed
     }
 
     // Track quest progress for pomodoro-related quests
@@ -108,7 +106,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error: dbErr } = await db
     .from('pomodoro_sessions')
-    .select('*, task:tasks(title)')
+    .select('*, todo:todos(title)')
     .eq('user_id', user.id)
     .gte('started_at', todayStart.toISOString())
     .order('started_at', { ascending: false })

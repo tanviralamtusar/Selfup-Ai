@@ -29,12 +29,12 @@ export async function POST(req: NextRequest) {
     .eq('user_id', user.id)
     .in('category', ['general', 'time_management', 'goals'])
 
-  // 3. Fetch unscheduled tasks
-  const { data: tasks } = await db
-    .from('tasks')
+  // 3. Fetch unscheduled todos
+  const { data: todos } = await db
+    .from('todos')
     .select('*')
     .eq('user_id', user.id)
-    .eq('status', 'todo')
+    .eq('is_completed', false)
     .is('scheduled_start', null)
 
   // 4. Fetch habits
@@ -58,10 +58,10 @@ export async function POST(req: NextRequest) {
     Analyze these tasks and habits and create an optimized daily schedule (6 AM - 11 PM).
     
     TASKS (Priority 1 is highest):
-    ${tasks?.map(t => `- [ID: ${t.id}] ${t.title} (${t.estimated_minutes || 30}m, Priority: ${t.priority}, Pillar: ${t.pillar})`).join('\n') || 'None'}
+    ${todos?.map(t => `- [ID: ${t.id}] ${t.title} (Priority: ${t.priority}, Category: ${t.category})`).join('\n') || 'None'}
     
     HABITS:
-    ${habits?.map(h => `- [ID: ${h.id}] ${h.name} (Pillar: ${h.pillar})`).join('\n') || 'None'}
+    ${habits?.map(h => `- [ID: ${h.id}] ${h.title} (Category: ${h.category})`).join('\n') || 'None'}
 
     Tactical Constraints:
     - Start at 6 AM. End at 11 PM.

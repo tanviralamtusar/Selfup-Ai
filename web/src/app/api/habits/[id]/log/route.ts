@@ -1,78 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
-import { GamificationService } from '@/lib/gamification.service'
-import { QuestService } from '@/lib/quest.service'
+import { TaskEconomyService } from '@/lib/task-economy.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+function getDb(req: NextRequest) {
+  const token = req.headers.get('authorization')?.replace('Bearer ', '')
+  return createClient(supabaseUrl, supabaseKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  })
+}
+
+/**
+ * POST /api/habits/[id]/log — mark habit as completed this cycle
+ * Awards 10 XP, increments streak, updates longest_streak
+ */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: habitId } = await params
   const { user, error } = await verifyAuth(req)
-  if (error || !user) return NextResponse.json({ error }, { status: 401 })
+  if (error || !user) return NextResponse.json({ success: false, error }, { status: 401 })
 
-  const token = req.headers.get('authorization')?.replace('Bearer ', '')
-  const db = createClient(supabaseUrl, supabaseKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  })
+  const { id: habitId } = await params
+  const db = getDb(req)
 
-  const today = new Date().toISOString().split('T')[0]
-
-  // Check if already logged today
-  const { data: existing } = await db
-    .from('habit_logs')
-    .select('id')
-    .eq('habit_id', habitId)
+  // Fetch the habit
+  const { data: habit, error: fetchErr } = await db
+    .from('habits')
+    .select('*')
+    .eq('id', habitId)
     .eq('user_id', user.id)
-    .eq('completed_at', today)
-    .maybeSingle()
-
-  if (existing) {
-    return NextResponse.json({ error: 'Already logged today', alreadyDone: true }, { status: 409 })
-  }
-
-  // Log it
-  const { data: log, error: logErr } = await db
-    .from('habit_logs')
-    .insert({ habit_id: habitId, user_id: user.id, completed_at: today })
-    .select()
     .single()
 
-  if (logErr) return NextResponse.json({ error: logErr.message }, { status: 500 })
-
-  // Increment streak on habit
-  const { data: habit } = await db.from('habits').select('streak, best_streak').eq('id', habitId).single()
-  if (habit) {
-    const newStreak = (habit.streak || 0) + 1
-    await db.from('habits').update({
-      streak: newStreak,
-      best_streak: Math.max(newStreak, habit.best_streak || 0)
-    }).eq('id', habitId)
+  if (fetchErr || !habit) {
+    return NextResponse.json({ success: false, error: 'Habit not found' }, { status: 404 })
   }
 
-  // Award XP: 10 per habit log
-  const xpAward = 10
-  const gService = new GamificationService(db)
-  const { leveledUp, details: levelUpDetails } = await gService.addXp(user.id, xpAward)
+  if (habit.is_completed_this_cycle) {
+    return NextResponse.json({
+      success: false,
+      error: 'Already completed this cycle',
+      alreadyDone: true,
+    }, { status: 409 })
+  }
 
-  // Update overall streak
-  const { streak: newOverallStreak, freezeUsed } = await gService.updateOverallStreak(user.id)
+  // Mark as completed this cycle, increment streaks
+  const newStreak = (habit.current_streak || 0) + 1
+  const longestStreak = Math.max(newStreak, habit.longest_streak || 0)
 
-  // Track quest progress for habit-related quests
-  const questService = new QuestService(db)
-  const questUpdates = await questService.checkAndUpdateProgress(user.id, 'habit', 1)
+  const { error: updateErr } = await db
+    .from('habits')
+    .update({
+      is_completed_this_cycle: true,
+      completed_at: new Date().toISOString(),
+      current_streak: newStreak,
+      longest_streak: longestStreak,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', habitId)
+    .eq('user_id', user.id)
 
-  return NextResponse.json({ 
-    log, 
-    xpEarned: xpAward,
-    leveledUp,
-    levelUpDetails,
-    streak: newOverallStreak,
-    freezeUsed,
-    questUpdates,
+  if (updateErr) {
+    return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 })
+  }
+
+  // Also log in habit_logs for historical tracking
+  const today = new Date().toISOString().split('T')[0]
+  await db
+    .from('habit_logs')
+    .insert({ habit_id: habitId, user_id: user.id, completed_at: today })
+    .then(() => {}) // ignore if logs table has issues
+
+  // Award XP — idempotent via xp_transactions
+  const economy = new TaskEconomyService(db)
+  const sourceId = `${habitId}:${today}`
+
+  const xpResult = await economy.awardXp(
+    user.id,
+    'habit',
+    sourceId,
+    habit.xp_reward || 10,
+    `Completed habit: ${habit.title}`
+  )
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      habit_id: habitId,
+      current_streak: newStreak,
+      longest_streak: longestStreak,
+      xp_awarded: xpResult.alreadyAwarded ? 0 : (habit.xp_reward || 10),
+      already_awarded: xpResult.alreadyAwarded,
+    }
   })
 }

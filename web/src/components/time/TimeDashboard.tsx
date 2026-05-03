@@ -30,6 +30,7 @@ import { useHabits, type Habit } from '@/lib/hooks/useHabits'
 import { useTodos, type Todo } from '@/lib/hooks/useTodos'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
+import { TodoModal } from '@/components/dashboard/TodoModal'
 import { toast } from 'sonner'
 
 // ── Priority Config ──
@@ -285,10 +286,11 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
 
 // ── Todo Item ──
 
-function TodoItem({ todo, onComplete, onDelete }: {
+function TodoItem({ todo, onComplete, onDelete, onEdit }: {
   todo: Todo
   onComplete: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (todo: Todo) => void
 }) {
   const config = PRIORITY_CONFIG[todo.priority]
   const icon = CATEGORY_ICONS[todo.category] || '📋'
@@ -326,10 +328,10 @@ function TodoItem({ todo, onComplete, onDelete }: {
       </button>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(todo)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate', todo.is_completed ? 'line-through text-white/40' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-emerald-400 transition-colors', todo.is_completed ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
             {todo.title}
           </span>
           {todo.is_overdue && (
@@ -339,6 +341,9 @@ function TodoItem({ todo, onComplete, onDelete }: {
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
+          <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', config.bg, config.color)}>
+            {config.label}
+          </span>
           {todo.due_date && (
             <span className={cn('flex items-center gap-0.5 text-xs', todo.is_overdue ? 'text-red-400' : 'text-white/30')}>
               <Calendar size={10} /> {new Date(todo.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -390,26 +395,32 @@ function PanelColumn({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col bg-gradient-to-b from-white/[0.03] to-transparent border border-white/[0.06] rounded-2xl overflow-hidden">
+    <div className="relative group flex flex-col bg-slate-950/60 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+      {/* Decorative Corner Lines */}
+      <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-white/20 z-10" />
+      <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-white/20 z-10" />
+      <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-white/20 z-10" />
+      <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-white/20 z-10" />
+
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+      <div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-white/[0.06] bg-white/[0.02]">
         <div className="flex items-center gap-2">
-          <div className={cn('p-1.5 rounded-lg', iconColor)}>
+          <div className={cn('p-2 rounded-xl shadow-inner', iconColor)}>
             {icon}
           </div>
-          <h3 className="text-sm font-semibold text-white/80 tracking-wide">{title}</h3>
+          <h3 className="text-xs font-black text-white/90 uppercase tracking-[0.2em] italic">{title}</h3>
         </div>
         {headerRight}
       </div>
 
       {/* Body */}
-      <div className="flex-1 p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10">
+      <div className="relative z-10 flex-1 p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-320px)] scrollbar-thin scrollbar-thumb-white/10 custom-scrollbar">
         {children}
       </div>
 
       {/* Footer */}
       {footer && (
-        <div className="px-4 py-2.5 border-t border-white/[0.06] bg-white/[0.01]">
+        <div className="relative z-10 px-4 py-3 border-t border-white/[0.06] bg-white/[0.01]">
           {footer}
         </div>
       )}
@@ -435,7 +446,7 @@ export function TimeDashboard() {
   const {
     todos, loading: todosLoading, overdueCount,
     remainingCount, completedCount: todosCompleted,
-    createTodo, completeTodo, deleteTodo,
+    createTodo, completeTodo, deleteTodo, updateTodo
   } = useTodos()
 
   const [isDailyModalOpen, setIsDailyModalOpen] = useState(false)
@@ -443,6 +454,9 @@ export function TimeDashboard() {
 
   const [isHabitModalOpen, setIsHabitModalOpen] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
+
+  const [isTodoModalOpen, setIsTodoModalOpen] = useState(false)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
 
   const isLoading = dailiesLoading || habitsLoading || todosLoading
 
@@ -487,6 +501,19 @@ export function TimeDashboard() {
   }
 
   // ── Loading ──
+
+  const handleSaveTodo = async (data: any) => {
+    if (editingTodo) {
+      await updateTodo(editingTodo.id, data)
+    } else {
+      await createTodo(data)
+    }
+  }
+
+  const handleDeleteTodo = async (id: string) => {
+    await deleteTodo(id)
+    setIsTodoModalOpen(false)
+  }
 
   if (isLoading) {
     return (
@@ -630,9 +657,17 @@ export function TimeDashboard() {
           icon={<Target size={16} className="text-emerald-400" />}
           iconColor="bg-emerald-500/15"
           headerRight={
-            <span className="text-xs text-white/30">
-              {remainingCount} remaining
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/30">
+                {remainingCount} remaining
+              </span>
+              <button 
+                onClick={() => { setEditingTodo(null); setIsTodoModalOpen(true); }}
+                className="text-emerald-400/60 hover:text-emerald-400 transition-colors p-1 bg-emerald-500/10 rounded-md hover:bg-emerald-500/20"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
           }
           footer={
             <QuickAdd placeholder="Add to-do..." onAdd={handleAddTodo} />
@@ -651,6 +686,7 @@ export function TimeDashboard() {
                   todo={todo}
                   onComplete={completeTodo}
                   onDelete={deleteTodo}
+                  onEdit={(t) => { setEditingTodo(t); setIsTodoModalOpen(true); }}
                 />
               ))
             )}
@@ -679,6 +715,17 @@ export function TimeDashboard() {
         habit={editingHabit}
         onSave={handleSaveHabit}
         onDelete={editingHabit ? handleDeleteHabit : undefined}
+      />
+
+      <TodoModal
+        isOpen={isTodoModalOpen}
+        onClose={() => {
+          setIsTodoModalOpen(false)
+          setEditingTodo(null)
+        }}
+        todo={editingTodo}
+        onSave={handleSaveTodo}
+        onDelete={editingTodo ? handleDeleteTodo : undefined}
       />
     </div>
   )

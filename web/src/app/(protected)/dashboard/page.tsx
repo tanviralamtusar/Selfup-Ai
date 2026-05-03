@@ -39,6 +39,7 @@ import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
+import { TodoModal } from '@/components/dashboard/TodoModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -156,17 +157,14 @@ export default function DashboardPage() {
   const coins = profile?.ai_coins ?? 20
   const displayName = profile?.display_name || profile?.username || 'Pathfinder'
 
-  // Real HP from profile
   const hp = profile?.hp ?? 100
   const maxHp = profile?.max_hp ?? 100
   const hpPct = maxHp > 0 ? (hp / maxHp) * 100 : 0
   const hpState = (profile?.hp_state as HpState) ?? 'healthy'
 
-  // Rank from profile
   const rankInfo = useMemo(() => getRank(level), [level])
   const rankLetter = profile?.rank ?? getRankLetter(level)
 
-  // Attributes from profile
   const attrs = useMemo(() => ({
     str: profile?.attr_str ?? 0,
     int: profile?.attr_int ?? 0,
@@ -176,19 +174,12 @@ export default function DashboardPage() {
   }), [profile])
   const statPoints = profile?.stat_points ?? 0
 
-  // Live habits
   const [habits, setHabits] = useState<Habit[]>([])
   const [loggingHabit, setLoggingHabit] = useState<string | null>(null)
-
-  // Activity feed
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [activitiesLoading, setActivitiesLoading] = useState(true)
-
-  // Badges
   const [badges, setBadges] = useState<BadgeItem[]>([])
   const [badgesLoading, setBadgesLoading] = useState(true)
-
-  // Dailies & Tasks
   const [dailies, setDailies] = useState<any[]>([])
   const [tasks, setTasks] = useState<any[]>([])
   const [completingDaily, setCompletingDaily] = useState<string | null>(null)
@@ -198,19 +189,14 @@ export default function DashboardPage() {
   const [editingDaily, setEditingDaily] = useState<any>(null)
   const [isHabitModalOpen, setIsHabitModalOpen] = useState(false)
   const [editingHabit, setEditingHabit] = useState<any>(null)
+  const [isTodoModalOpen, setIsTodoModalOpen] = useState(false)
+  const [editingTodo, setEditingTodo] = useState<any>(null)
 
-  // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
   const [levelUpData, setLevelUpData] = useState({ newLevel: 2, totalXp: 100, coinsRewarded: 50, statPointsAwarded: 1, rankUp: undefined as { oldRank: string; newRank: string; rankTitle: string } | undefined })
-
-  // Active dungeons
   const [activeDungeons, setActiveDungeons] = useState<ActiveDungeon[]>([])
   const [dungeonCountdown, setDungeonCountdown] = useState<string>('')
-
-  // Wallet state
   const [showWalletModal, setShowWalletModal] = useState(false)
-
-  // Streak Stats
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
   const [showStreakHistory, setShowStreakHistory] = useState(false)
 
@@ -231,7 +217,6 @@ export default function DashboardPage() {
     }
   }, [session])
 
-  // Dungeon countdown timer
   useEffect(() => {
     const activeDungeon = activeDungeons.find(d => d.status === 'active')
     if (!activeDungeon) { setDungeonCountdown(''); return }
@@ -255,7 +240,7 @@ export default function DashboardPage() {
         const json = await res.json()
         setHabits(json.data || [])
       }
-    } catch { /* silently fail — habits are non-critical */ }
+    } catch {}
   }
 
   const fetchActivities = async () => {
@@ -263,17 +248,16 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/user/activities', { headers: headers() })
       if (res.ok) setActivities(await res.json())
-    } catch { /* silently fail */ }
+    } catch {}
     finally { setActivitiesLoading(false) }
   }
 
   const fetchBadges = async () => {
     setBadgesLoading(true)
     try {
-      // Fetch earned badges with badge info
       const res = await fetch('/api/user/badges', { headers: headers() })
       if (res.ok) setBadges(await res.json())
-    } catch { /* silently fail — badges endpoint may not exist yet */ }
+    } catch {}
     finally { setBadgesLoading(false) }
   }
 
@@ -285,7 +269,7 @@ export default function DashboardPage() {
         const activity = data.data?.weeklyActivity ?? data.weeklyActivity
         if (activity) setWeeklyActivity(activity)
       }
-    } catch { /* silently fail */ }
+    } catch {}
   }
 
   const fetchDungeons = async () => {
@@ -295,7 +279,7 @@ export default function DashboardPage() {
         const data = await res.json()
         if (data.data?.dungeons) setActiveDungeons(data.data.dungeons)
       }
-    } catch { /* silently fail */ }
+    } catch {}
   }
 
   const fetchDailies = async () => {
@@ -305,7 +289,7 @@ export default function DashboardPage() {
         const json = await res.json()
         setDailies(json.data || [])
       }
-    } catch { /* silently fail */ }
+    } catch {}
   }
 
   const fetchTasks = async () => {
@@ -315,7 +299,7 @@ export default function DashboardPage() {
         const json = await res.json()
         setTasks(json.data || [])
       }
-    } catch { /* silently fail */ }
+    } catch {}
   }
 
   const handleSaveDaily = async (data: any) => {
@@ -398,6 +382,46 @@ export default function DashboardPage() {
     }
   }
 
+  const handleSaveTask = async (data: any) => {
+    try {
+      const url = editingTodo ? `/api/todos/${editingTodo.id}` : '/api/todos'
+      const method = editingTodo ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: headers(),
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        fetchTasks()
+        toast.success(`Task ${editingTodo ? 'updated' : 'created'}!`)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to save task')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
+  }
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      const res = await fetch(`/api/todos/${id}`, {
+        method: 'DELETE',
+        headers: headers()
+      })
+      if (res.ok) {
+        fetchTasks()
+        toast.success('Task deleted')
+        setIsTodoModalOpen(false)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to delete task')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
+  }
+
   const handleCompleteDaily = async (daily: any) => {
     if (daily.is_completed || completingDaily) return
     setCompletingDaily(daily.id)
@@ -409,9 +433,7 @@ export default function DashboardPage() {
       if (res.ok) {
         const result = await res.json()
         toast.success(`Daily complete! +${result.data.xp_awarded} XP`)
-        // Optimistic update
         setDailies(prev => prev.map(d => d.id === daily.id ? { ...d, is_completed: true } : d))
-        // Refresh profile for level/XP updates
         const profileRes = await fetch('/api/user/profile', { headers: headers() })
         if (profileRes.ok) {
           const profileData = await profileRes.json()
@@ -439,9 +461,7 @@ export default function DashboardPage() {
       if (res.ok) {
         const result = await res.json()
         toast.success(`Task complete! +${result.data.xp_awarded} XP`)
-        // Optimistic update
         setTasks(prev => prev.map(t => t.id === task.id ? { ...t, is_completed: true } : t))
-        // Refresh profile for level/XP updates
         const profileRes = await fetch('/api/user/profile', { headers: headers() })
         if (profileRes.ok) {
           const profileData = await profileRes.json()
@@ -518,18 +538,12 @@ export default function DashboardPage() {
 
           {/* === MOBILE LAYOUT === */}
           <div className="grid grid-cols-1 gap-6 relative z-10 lg:hidden">
-            {/* Profile Status */}
             <div className="space-y-5">
               <div className="flex flex-row gap-4 md:gap-6 items-center">
-                {/* Avatar + Level Pill */}
                 <div className="relative shrink-0">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-slate-950 shadow-[0_0_20px_rgba(59,130,246,0.15)] flex items-center justify-center group-hover:border-blue-400/50 transition-all">
                     {profile?.avatar_url ? (
-                      <img
-                        className="w-full h-full object-cover rounded-xl"
-                        alt="Avatar"
-                        src={profile.avatar_url}
-                      />
+                      <img className="w-full h-full object-cover rounded-xl" alt="Avatar" src={profile.avatar_url} />
                     ) : (
                       <User size={48} className="text-blue-400/40 system-text-glow" />
                     )}
@@ -546,45 +560,30 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* HP & XP Bars */}
                 <div className="flex-1 space-y-4 md:space-y-5 mt-1 md:mt-0">
-                  {/* HP */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center px-1">
                       <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-emerald-400 system-text-glow">H P</span>
                       <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{hp} / {maxHp}</span>
                     </div>
                     <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${hpPct}%` }}
-                        className="h-full bg-emerald-400 rounded-md shadow-[0_0_10px_rgba(52,211,153,0.3)]"
-                      />
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${hpPct}%` }} className="h-full bg-emerald-400 rounded-md shadow-[0_0_10px_rgba(52,211,153,0.3)]" />
                     </div>
                   </div>
-
-                  {/* XP */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center px-1">
                       <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-blue-400 system-text-glow">X P</span>
                       <span className="text-[10px] md:text-[11px] font-black text-blue-100/80 tabular-nums tracking-widest">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
                     </div>
                     <div className="h-2.5 md:h-3 w-full bg-slate-900/80 rounded-md border border-blue-500/20 overflow-hidden shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${xpPercent}%` }}
-                        className="h-full bg-blue-500 rounded-md shadow-[0_0_10px_rgba(59,130,246,0.3)]"
-                      />
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} className="h-full bg-blue-500 rounded-md shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-row justify-center flex-wrap gap-3 md:gap-4 mt-2">
-                <button
-                  onClick={() => setShowWalletModal(true)}
-                  className="bg-slate-900/90 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-blue-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 group/wallet shadow-lg shrink-0"
-                >
+                <button onClick={() => setShowWalletModal(true)} className="bg-slate-900/90 px-4 md:px-5 py-2 md:py-2.5 rounded-full border border-blue-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 group/wallet shadow-lg shrink-0">
                   <img src="/coin.png" alt="AiCoins" className="w-4 h-4 md:w-5 md:h-5 object-contain" />
                   <span className="text-xs md:text-sm font-black text-white tabular-nums tracking-tighter ml-1">{formatNumber(coins)}</span>
                 </button>
@@ -592,10 +591,7 @@ export default function DashboardPage() {
                   <Trophy size={12} className="text-blue-400/60" />
                   <span className="text-[10px] md:text-xs font-black text-blue-100 ml-1">#420</span>
                 </div>
-                <button
-                  onClick={() => setShowStreakHistory(true)}
-                  className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-orange-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 shadow-lg shrink-0"
-                >
+                <button onClick={() => setShowStreakHistory(true)} className="bg-slate-900/90 px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-orange-500/30 flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95 shadow-lg shrink-0">
                   <Flame size={12} className="text-orange-400" />
                   <span className="text-[10px] md:text-xs font-black text-orange-100 ml-1">{profile?.streak_overall ?? 0}</span>
                 </button>
@@ -605,17 +601,12 @@ export default function DashboardPage() {
 
           {/* === DESKTOP LAYOUT === */}
           <div className="hidden lg:grid grid-cols-12 gap-6 relative z-10">
-            {/* Left: Avatar & Basic Stats */}
             <div className="lg:col-span-4 space-y-6">
               <div className="flex flex-col md:flex-row items-center gap-5">
                 <div className="relative">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-slate-950 shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center font-black text-blue-400 text-2xl">
                     {profile?.avatar_url ? (
-                      <img
-                        className="w-full h-full object-cover rounded-xl"
-                        alt="Avatar"
-                        src={profile.avatar_url}
-                      />
+                      <img className="w-full h-full object-cover rounded-xl" alt="Avatar" src={profile.avatar_url} />
                     ) : (
                       <User size={48} className="text-blue-400/80 system-text-glow" />
                     )}
@@ -625,7 +616,6 @@ export default function DashboardPage() {
                     LVL {level}
                   </div>
                 </div>
-
                 <div className="flex-1 text-center md:text-left space-y-1">
                   <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
                     <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
@@ -633,10 +623,7 @@ export default function DashboardPage() {
                   </div>
                   <h1 className="text-2xl md:text-3xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-                    <button
-                      onClick={() => setShowWalletModal(true)}
-                      className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
-                    >
+                    <button onClick={() => setShowWalletModal(true)} className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet">
                       <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/wallet:scale-110 transition-transform" />
                       <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
                       <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
@@ -648,9 +635,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-
               <div className="flex flex-col gap-4 max-w-sm">
-                {/* Health (HP) */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-end px-1">
                     <div className="flex items-center gap-2">
@@ -662,32 +647,21 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{hp} / {maxHp}</span>
                   </div>
                   <div className={cn('h-3 w-full bg-slate-900 rounded-sm p-[1px] border overflow-hidden', hpState === 'critical' || hpState === 'collapse' ? 'border-rose-500/30' : 'border-blue-500/10')}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${hpPct}%` }}
-                      className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]')}
-                    />
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${hpPct}%` }} className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400' : 'bg-gradient-to-r from-rose-600 to-rose-400')} />
                   </div>
                 </div>
-
-                {/* Experience (XP) */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-end px-1">
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
                     <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
                   </div>
                   <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${xpPercent}%` }}
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
-                    />
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} className="h-full bg-gradient-to-r from-blue-600 to-blue-400" />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Middle: Achievements / Badges */}
             <div className="lg:col-span-4 flex flex-col relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="w-2 h-px bg-blue-400" />
@@ -698,7 +672,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right: Streak Card */}
             <div className="lg:col-span-4">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
@@ -716,9 +689,7 @@ export default function DashboardPage() {
 
       {/* ─── Main Content: 4-Column Grid + Activity Feed ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
-        {/* Left 3 columns: Habits, Dailies, To-Dos */}
         <div className="xl:col-span-3">
-          {/* Mobile Tab Switcher */}
           <div className="flex lg:hidden bg-slate-900/60 p-1 rounded-lg border border-blue-500/10 mb-4 gap-1">
             {[
               { id: 'habits', label: 'Habits', activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
@@ -730,9 +701,7 @@ export default function DashboardPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={cn(
                   "flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded transition-all italic border border-transparent",
-                  activeTab === tab.id 
-                    ? tab.activeClass
-                    : "text-blue-100/30 hover:text-blue-100/60"
+                  activeTab === tab.id ? tab.activeClass : "text-blue-100/30 hover:text-blue-100/60"
                 )}
               >
                 {tab.label}
@@ -741,186 +710,120 @@ export default function DashboardPage() {
           </div>
 
           <motion.div variants={itemAnim} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
-            {/* Column: Habits */}
-            <div className={cn("space-y-4", activeTab !== 'habits' && 'hidden lg:block')}>
-              <div className="flex items-center justify-between px-2">
+            {/* Habits Panel */}
+            <div className={cn("relative group flex flex-col bg-slate-950/40 backdrop-blur-xl border border-blue-500/10 rounded-2xl overflow-hidden italic shadow-2xl p-4 space-y-4", activeTab !== 'habits' && 'hidden lg:block')}>
+              <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-blue-500/30 z-10" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-blue-500/30 z-10" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-blue-500/30 z-10" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-blue-500/30 z-10" />
+              <div className="flex items-center justify-between px-1 relative z-10">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                  Habit
+                  Habits
                 </h2>
-                <button 
-                  onClick={() => { setEditingHabit(null); setIsHabitModalOpen(true); }}
-                  className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90"
-                >
+                <button onClick={() => { setEditingHabit(null); setIsHabitModalOpen(true); }} className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 relative z-10">
                 {habits.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-blue-500/10 text-center bg-slate-900/20">
                     <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
-                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">
-                      + Initialize Protocol
-                    </Link>
+                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">+ Initialize Protocol</Link>
                   </div>
                 ) : habits.slice(0, 4).map(habit => (
-                  <div key={habit.id} className={cn(
-                    "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic cursor-pointer",
-                    habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
-                  )} onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}>
+                  <div key={habit.id} className={cn("group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic cursor-pointer", habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]')} onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}>
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); !habit.is_completed_this_cycle && handleLogHabit(habit.id); }}
-                        disabled={habit.is_completed_this_cycle || loggingHabit === habit.id}
-                        className={cn(
-                          "w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90",
-                          habit.is_completed_this_cycle
-                            ? 'bg-blue-500/5 text-blue-500/30 border-blue-500/10'
-                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500 hover:text-white shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        )}
-                      >
-                        {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> :
-                          habit.is_completed_this_cycle ? <Check size={14} /> : <Plus size={14} />}
+                      <button onClick={(e) => { e.stopPropagation(); !habit.is_completed_this_cycle && handleLogHabit(habit.id); }} disabled={habit.is_completed_this_cycle || loggingHabit === habit.id} className={cn("w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90", habit.is_completed_this_cycle ? 'bg-blue-500/5 text-blue-500/30 border-blue-500/10' : 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500 hover:text-white shadow-[0_0_10px_rgba(59,130,246,0.2)]')}>
+                        {loggingHabit === habit.id ? <Loader2 size={14} className="animate-spin" /> : habit.is_completed_this_cycle ? <Check size={14} /> : <Plus size={14} />}
                       </button>
                       <div className="flex-1">
                         <p className="text-xs font-black tracking-wide text-blue-50 uppercase italic">{habit.title}</p>
                         <p className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] italic">+{habit.xp_reward || 10} EXP</p>
                       </div>
-                      {habit.current_streak > 0 && (
-                        <div className="flex items-center gap-1 pr-1">
-                          <Zap size={12} className="text-blue-300" fill="currentColor" />
-                          <span className="text-[10px] font-black text-blue-300 tabular-nums">{habit.current_streak}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            
-            {/* Column: Dailies */}
-            <div className={cn("space-y-4", activeTab !== 'dailies' && 'hidden lg:block')}>
-              <div className="flex items-center justify-between px-2">
+
+            {/* Dailies Panel */}
+            <div className={cn("relative group flex flex-col bg-slate-950/40 backdrop-blur-xl border border-cyan-500/10 rounded-2xl overflow-hidden italic shadow-2xl p-4 space-y-4", activeTab !== 'dailies' && 'hidden lg:block')}>
+              <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-cyan-500/30 z-10" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-cyan-500/30 z-10" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-cyan-500/30 z-10" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-cyan-500/30 z-10" />
+              <div className="flex items-center justify-between px-1 relative z-10">
                 <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   Dailies
                 </h2>
-                <button 
-                  onClick={() => { setEditingDaily(null); setIsDailyModalOpen(true); }}
-                  className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90"
-                >
+                <button onClick={() => { setEditingDaily(null); setIsDailyModalOpen(true); }} className="text-cyan-400/40 hover:text-cyan-400 transition-all hover:scale-110 active:scale-90">
                   <PlusCircle size={16} />
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 relative z-10">
                 {dailies.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active dailies</p>
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
                   </div>
                 ) : dailies.slice(0, 4).map(daily => (
-                  <div 
-                    key={daily.id} 
-                    onClick={() => handleCompleteDaily(daily)}
-                    className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden",
-                    daily.is_completed 
-                      ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' 
-                      : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer'
-                  )}>
-                    <div className={cn(
-                      "w-5 h-5 rounded flex items-center justify-center transition-all",
-                      daily.is_completed
-                        ? 'bg-cyan-500/20 border border-cyan-500/30'
-                        : 'border border-cyan-500/30 group-hover:border-cyan-400 bg-slate-950'
-                    )}>
-                      {completingDaily === daily.id ? (
-                        <Loader2 className="text-cyan-400 animate-spin" size={10} />
-                      ) : (
-                        <Check className={cn(
-                          "text-cyan-400",
-                          daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100'
-                        )} size={12} strokeWidth={3} />
-                      )}
+                  <div key={daily.id} onClick={() => handleCompleteDaily(daily)} className={cn("flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden", daily.is_completed ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer')}>
+                    <div className={cn("w-5 h-5 rounded flex items-center justify-center transition-all relative z-10", daily.is_completed ? 'bg-cyan-500/20 border border-cyan-500/30' : 'border border-cyan-500/30 group-hover:border-cyan-400 bg-slate-950 shadow-[0_0_10px_rgba(34,211,238,0.2)]')}>
+                      {completingDaily === daily.id ? <Loader2 className="text-cyan-400 animate-spin" size={10} /> : <Check className={cn("text-cyan-400", daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100')} size={12} strokeWidth={3} />}
                     </div>
-                    <div className="flex-1 overflow-hidden" onClick={(e) => { e.stopPropagation(); setEditingDaily(daily); setIsDailyModalOpen(true); }}>
-                      <p className={cn(
-                        "text-[11px] font-black uppercase tracking-tight truncate hover:text-cyan-400 transition-colors",
-                        daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40 pointer-events-none' : 'text-blue-50'
-                      )}>{daily.title}</p>
-                      {!daily.is_completed && daily.subtasks?.length > 0 && (
-                        <p className="text-[8px] text-blue-500/40 uppercase mt-0.5 tracking-widest">
-                          {daily.subtasks.filter((s: any) => s.is_completed).length} / {daily.subtasks.length} SUBTASKS
-                        </p>
-                      )}
+                    <div className="flex-1 overflow-hidden relative z-10" onClick={(e) => { e.stopPropagation(); setEditingDaily(daily); setIsDailyModalOpen(true); }}>
+                      <p className={cn("text-[11px] font-black uppercase tracking-tight truncate hover:text-cyan-400 transition-colors", daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40 pointer-events-none' : 'text-blue-50')}>{daily.title}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Column: To-Dos + Rewards */}
-            <div className={cn("space-y-6", activeTab !== 'todo' && 'hidden lg:block')}>
-
-              {/* To-Dos */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
-                    <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                    To-Do
-                  </h2>
-                  <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
-                    <PlusCircle size={16} />
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {tasks.filter((t: any) => !t.is_completed).length === 0 ? (
-                    <div className="p-6 rounded border border-dashed border-rose-500/10 text-center bg-slate-900/20">
-                      <p className="text-[10px] text-rose-500/30 font-black uppercase tracking-[0.2em] italic">No pending tasks</p>
-                    </div>
-                  ) : tasks.filter((t: any) => !t.is_completed).sort((a: any, b: any) => {
-                      const pValues = { critical: 3, high: 2, medium: 1, low: 0 };
-                      return (pValues[b.priority as keyof typeof pValues] || 0) - (pValues[a.priority as keyof typeof pValues] || 0);
-                    }).slice(0, 3).map(task => (
-                    <div 
-                      key={task.id} 
-                      onClick={() => handleCompleteTask(task)}
-                      className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic"
-                    >
-                      {completingTask === task.id && (
-                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-20">
-                          <Loader2 className="text-blue-400 animate-spin" size={20} />
-                        </div>
-                      )}
-                      <div className={cn(
-                        "absolute top-0 right-0 w-16 h-16 blur-xl rounded-full",
-                        task.priority === 'critical' ? 'bg-rose-500/5' : task.priority === 'high' ? 'bg-orange-500/5' : 'bg-blue-500/5'
-                      )} />
-                      <div className="flex items-start justify-between gap-3 relative z-10">
-                        <div className="space-y-2">
-                          <p className="text-[11px] font-black leading-snug text-blue-50 group-hover:text-blue-400 transition-colors uppercase tracking-tight">{task.title}</p>
-                          <span className={cn(
-                            "inline-flex px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-[0.3em] border",
-                            task.priority === 'critical' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 
-                            task.priority === 'high' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 
-                            'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          )}>PRIORITY: {task.priority.toUpperCase()}</span>
-                        </div>
-                        <div className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all group-hover:border-blue-400">
-                          <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-40 transition-opacity" />
-                        </div>
+            {/* To-Do Panel */}
+            <div className={cn("relative group flex flex-col bg-slate-950/40 backdrop-blur-xl border border-rose-500/10 rounded-2xl overflow-hidden italic shadow-2xl p-4 space-y-4", activeTab !== 'todo' && 'hidden lg:block')}>
+              <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-rose-500/30 z-10" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-rose-500/30 z-10" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-rose-500/30 z-10" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-rose-500/30 z-10" />
+              <div className="flex items-center justify-between px-1 relative z-10">
+                <h2 className="text-[10px] font-black tracking-[0.3em] flex items-center gap-2 font-headline uppercase text-blue-100 italic">
+                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+                  To-Do
+                </h2>
+                <button onClick={() => { setEditingTodo(null); setIsTodoModalOpen(true); }} className="text-rose-400/40 hover:text-rose-400 transition-all hover:scale-110 active:scale-90">
+                  <PlusCircle size={16} />
+                </button>
+              </div>
+              <div className="space-y-3 relative z-10">
+                {tasks.filter((t: any) => !t.is_completed).length === 0 ? (
+                  <div className="p-6 rounded border border-dashed border-rose-500/10 text-center bg-slate-900/20">
+                    <p className="text-[10px] text-rose-500/30 font-black uppercase tracking-[0.2em] italic">No pending tasks</p>
+                  </div>
+                ) : tasks.filter((t: any) => !t.is_completed).slice(0, 3).map(task => (
+                  <div key={task.id} className="bg-slate-900/40 p-3.5 rounded-lg border border-blue-500/20 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(59,130,246,0.05)] cursor-pointer group relative overflow-hidden italic" onClick={() => { setEditingTodo(task); setIsTodoModalOpen(true); }}>
+                    <div className="flex items-start justify-between gap-3 relative z-10">
+                      <div className="space-y-2 flex-1">
+                        <p className="text-[11px] font-black leading-snug text-blue-50 group-hover:text-blue-400 transition-colors uppercase tracking-tight">{task.title}</p>
+                        <span className="inline-flex px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-[0.3em] border bg-blue-500/10 text-blue-400 border-blue-500/20">PRIORITY: {task.priority.toUpperCase()}</span>
                       </div>
+                      <button onClick={(e) => { e.stopPropagation(); handleCompleteTask(task); }} className="w-4 h-4 rounded-sm bg-slate-950 border border-blue-500/20 flex items-center justify-center transition-all hover:border-blue-400 group-hover:border-blue-400/60">
+                        <div className="w-1.5 h-1.5 rounded-sm bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-
-              </div>
+            </div>
           </motion.div>
         </div>
 
         {/* Right column: Activity Feed */}
-        <motion.div variants={itemAnim} className="bg-slate-950/40 rounded-xl p-5 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)] max-h-[600px] overflow-y-auto custom-scrollbar relative overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
+        <motion.div variants={itemAnim} className="bg-slate-950/40 backdrop-blur-xl rounded-2xl p-5 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)] max-h-[600px] overflow-y-auto custom-scrollbar relative overflow-hidden italic">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-blue-500/30 z-10" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-blue-500/30 z-10" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-blue-500/30 z-10" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-blue-500/30 z-10" />
           <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-slate-950/80 backdrop-blur-md pb-2 z-10 -mx-1 px-1">
             <div className="w-4 h-px bg-blue-500" />
             <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SELFUP EVENT LOG</p>
@@ -929,11 +832,9 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      {/* ─── Attributes of the Awakened ─── */}
+      {/* ─── Attributes Section ─── */}
       <motion.section variants={itemAnim} className="bg-slate-950/40 rounded-xl p-8 border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.05)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 blur-[140px] rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.05)_50%),linear-gradient(90deg,rgba(255,0,0,0.01),rgba(0,255,0,0.01),rgba(0,0,255,0.01))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-5 relative z-10">
           <div>
             <div className="flex items-center gap-1.5 mb-2">
@@ -942,33 +843,16 @@ export default function DashboardPage() {
             </div>
             <h2 className="text-3xl font-black tracking-tighter text-blue-50 font-headline leading-none italic uppercase system-text-glow">Attributes of the Awakened</h2>
           </div>
-          <Link href={ROUTES.SKILLS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">
-            DETAILED ANALYSIS <ArrowRight size={14} />
-          </Link>
+          <Link href={ROUTES.SKILLS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">DETAILED ANALYSIS <ArrowRight size={14} /></Link>
         </div>
-
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
-          {ATTRIBUTES.map((attr) => {
-            const value = attrs[attr.key] ?? 0
-            const percent = Math.min(100, (value / 50) * 100)
-            const colorMap: Record<string, string> = { str: 'text-red-400', int: 'text-cyan-400', agi: 'text-blue-300', vit: 'text-green-400', cha: 'text-purple-400' }
-            return (
-              <Gauge
-                key={attr.key}
-                percent={percent}
-                colorClass={colorMap[attr.key] || 'text-blue-400'}
-                label={attr.key.toUpperCase()}
-                title={attr.name.toUpperCase()}
-              />
-            )
-          })}
+          {ATTRIBUTES.map((attr) => (
+            <Gauge key={attr.key} percent={Math.min(100, (attrs[attr.key] / 50) * 100)} colorClass={attr.key === 'str' ? 'text-red-400' : attr.key === 'int' ? 'text-cyan-400' : 'text-blue-400'} label={attr.key.toUpperCase()} title={attr.name.toUpperCase()} />
+          ))}
           {statPoints > 0 && (
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse">
-                <div className="text-center">
-                  <span className="text-lg font-black text-amber-300">+{statPoints}</span>
-                  <span className="text-[7px] font-black text-amber-400/60 block uppercase tracking-widest">Points</span>
-                </div>
+                <span className="text-lg font-black text-amber-300">+{statPoints}</span>
               </div>
               <p className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em]">Allocate</p>
             </div>
@@ -976,104 +860,50 @@ export default function DashboardPage() {
         </div>
       </motion.section>
 
-      {/* Dungeon Gate Panel */}
+      {/* Dungeon Section */}
       {activeDungeons.length > 0 && (
-        <motion.section variants={itemAnim} className="relative overflow-hidden rounded-xl bg-slate-950/60 backdrop-blur-xl border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.08)]">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-rose-500/5 pointer-events-none" />
-          <div className="p-6 relative z-10">
-            <div className="flex items-center gap-1.5 mb-4">
-              <div className="w-5 h-px bg-purple-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 italic">DUNGEON GATES</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeDungeons.map((dungeon) => {
-                const objectives = dungeon.objectives || []
-                const allCleared = objectives.every((obj, i) => (dungeon.progress[`obj_${i}`] ?? 0) >= obj.target)
-                return (
-                  <div key={dungeon.id} className={cn('p-4 rounded-lg border relative overflow-hidden', dungeon.status === 'cleared' ? 'bg-emerald-500/5 border-emerald-500/20' : dungeon.status === 'expired' || dungeon.status === 'failed' ? 'bg-slate-900/40 border-slate-700/30 opacity-50' : 'bg-slate-900/40 border-purple-500/20 hover:border-purple-400/40 transition-all')}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border', dungeon.tier === 'S' ? 'text-amber-300 border-amber-500/30 bg-amber-500/10' : dungeon.tier === 'A' ? 'text-purple-300 border-purple-500/30 bg-purple-500/10' : dungeon.tier === 'C' ? 'text-cyan-300 border-cyan-500/30 bg-cyan-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{dungeon.tier}-Rank</span>
-                        <h3 className="text-xs font-black text-blue-50 uppercase tracking-tight italic">{dungeon.title}</h3>
+        <motion.section variants={itemAnim} className="relative overflow-hidden rounded-xl bg-slate-950/60 backdrop-blur-xl border border-blue-500/20 p-6 shadow-2xl">
+          <div className="flex items-center gap-1.5 mb-4">
+            <div className="w-5 h-px bg-purple-500" />
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-purple-400 italic">DUNGEON GATES</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeDungeons.map(dungeon => (
+              <div key={dungeon.id} className="p-4 rounded-lg border bg-slate-900/40 border-purple-500/20">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-xs font-black text-blue-50 uppercase italic">{dungeon.title}</h3>
+                  {dungeonCountdown && <span className="text-[10px] font-black text-rose-400 tabular-nums animate-pulse">{dungeonCountdown}</span>}
+                </div>
+                <div className="space-y-2">
+                  {dungeon.objectives.map((obj, i) => {
+                    const current = dungeon.progress[`obj_${i}`] ?? 0
+                    const pct = Math.min(100, (current / obj.target) * 100)
+                    return (
+                      <div key={i} className="space-y-1">
+                        <div className="flex justify-between text-[9px] font-bold">
+                          <span className="text-blue-200/70">{obj.label}</span>
+                          <span className="text-blue-300/50">{current}/{obj.target}</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-blue-500/10">
+                          <div className={cn("h-full", pct >= 100 ? 'bg-emerald-500' : 'bg-purple-500')} style={{ width: `${pct}%` }} />
+                        </div>
                       </div>
-                      {dungeon.status === 'active' && dungeonCountdown && (
-                        <span className="text-[10px] font-black text-rose-400 tabular-nums animate-pulse">{dungeonCountdown}</span>
-                      )}
-                      {dungeon.status === 'cleared' && (
-                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">✅ Cleared</span>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {objectives.map((obj, i) => {
-                        const current = dungeon.progress[`obj_${i}`] ?? 0
-                        const pct = Math.min(100, (current / obj.target) * 100)
-                        return (
-                          <div key={i} className="space-y-1">
-                            <div className="flex justify-between">
-                              <span className="text-[9px] font-bold text-blue-200/70 italic">{obj.label}</span>
-                              <span className="text-[9px] font-black text-blue-300/50 tabular-nums">{current}/{obj.target}</span>
-                            </div>
-                            <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden border border-blue-500/10">
-                              <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} className={cn('h-full rounded-full', pct >= 100 ? 'bg-emerald-500' : 'bg-purple-500')} />
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                    <div className="flex items-center gap-3 mt-3 pt-2 border-t border-blue-500/10">
-                      <span className="text-[8px] font-black text-blue-400/60 uppercase tracking-wider">+{dungeon.xpReward} XP</span>
-                      <span className="text-[8px] font-black text-amber-400/60 uppercase tracking-wider">+{dungeon.coinReward} AiC</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </motion.section>
       )}
 
-      <LevelUpModal
-        isOpen={showLevelUp}
-        onClose={() => setShowLevelUp(false)}
-        newLevel={levelUpData.newLevel}
-        totalXp={levelUpData.totalXp}
-        coinsReward={levelUpData.coinsRewarded}
-      />
-
-
-      <AiCoinWalletModal
-        isOpen={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
-      />
-
-      <StreakHistory
-        isOpen={showStreakHistory}
-        onClose={() => setShowStreakHistory(false)}
-        currentStreak={profile?.streak_overall ?? 0}
-        bestStreak={profile?.streak_best ?? 0}
-        freezeCount={profile?.streak_freeze_count ?? 0}
-        lastDate={profile?.streak_last_date}
-      />
-      <DailyModal
-        isOpen={isDailyModalOpen}
-        onClose={() => {
-          setIsDailyModalOpen(false)
-          setEditingDaily(null)
-        }}
-        daily={editingDaily}
-        onSave={handleSaveDaily}
-        onDelete={editingDaily ? handleDeleteDaily : undefined}
-      />
-      <HabitModal
-        isOpen={isHabitModalOpen}
-        onClose={() => {
-          setIsHabitModalOpen(false)
-          setEditingHabit(null)
-        }}
-        habit={editingHabit}
-        onSave={handleSaveHabit}
-        onDelete={editingHabit ? handleDeleteHabit : undefined}
-      />
+      {/* Modals */}
+      <LevelUpModal isOpen={showLevelUp} onClose={() => setShowLevelUp(false)} newLevel={levelUpData.newLevel} totalXp={levelUpData.totalXp} coinsReward={levelUpData.coinsRewarded} />
+      <AiCoinWalletModal isOpen={showWalletModal} onClose={() => setShowWalletModal(false)} />
+      <StreakHistory isOpen={showStreakHistory} onClose={() => setShowStreakHistory(false)} currentStreak={profile?.streak_overall ?? 0} bestStreak={profile?.streak_best ?? 0} freezeCount={profile?.streak_freeze_count ?? 0} lastDate={profile?.streak_last_date} />
+      <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} />
+      <HabitModal isOpen={isHabitModalOpen} onClose={() => { setIsHabitModalOpen(false); setEditingHabit(null); }} habit={editingHabit} onSave={handleSaveHabit} onDelete={editingHabit ? handleDeleteHabit : undefined} />
+      <TodoModal isOpen={isTodoModalOpen} onClose={() => { setIsTodoModalOpen(false); setEditingTodo(null); }} todo={editingTodo} onSave={handleSaveTask} onDelete={editingTodo ? handleDeleteTask : undefined} />
     </motion.div>
   )
 }

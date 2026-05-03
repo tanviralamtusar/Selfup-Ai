@@ -293,7 +293,7 @@
       "label": "fetchActivities()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\analysis\\page.tsx",
-      "source_location": "L71",
+      "source_location": "L73",
       "id": "analysis_page_fetchactivities",
       "community": 46,
       "norm_label": "fetchactivities()"
@@ -4314,7 +4314,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\analysis\\page.tsx",
-      "source_location": "L71",
+      "source_location": "L73",
       "weight": 1.0,
       "_src": "web_src_app_protected_analysis_page_tsx",
       "_tgt": "analysis_page_fetchactivities",

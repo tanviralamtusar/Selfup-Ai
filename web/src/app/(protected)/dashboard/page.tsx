@@ -425,9 +425,10 @@ export default function DashboardPage() {
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-blue-400/50" />
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-blue-400/50" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-            {/* Left: Profile Status */}
-            <div className="lg:col-span-4 space-y-5">
+          {/* === MOBILE LAYOUT === */}
+          <div className="grid grid-cols-1 gap-6 relative z-10 lg:hidden">
+            {/* Profile Status */}
+            <div className="space-y-5">
               <div className="flex flex-row gap-4 md:gap-6 items-center">
                 {/* Avatar + Level Pill */}
                 <div className="relative shrink-0">
@@ -509,9 +510,94 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* === DESKTOP LAYOUT === */}
+          <div className="hidden lg:grid grid-cols-12 gap-6 relative z-10">
+            {/* Left: Avatar & Basic Stats */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="flex flex-col md:flex-row items-center gap-5">
+                <div className="relative">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-blue-400/30 p-1 bg-blue-500/5 group-hover:border-blue-400 transition-colors shadow-[0_0_20px_rgba(59,130,246,0.2)] flex items-center justify-center bg-slate-950 font-black text-blue-400 text-2xl">
+                    {profile?.avatar_url ? (
+                      <img
+                        className="w-full h-full object-cover rounded-xl"
+                        alt="Avatar"
+                        src={profile.avatar_url}
+                      />
+                    ) : (
+                      <User size={48} className="text-blue-400/80 system-text-glow" />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 border border-blue-500/50 text-blue-400 font-black px-4 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.2em] shadow-lg whitespace-nowrap system-text-glow flex items-center gap-2">
+                    <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-black border', rankLetter === 'S' || rankLetter === 'SSS' ? 'text-amber-300 border-amber-500/50 bg-amber-500/10 shadow-[0_0_10px_rgba(251,191,36,0.3)]' : rankLetter === 'A' ? 'text-purple-300 border-purple-500/50 bg-purple-500/10' : 'text-blue-300 border-blue-500/30 bg-blue-500/10')}>{rankLetter}</span>
+                    LVL {level}
+                  </div>
+                </div>
+
+                <div className="flex-1 text-center md:text-left space-y-1">
+                  <div className="flex items-center justify-center md:justify-start gap-1.5 mb-1">
+                    <div className={cn('w-1.5 h-1.5 rounded-full animate-pulse', hpState === 'healthy' ? 'bg-blue-400' : hpState === 'weakened' ? 'bg-amber-400' : 'bg-rose-400')} />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-400/50">Rank {rankLetter} — {rankInfo.title}</p>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tight text-blue-50 font-headline leading-tight uppercase italic system-text-glow">{displayName}</h1>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
+                    <button
+                      onClick={() => setShowWalletModal(true)}
+                      className="bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 flex items-center gap-2 hover:bg-blue-500/20 transition-all active:scale-95 group/wallet"
+                    >
+                      <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/wallet:scale-110 transition-transform" />
+                      <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest group-hover/wallet:text-blue-300">AiCoins</span>
+                      <span className="text-xs font-black text-blue-100 tabular-nums">{formatNumber(coins)}</span>
+                    </button>
+                    <div className="bg-blue-500/5 px-4 py-1.5 rounded-lg border border-blue-500/10 flex items-center gap-2">
+                      <Trophy size={10} className="text-blue-400" />
+                      <span className="text-[9px] font-black text-blue-400/40 uppercase tracking-widest">Global Rank: #420</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 max-w-sm">
+                {/* Health (HP) */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end px-1">
+                    <div className="flex items-center gap-2">
+                      <span className={cn('text-[10px] font-black uppercase tracking-[0.3em] system-text-glow', hpState === 'healthy' ? 'text-emerald-400' : hpState === 'weakened' ? 'text-amber-400' : 'text-rose-500')}>HP</span>
+                      {hpState !== 'healthy' && (
+                        <span className={cn('text-[7px] font-black uppercase tracking-[0.3em] px-1.5 py-0.5 rounded border', hpState === 'weakened' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : hpState === 'critical' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 animate-pulse' : 'text-rose-500 bg-rose-500/20 border-rose-500/30 animate-pulse')}>{hpState.toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{hp} / {maxHp}</span>
+                  </div>
+                  <div className={cn('h-3 w-full bg-slate-900 rounded-sm p-[1px] border overflow-hidden', hpState === 'critical' || hpState === 'collapse' ? 'border-rose-500/30' : 'border-blue-500/10')}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${hpPct}%` }}
+                      className={cn('h-full', hpState === 'healthy' ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : hpState === 'weakened' ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]')}
+                    />
+                  </div>
+                </div>
+
+                {/* Experience (XP) */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-end px-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 system-text-glow">XP</span>
+                    <span className="text-[10px] font-black text-blue-100/60 tabular-nums">{formatNumber(xp)} / {formatNumber(xpNeeded)}</span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-900 rounded-sm p-[1px] border border-blue-500/10 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${xpPercent}%` }}
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Middle: Achievements / Badges */}
-            <div className="hidden lg:flex lg:col-span-4 flex-col relative">
+            <div className="lg:col-span-4 flex flex-col relative">
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="w-2 h-px bg-blue-400" />
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-blue-400/80 italic whitespace-nowrap">ACHIEVEMENTS</p>
@@ -522,7 +608,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Right: Streak Card */}
-            <div className="hidden lg:block lg:col-span-4">
+            <div className="lg:col-span-4">
               <StreakCard
                 currentStreak={profile?.streak_overall ?? 0}
                 bestStreak={profile?.streak_best ?? 0}

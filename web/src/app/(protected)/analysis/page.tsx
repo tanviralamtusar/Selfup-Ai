@@ -61,8 +61,10 @@ export default function AnalysisPage() {
   const { profile, session } = useAuthStore()
   const [activities, setActivities] = useState<ActivityData[]>([])
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     if (session?.access_token) {
       fetchActivities()
     }
@@ -221,42 +223,44 @@ export default function AnalysisPage() {
           </div>
 
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }} 
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '8px' }}
-                  labelStyle={{ color: '#94a3b8', fontWeight: 800, fontSize: '10px', textTransform: 'uppercase' }}
-                  itemStyle={{ color: '#3b82f6', fontWeight: 900, fontSize: '12px' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="xp" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorXp)" 
-                  animationDuration={1500}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <AreaChart data={trendData}>
+                  <defs>
+                    <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }} 
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '8px' }}
+                    labelStyle={{ color: '#94a3b8', fontWeight: 800, fontSize: '10px', textTransform: 'uppercase' }}
+                    itemStyle={{ color: '#3b82f6', fontWeight: 900, fontSize: '12px' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="xp" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorXp)" 
+                    animationDuration={1500}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </motion.div>
 
@@ -273,21 +277,23 @@ export default function AnalysisPage() {
           </div>
 
           <div className="h-[300px] w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={pillarData}>
-                <PolarGrid stroke="#1e293b" />
-                <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
-                <Radar
-                  name="XP"
-                  dataKey="value"
-                  stroke="#06b6d4"
-                  fill="#06b6d4"
-                  fillOpacity={0.4}
-                  animationDuration={1500}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={pillarData}>
+                  <PolarGrid stroke="#1e293b" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
+                  <Radar
+                    name="XP"
+                    dataKey="value"
+                    stroke="#06b6d4"
+                    fill="#06b6d4"
+                    fillOpacity={0.4}
+                    animationDuration={1500}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </motion.div>
 
@@ -304,27 +310,29 @@ export default function AnalysisPage() {
           </div>
 
           <div className="h-[200px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={typeData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                  animationDuration={1500}
-                >
-                  {typeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '8px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <PieChart>
+                  <Pie
+                    data={typeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    animationDuration={1500}
+                  >
+                    {typeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '8px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className="space-y-2 mt-4">

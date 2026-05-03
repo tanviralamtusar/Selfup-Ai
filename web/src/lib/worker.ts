@@ -257,13 +257,13 @@ export async function executeAiTask(data: AiJobData) {
           const taskEntries = initPlan.tasks.map((t: any) => ({
             user_id: userId,
             title: t.title,
-            category: t.category,
+            category: t.category || 'general',
             priority: 'medium',
-            status: 'pending',
-            xp_reward: 5,
-            coin_reward: 1
+            is_completed: false,
+            xp_reward: 10,
+            xp_penalty: 5
           }))
-          await supabase.from('tasks').insert(taskEntries)
+          await supabase.from('todos').insert(taskEntries)
         }
 
         if (initPlan.quests && initPlan.quests.length > 0) {

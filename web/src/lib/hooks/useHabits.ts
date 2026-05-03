@@ -12,6 +12,9 @@ export interface Habit {
   category: 'general' | 'fitness' | 'skills' | 'style' | 'system'
   source: string
   reset_type: 'daily' | 'weekly' | 'monthly'
+  is_positive: boolean
+  is_negative: boolean
+  difficulty: 'trivial' | 'easy' | 'medium' | 'hard'
   is_indefinite: boolean
   end_date: string | null
   current_streak: number
@@ -30,6 +33,9 @@ interface CreateHabitInput {
   description?: string
   category?: string
   reset_type?: 'daily' | 'weekly' | 'monthly'
+  is_positive?: boolean
+  is_negative?: boolean
+  difficulty?: 'trivial' | 'easy' | 'medium' | 'hard'
   is_indefinite?: boolean
   end_date?: string
 }

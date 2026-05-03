@@ -28,6 +28,9 @@ import { cn } from '@/lib/utils'
 import { useDailies, type Daily } from '@/lib/hooks/useDailies'
 import { useHabits, type Habit } from '@/lib/hooks/useHabits'
 import { useTodos, type Todo } from '@/lib/hooks/useTodos'
+import { DailyModal } from '@/components/dashboard/DailyModal'
+import { HabitModal } from '@/components/dashboard/HabitModal'
+import { toast } from 'sonner'
 
 // ── Priority Config ──
 
@@ -127,10 +130,11 @@ function QuickAdd({ placeholder, onAdd }: { placeholder: string; onAdd: (text: s
 
 // ── Daily Item ──
 
-function DailyItem({ daily, onComplete, onDelete }: {
+function DailyItem({ daily, onComplete, onDelete, onEdit }: {
   daily: Daily
   onComplete: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (daily: Daily) => void
 }) {
   const config = PRIORITY_CONFIG[daily.priority]
   const icon = CATEGORY_ICONS[daily.category] || '📋'
@@ -164,10 +168,10 @@ function DailyItem({ daily, onComplete, onDelete }: {
       </button>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(daily)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate', daily.is_completed ? 'line-through text-white/40' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-cyan-400 transition-colors', daily.is_completed ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
             {daily.title}
           </span>
         </div>
@@ -200,10 +204,11 @@ function DailyItem({ daily, onComplete, onDelete }: {
 
 // ── Habit Item ──
 
-function HabitItem({ habit, onComplete, onDelete }: {
+function HabitItem({ habit, onComplete, onDelete, onEdit }: {
   habit: Habit
   onComplete: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (habit: Habit) => void
 }) {
   const resetConfig = RESET_TYPE_CONFIG[habit.reset_type]
   const icon = CATEGORY_ICONS[habit.category] || '📋'
@@ -237,10 +242,10 @@ function HabitItem({ habit, onComplete, onDelete }: {
       </button>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(habit)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate', habit.is_completed_this_cycle ? 'line-through text-white/40' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-violet-400 transition-colors', habit.is_completed_this_cycle ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
             {habit.title}
           </span>
         </div>
@@ -418,13 +423,13 @@ export function TimeDashboard() {
   const {
     dailies, loading: dailiesLoading, completedCount: dailiesCompleted,
     totalCount: dailiesTotal, completionRate: dailiesRate,
-    createDaily, completeDaily, deleteDaily,
+    createDaily, completeDaily, deleteDaily, updateDaily
   } = useDailies()
 
   const {
     habits, loading: habitsLoading, completedCount: habitsCompleted,
     totalCount: habitsTotal, totalStreak,
-    createHabit, completeHabit, deleteHabit,
+    createHabit, completeHabit, deleteHabit, updateHabit
   } = useHabits()
 
   const {
@@ -432,6 +437,12 @@ export function TimeDashboard() {
     remainingCount, completedCount: todosCompleted,
     createTodo, completeTodo, deleteTodo,
   } = useTodos()
+
+  const [isDailyModalOpen, setIsDailyModalOpen] = useState(false)
+  const [editingDaily, setEditingDaily] = useState<Daily | null>(null)
+
+  const [isHabitModalOpen, setIsHabitModalOpen] = useState(false)
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
 
   const isLoading = dailiesLoading || habitsLoading || todosLoading
 
@@ -441,8 +452,34 @@ export function TimeDashboard() {
     await createDaily({ title, priority: 'medium' })
   }
 
+  const handleSaveDaily = async (data: any) => {
+    if (editingDaily) {
+      await updateDaily(editingDaily.id, data)
+    } else {
+      await createDaily(data)
+    }
+  }
+
+  const handleDeleteDaily = async (id: string) => {
+    await deleteDaily(id)
+    setIsDailyModalOpen(false)
+  }
+
   const handleAddHabit = async (title: string) => {
     await createHabit({ title, reset_type: 'daily' })
+  }
+
+  const handleSaveHabit = async (data: any) => {
+    if (editingHabit) {
+      await updateHabit(editingHabit.id, data)
+    } else {
+      await createHabit(data)
+    }
+  }
+
+  const handleDeleteHabit = async (id: string) => {
+    await deleteHabit(id)
+    setIsHabitModalOpen(false)
   }
 
   const handleAddTodo = async (title: string) => {
@@ -492,9 +529,15 @@ export function TimeDashboard() {
           icon={<Zap size={16} className="text-cyan-400" />}
           iconColor="bg-cyan-500/15"
           headerRight={
-            <span className="text-xs text-white/30">
-              {dailiesCompleted}/{dailiesTotal}
-            </span>
+            <div className="flex items-center gap-2 text-xs text-white/30">
+              <span>{dailiesCompleted}/{dailiesTotal}</span>
+              <button 
+                onClick={() => { setEditingDaily(null); setIsDailyModalOpen(true); }}
+                className="text-cyan-400/60 hover:text-cyan-400 transition-colors p-1 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
           }
           footer={
             <div className="space-y-2">
@@ -527,6 +570,7 @@ export function TimeDashboard() {
                   daily={daily}
                   onComplete={completeDaily}
                   onDelete={deleteDaily}
+                  onEdit={(d) => { setEditingDaily(d); setIsDailyModalOpen(true); }}
                 />
               ))
             )}
@@ -548,6 +592,12 @@ export function TimeDashboard() {
               <span className="text-xs text-white/30">
                 {habitsCompleted}/{habitsTotal}
               </span>
+              <button 
+                onClick={() => { setEditingHabit(null); setIsHabitModalOpen(true); }}
+                className="text-violet-400/60 hover:text-violet-400 transition-colors p-1 bg-violet-500/10 rounded-md hover:bg-violet-500/20 ml-1"
+              >
+                <Plus size={14} />
+              </button>
             </div>
           }
           footer={
@@ -567,6 +617,7 @@ export function TimeDashboard() {
                   habit={habit}
                   onComplete={completeHabit}
                   onDelete={deleteHabit}
+                  onEdit={(h) => { setEditingHabit(h); setIsHabitModalOpen(true); }}
                 />
               ))
             )}
@@ -607,6 +658,28 @@ export function TimeDashboard() {
         </PanelColumn>
 
       </div>
+
+      <DailyModal
+        isOpen={isDailyModalOpen}
+        onClose={() => {
+          setIsDailyModalOpen(false)
+          setEditingDaily(null)
+        }}
+        daily={editingDaily}
+        onSave={handleSaveDaily}
+        onDelete={editingDaily ? handleDeleteDaily : undefined}
+      />
+
+      <HabitModal
+        isOpen={isHabitModalOpen}
+        onClose={() => {
+          setIsHabitModalOpen(false)
+          setEditingHabit(null)
+        }}
+        habit={editingHabit}
+        onSave={handleSaveHabit}
+        onDelete={editingHabit ? handleDeleteHabit : undefined}
+      />
     </div>
   )
 }

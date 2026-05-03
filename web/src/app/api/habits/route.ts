@@ -51,6 +51,9 @@ export async function POST(req: NextRequest) {
     category = 'general',
     source = 'user',
     reset_type = 'daily',
+    is_positive = true,
+    is_negative = false,
+    difficulty = 'medium',
     is_indefinite = true,
     end_date,
   } = body
@@ -84,10 +87,13 @@ export async function POST(req: NextRequest) {
       category,
       source,
       reset_type,
+      is_positive,
+      is_negative,
+      difficulty,
       is_indefinite,
       end_date: is_indefinite ? null : end_date,
       hp_penalty,
-      xp_reward: 10,
+      xp_reward: difficulty === 'trivial' ? 5 : difficulty === 'easy' ? 10 : difficulty === 'medium' ? 15 : 20,
     })
     .select()
     .single()

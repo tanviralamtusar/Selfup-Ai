@@ -37,6 +37,8 @@ import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
+import { DailyModal } from '@/components/dashboard/DailyModal'
+import { HabitModal } from '@/components/dashboard/HabitModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -104,6 +106,11 @@ interface Habit {
   current_streak: number
   is_completed_this_cycle: boolean
   xp_reward: number
+  is_positive?: boolean
+  is_negative?: boolean
+  difficulty?: 'trivial' | 'easy' | 'medium' | 'hard'
+  reset_type?: 'daily' | 'weekly' | 'monthly'
+  description?: string
 }
 
 interface ActivityItem {
@@ -187,6 +194,10 @@ export default function DashboardPage() {
   const [completingDaily, setCompletingDaily] = useState<string | null>(null)
   const [completingTask, setCompletingTask] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'habits' | 'dailies' | 'todo'>('dailies')
+  const [isDailyModalOpen, setIsDailyModalOpen] = useState(false)
+  const [editingDaily, setEditingDaily] = useState<any>(null)
+  const [isHabitModalOpen, setIsHabitModalOpen] = useState(false)
+  const [editingHabit, setEditingHabit] = useState<any>(null)
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false)
@@ -305,6 +316,86 @@ export default function DashboardPage() {
         setTasks(json.data || [])
       }
     } catch { /* silently fail */ }
+  }
+
+  const handleSaveDaily = async (data: any) => {
+    try {
+      const url = editingDaily ? `/api/dailies/${editingDaily.id}` : '/api/dailies'
+      const method = editingDaily ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: headers(),
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        fetchDailies()
+        toast.success(`Protocol ${editingDaily ? 'updated' : 'initialized'}!`)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to save protocol')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
+  }
+
+  const handleDeleteDaily = async (id: string) => {
+    try {
+      const res = await fetch(`/api/dailies/${id}`, {
+        method: 'DELETE',
+        headers: headers()
+      })
+      if (res.ok) {
+        fetchDailies()
+        toast.success('Protocol terminated')
+        setIsDailyModalOpen(false)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to terminate protocol')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
+  }
+
+  const handleSaveHabit = async (data: any) => {
+    try {
+      const url = editingHabit ? `/api/habits/${editingHabit.id}` : '/api/habits'
+      const method = editingHabit ? 'PATCH' : 'POST'
+      const res = await fetch(url, {
+        method,
+        headers: headers(),
+        body: JSON.stringify(data)
+      })
+      if (res.ok) {
+        fetchHabits()
+        toast.success(`Habit ${editingHabit ? 'updated' : 'created'}!`)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to save habit')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
+  }
+
+  const handleDeleteHabit = async (id: string) => {
+    try {
+      const res = await fetch(`/api/habits/${id}`, {
+        method: 'DELETE',
+        headers: headers()
+      })
+      if (res.ok) {
+        fetchHabits()
+        toast.success('Habit deleted')
+        setIsHabitModalOpen(false)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to delete habit')
+      }
+    } catch (e: any) {
+      toast.error('Network error. Could not connect to the system.')
+    }
   }
 
   const handleCompleteDaily = async (daily: any) => {
@@ -657,9 +748,12 @@ export default function DashboardPage() {
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                   Habit
                 </h2>
-                <Link href={ROUTES.TIME} className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
+                <button 
+                  onClick={() => { setEditingHabit(null); setIsHabitModalOpen(true); }}
+                  className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90"
+                >
                   <PlusCircle size={16} />
-                </Link>
+                </button>
               </div>
               <div className="space-y-3">
                 {habits.length === 0 ? (
@@ -671,12 +765,12 @@ export default function DashboardPage() {
                   </div>
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn(
-                    "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic",
+                    "group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic cursor-pointer",
                     habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]'
-                  )}>
+                  )} onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => !habit.is_completed_this_cycle && handleLogHabit(habit.id)}
+                        onClick={(e) => { e.stopPropagation(); !habit.is_completed_this_cycle && handleLogHabit(habit.id); }}
                         disabled={habit.is_completed_this_cycle || loggingHabit === habit.id}
                         className={cn(
                           "w-9 h-9 flex items-center justify-center rounded border transition-all active:scale-90",
@@ -711,7 +805,10 @@ export default function DashboardPage() {
                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   Dailies
                 </h2>
-                <button className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90">
+                <button 
+                  onClick={() => { setEditingDaily(null); setIsDailyModalOpen(true); }}
+                  className="text-blue-500/40 hover:text-blue-400 transition-all hover:scale-110 active:scale-90"
+                >
                   <PlusCircle size={16} />
                 </button>
               </div>
@@ -745,10 +842,10 @@ export default function DashboardPage() {
                         )} size={12} strokeWidth={3} />
                       )}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-hidden" onClick={(e) => { e.stopPropagation(); setEditingDaily(daily); setIsDailyModalOpen(true); }}>
                       <p className={cn(
-                        "text-[11px] font-black uppercase tracking-tight",
-                        daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40' : 'text-blue-50'
+                        "text-[11px] font-black uppercase tracking-tight truncate hover:text-cyan-400 transition-colors",
+                        daily.is_completed ? 'text-cyan-500/60 line-through decoration-cyan-500/40 pointer-events-none' : 'text-blue-50'
                       )}>{daily.title}</p>
                       {!daily.is_completed && daily.subtasks?.length > 0 && (
                         <p className="text-[8px] text-blue-500/40 uppercase mt-0.5 tracking-widest">
@@ -956,6 +1053,26 @@ export default function DashboardPage() {
         bestStreak={profile?.streak_best ?? 0}
         freezeCount={profile?.streak_freeze_count ?? 0}
         lastDate={profile?.streak_last_date}
+      />
+      <DailyModal
+        isOpen={isDailyModalOpen}
+        onClose={() => {
+          setIsDailyModalOpen(false)
+          setEditingDaily(null)
+        }}
+        daily={editingDaily}
+        onSave={handleSaveDaily}
+        onDelete={editingDaily ? handleDeleteDaily : undefined}
+      />
+      <HabitModal
+        isOpen={isHabitModalOpen}
+        onClose={() => {
+          setIsHabitModalOpen(false)
+          setEditingHabit(null)
+        }}
+        habit={editingHabit}
+        onSave={handleSaveHabit}
+        onDelete={editingHabit ? handleDeleteHabit : undefined}
       />
     </motion.div>
   )

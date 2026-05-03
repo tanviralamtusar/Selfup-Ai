@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(profile?.display_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
   const [isPublic, setIsPublic] = useState(profile?.is_public || false)
+  const [timezone, setTimezone] = useState(profile?.timezone || 'UTC')
 
   // AI persona state
   const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'SYSTEM')
@@ -63,6 +64,7 @@ export default function SettingsPage() {
       setIsPublic(profile.is_public || false)
       setPersonaName(profile.ai_persona_name || 'SYSTEM')
       setPersonaStyle((profile.ai_persona_style as PersonaStyle) || 'friendly')
+      setTimezone(profile.timezone || 'UTC')
     }
   }, [profile])
 
@@ -72,7 +74,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings/profile', {
         method: 'PATCH',
         headers: headers(),
-        body: JSON.stringify({ display_name: displayName, bio, is_public: isPublic })
+        body: JSON.stringify({ display_name: displayName, bio, is_public: isPublic, timezone })
       })
       if (res.ok) {
         toast.success('Profile updated!')
@@ -192,6 +194,23 @@ export default function SettingsPage() {
                     placeholder="Calibrating existence parameters..."
                     className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 resize-none transition-all placeholder:text-blue-500/10"
                   />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">TEMPORAL SYNCHRONIZATION (TIMEZONE)</label>
+                  <select
+                    value={timezone}
+                    onChange={e => setTimezone(e.target.value)}
+                    className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 appearance-none cursor-pointer transition-all"
+                  >
+                    {Intl.supportedValuesOf('timeZone').map(tz => (
+                      <option key={tz} value={tz} className="bg-slate-950 text-blue-100">
+                        {tz.replace(/_/g, ' ')}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[9px] text-blue-400/30 mt-2 font-black uppercase tracking-widest italic ml-1">
+                    Current detected time: {new Date().toLocaleTimeString('en-US', { timeZone: timezone })}
+                  </p>
                 </div>
 
                 {/* Public toggle */}

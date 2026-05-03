@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest) {
   if (error || !user) return NextResponse.json({ error }, { status: 401 })
 
   const body = await req.json()
-  const { display_name, bio, ai_persona_name, ai_persona_style, is_public } = body
+  const { display_name, bio, ai_persona_name, ai_persona_style, is_public, timezone } = body
 
   const token = req.headers.get('authorization')?.replace('Bearer ', '')
   const db = createClient(supabaseUrl, supabaseKey, {
@@ -23,6 +23,7 @@ export async function PATCH(req: NextRequest) {
   if (ai_persona_name !== undefined) updateData.ai_persona_name = ai_persona_name
   if (ai_persona_style !== undefined) updateData.ai_persona_style = ai_persona_style
   if (is_public !== undefined) updateData.is_public = is_public
+  if (timezone !== undefined) updateData.timezone = timezone
 
   const { data, error: dbErr } = await db
     .from('user_profiles')

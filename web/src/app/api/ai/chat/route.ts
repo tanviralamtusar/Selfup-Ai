@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     // 4. Fetch User Profile for Coins and Stats
     const { data: profile, error: profileError } = await authSupabase
       .from('user_profiles')
-      .select('ai_coins, level, xp, display_name, ai_persona_name, ai_persona_style')
+      .select('ai_coins, level, xp, display_name, ai_persona_name, ai_persona_style, timezone')
       .eq('id', user.id)
       .single()
 
@@ -120,6 +120,15 @@ export async function POST(req: NextRequest) {
     const personaName = profile?.ai_persona_name || 'SYSTEM'
     const personaStyle = profile.ai_persona_style || 'friendly'
     const personaTone = PERSONA_PROMPTS[personaStyle] || PERSONA_PROMPTS['friendly']
+    const userTimezone = profile.timezone || 'UTC'
+
+    // Calculate user's current local time
+    const now = new Date()
+    const userLocalTime = now.toLocaleString('en-US', { 
+      timeZone: userTimezone,
+      dateStyle: 'full',
+      timeStyle: 'medium'
+    })
 
     const basePrompt = SYSTEM_PROMPT.replaceAll('{{NAME}}', personaName)
     const contextualPrompt = `
@@ -134,6 +143,7 @@ User Profile Context:
 - Name: ${profile.display_name}
 - Level: ${profile.level}
 - Current XP: ${profile.xp}
+- User Local Time: ${userLocalTime} (Timezone: ${userTimezone})
 
 ${memoryContext}
 `

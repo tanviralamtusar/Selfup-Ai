@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await authSupabase
       .from('user_profiles')
-      .select('ai_persona_name, ai_persona_style')
+      .select('ai_persona_name, ai_persona_style, timezone')
       .eq('id', user.id)
       .single()
 
@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
     // 2. Build Suggestion Prompt
     const rawPersonaName = profile?.ai_persona_name || 'SYSTEM'
     const personaName = profile?.ai_persona_name || 'SYSTEM'
+    const userTimezone = profile?.timezone || 'UTC'
+    const now = new Date()
+    const userLocalTime = now.toLocaleString('en-US', { 
+      timeZone: userTimezone,
+      dateStyle: 'full',
+      timeStyle: 'medium'
+    })
     
     const systemPrompt = `
       You are "${personaName}", a high-performance AI coach.
@@ -44,6 +51,8 @@ export async function POST(req: NextRequest) {
       
       User Memory/Context:
       ${memoryContext}
+      
+      User Local Date and Time: ${userLocalTime}
       
       Existing Habits:
       ${existingHabits?.map(h => `- ${h.name} (${h.pillar})`).join('\n')}

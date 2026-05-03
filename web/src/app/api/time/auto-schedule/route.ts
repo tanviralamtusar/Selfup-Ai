@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   // 1. Fetch user profile for persona
   const { data: profile } = await db
     .from('user_profiles')
-    .select('ai_persona_name, ai_persona_style')
+    .select('ai_persona_name, ai_persona_style, timezone')
     .eq('id', user.id)
     .single()
 
@@ -47,6 +47,13 @@ export async function POST(req: NextRequest) {
   // 5. Construct AI Prompt
   const rawPersonaName = profile?.ai_persona_name || 'SYSTEM'
   const personaName = profile?.ai_persona_name || 'SYSTEM'
+  const userTimezone = profile?.timezone || 'UTC'
+  const now = new Date()
+  const userLocalTime = now.toLocaleString('en-US', { 
+    timeZone: userTimezone,
+    dateStyle: 'full',
+    timeStyle: 'medium'
+  })
 
   const prompt = `
     You are ${personaName}, the user's elite AI strategist. 
@@ -54,6 +61,8 @@ export async function POST(req: NextRequest) {
     
     User Preferences from Memory:
     ${memories?.map(m => `- ${m.content}`).join('\n') || 'None recorded.'}
+
+    User Local Date and Time: ${userLocalTime}
 
     Analyze these tasks and habits and create an optimized daily schedule (6 AM - 11 PM).
     

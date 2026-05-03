@@ -24,6 +24,7 @@ import {
   Search,
   Settings,
   User,
+  Activity,
 } from 'lucide-react'
 
 import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
@@ -36,6 +37,7 @@ const navItems = [
   { icon: Clock, label: 'Time', href: ROUTES.TIME },
   { icon: Palette, label: 'Style', href: ROUTES.STYLE },
   { icon: Sword, label: 'Quests', href: ROUTES.QUESTS },
+  { icon: Activity, label: 'Analysis', href: ROUTES.ANALYSIS },
   { icon: Users, label: 'Social', href: ROUTES.LEADERBOARD },
 ]
 

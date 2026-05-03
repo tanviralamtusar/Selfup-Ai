@@ -29,7 +29,8 @@ export async function PATCH(
 
   const allowedFields = [
     'title', 'description', 'category', 'reset_type',
-    'is_indefinite', 'end_date', 'is_active'
+    'is_indefinite', 'end_date', 'is_active',
+    'is_positive', 'is_negative', 'difficulty'
   ]
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const field of allowedFields) {
@@ -41,6 +42,12 @@ export async function PATCH(
   // Recalculate HP penalty if reset_type changed
   if (updates.reset_type) {
     updates.hp_penalty = calculateHpPenalty(updates.reset_type as 'daily' | 'weekly' | 'monthly')
+  }
+
+  // Recalculate XP reward if difficulty changed
+  if (updates.difficulty) {
+    const diff = updates.difficulty as string
+    updates.xp_reward = diff === 'trivial' ? 5 : diff === 'easy' ? 10 : diff === 'medium' ? 15 : 20
   }
 
   const { data, error: dbErr } = await db

@@ -3,14 +3,18 @@ import { PERSONA_PROMPTS } from './gemma'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function fetchUserMemory(
   userId: string,
-  authToken: string
+  _authToken?: string
 ): Promise<Record<string, string>> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${authToken}` } }
+    // Use service role key to bypass RLS for server-side memory reads.
+    // The anon key + auth header approach silently failed because
+    // auth.uid() was not properly set in that context.
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     })
 
     const { data: memories, error } = await supabase
@@ -29,6 +33,7 @@ export async function fetchUserMemory(
       }
     })
 
+    console.log(`[AI Memory] Fetched ${Object.keys(memoryMap).length} memory entries for user ${userId}`)
     return memoryMap
   } catch (err) {
     console.error('[AI Memory Fetch Error]:', err)
@@ -40,9 +45,12 @@ export async function formatMemoryContext(memory: Record<string, string>): Promi
   if (Object.keys(memory).length === 0) return ''
 
   const sections: string[] = []
+  const categorizedKeys = new Set<string>()
 
   // Fitness context
+  const fitnessKeys = ['fitness_goal', 'workout_frequency', 'fitness_level', 'recent_workouts']
   if (memory.fitness_goal || memory.workout_frequency || memory.fitness_level) {
+    fitnessKeys.forEach(k => categorizedKeys.add(k))
     sections.push(`
 REMEMBERED - Fitness Goals:
 - Goal: ${memory.fitness_goal || 'Not set'}
@@ -53,7 +61,9 @@ ${memory.recent_workouts ? `- Recent Activity: ${memory.recent_workouts}` : ''}
   }
 
   // Skills context
+  const skillKeys = ['active_skills', 'learning_style', 'skill_milestones']
   if (memory.active_skills || memory.learning_style) {
+    skillKeys.forEach(k => categorizedKeys.add(k))
     sections.push(`
 REMEMBERED - Learning & Skills:
 - Skills Learning: ${memory.active_skills || 'None tracked'}
@@ -63,7 +73,9 @@ ${memory.skill_milestones ? `- Milestones: ${memory.skill_milestones}` : ''}
   }
 
   // Time management
+  const timeKeys = ['sleep_schedule', 'work_hours', 'time_challenges', 'productivity_tools']
   if (memory.sleep_schedule || memory.work_hours || memory.time_challenges) {
+    timeKeys.forEach(k => categorizedKeys.add(k))
     sections.push(`
 REMEMBERED - Time Management:
 - Sleep Schedule: ${memory.sleep_schedule || 'Unknown'}
@@ -74,7 +86,9 @@ ${memory.productivity_tools ? `- Preferred Tools: ${memory.productivity_tools}` 
   }
 
   // Style
+  const styleKeys = ['style_preference', 'body_type', 'color_preference', 'style_goals']
   if (memory.style_preference || memory.body_type || memory.color_preference) {
+    styleKeys.forEach(k => categorizedKeys.add(k))
     sections.push(`
 REMEMBERED - Personal Style:
 - Aesthetic: ${memory.style_preference || 'Unknown'}
@@ -85,7 +99,9 @@ ${memory.style_goals ? `- Goals: ${memory.style_goals}` : ''}
   }
 
   // Personality & preferences
+  const personalityKeys = ['communication_style', 'motivation_type', 'user_challenges', 'achievements']
   if (memory.communication_style || memory.motivation_type || memory.user_challenges) {
+    personalityKeys.forEach(k => categorizedKeys.add(k))
     sections.push(`
 REMEMBERED - About the User:
 - Prefers: ${memory.communication_style || 'Unknown communication style'}
@@ -96,7 +112,9 @@ ${memory.achievements ? `- Recent Wins: ${memory.achievements}` : ''}
   }
 
   // AI Persona preferences
+  const personaKeys = ['ai_interaction_style', 'preferred_advice_type']
   if (memory.ai_interaction_style || memory.preferred_advice_type) {
+    personaKeys.forEach(k => categorizedKeys.add(k))
     const personaKey = memory.ai_interaction_style || 'friendly'
     const detailedPersona = PERSONA_PROMPTS[personaKey] || PERSONA_PROMPTS['friendly']
 
@@ -108,6 +126,22 @@ REMEMBERED - How to Help:
 `)
   }
 
+  // Catch-all: include any memory keys NOT covered by the hardcoded categories above.
+  // This ensures memories like "food_preference", "dietary_preference", "work_environment"
+  // are never silently dropped.
+  const uncategorizedEntries = Object.entries(memory).filter(
+    ([key]) => !categorizedKeys.has(key)
+  )
+  if (uncategorizedEntries.length > 0) {
+    const lines = uncategorizedEntries.map(
+      ([key, val]) => `- ${key.replace(/_/g, ' ')}: ${val}`
+    )
+    sections.push(`
+REMEMBERED - General Memories:
+${lines.join('\n')}
+`)
+  }
+
   return sections.join('\n')
 }
 
@@ -115,11 +149,12 @@ export async function extractAndSaveMemory(
   userId: string,
   userMessage: string,
   aiResponse: string,
-  authToken: string
+  _authToken?: string
 ): Promise<void> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${authToken}` } }
+    // Use service role key for reliable server-side writes
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     })
 
     // Simple extraction patterns (in production, this could use NLP/ML)
@@ -239,12 +274,12 @@ export async function saveMemory(
   userId: string,
   memoryKey: string,
   memoryValue: string,
-  authToken: string,
+  _authToken?: string,
   source: string = 'system'
 ): Promise<void> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${authToken}` } }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     })
 
     await supabase.from('ai_memory').upsert(
@@ -270,11 +305,11 @@ export async function saveMemory(
  */
 export async function clearUserMemory(
   userId: string,
-  authToken: string
+  _authToken?: string
 ): Promise<void> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${authToken}` } }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     })
 
     const { error } = await supabase
@@ -289,3 +324,4 @@ export async function clearUserMemory(
     throw err
   }
 }
+

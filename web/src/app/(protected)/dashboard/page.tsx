@@ -427,7 +427,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
             {/* Left: Profile Status */}
-            <div className="lg:col-span-12 space-y-5">
+            <div className="lg:col-span-4 space-y-5">
               <div className="flex flex-row gap-4 md:gap-6 items-center">
                 {/* Avatar + Level Pill */}
                 <div className="relative shrink-0">

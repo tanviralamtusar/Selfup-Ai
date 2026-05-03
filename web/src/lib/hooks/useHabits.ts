@@ -63,7 +63,9 @@ export const useHabits = () => {
       const res = await fetch('/api/habits', { headers: headers() })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to fetch habits')
-      setHabits(json.data || [])
+      
+      const data = Array.isArray(json.data) ? json.data : []
+      setHabits(data)
     } catch (err: any) {
       console.error('[useHabits] fetch error:', err)
       setError(err.message)
@@ -193,9 +195,10 @@ export const useHabits = () => {
   }, [fetchHabits])
 
   // Computed values
-  const completedCount = habits.filter(h => h.is_completed_this_cycle).length
-  const totalCount = habits.length
-  const totalStreak = habits.reduce((sum, h) => sum + h.current_streak, 0)
+  const safeHabits = Array.isArray(habits) ? habits : []
+  const completedCount = safeHabits.filter(h => h.is_completed_this_cycle).length
+  const totalCount = safeHabits.length
+  const totalStreak = safeHabits.reduce((sum, h) => sum + h.current_streak, 0)
 
   return {
     habits,

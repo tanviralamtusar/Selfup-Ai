@@ -60,7 +60,9 @@ export const useTodos = () => {
       const res = await fetch(url, { headers: headers() })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to fetch todos')
-      setTodos(json.data || [])
+      
+      const data = Array.isArray(json.data) ? json.data : []
+      setTodos(data)
     } catch (err: any) {
       console.error('[useTodos] fetch error:', err)
       setError(err.message)
@@ -177,9 +179,10 @@ export const useTodos = () => {
   }, [fetchTodos])
 
   // Computed values
-  const overdueCount = todos.filter(t => t.is_overdue).length
-  const remainingCount = todos.filter(t => !t.is_completed).length
-  const completedCount = todos.filter(t => t.is_completed).length
+  const safeTodos = Array.isArray(todos) ? todos : []
+  const overdueCount = safeTodos.filter(t => t.is_overdue).length
+  const remainingCount = safeTodos.filter(t => !t.is_completed).length
+  const completedCount = safeTodos.filter(t => t.is_completed).length
 
   return {
     todos,

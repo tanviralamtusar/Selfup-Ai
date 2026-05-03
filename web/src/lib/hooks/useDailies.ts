@@ -61,7 +61,9 @@ export const useDailies = () => {
       const res = await fetch('/api/dailies', { headers: headers() })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to fetch dailies')
-      setDailies(json.data || [])
+      
+      const data = Array.isArray(json.data) ? json.data : []
+      setDailies(data)
     } catch (err: any) {
       console.error('[useDailies] fetch error:', err)
       setError(err.message)
@@ -178,8 +180,9 @@ export const useDailies = () => {
   }, [fetchDailies])
 
   // Computed values
-  const completedCount = dailies.filter(d => d.is_completed).length
-  const totalCount = dailies.length
+  const safeDailies = Array.isArray(dailies) ? dailies : []
+  const completedCount = safeDailies.filter(d => d.is_completed).length
+  const totalCount = safeDailies.length
   const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
   return {

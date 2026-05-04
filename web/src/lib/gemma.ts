@@ -98,6 +98,12 @@ Rules:
 </action>
 
 #### Start Fitness Interview:
+When starting a fitness interview, you MUST ask the user questions about their:
+1. Primary Goal (build muscle, lose fat, endurance)
+2. Experience Level
+3. Equipment Available
+4. Days per week and time commitment
+Include the action tag and explicitly ask these questions in your chat response.
 <action type="fitness_interview_start">
 {
   "message": "Start the fitness assessment."

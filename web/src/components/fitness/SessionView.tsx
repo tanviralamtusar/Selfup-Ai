@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Trophy, Clock, X, CheckCircle } from 'lucide-react';
 import { ExerciseCard } from './ExerciseCard';
 import type { WorkoutDayRow, WorkoutDayExerciseRow } from '@/types/fitness';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface SessionViewProps {
   sessionId: string;

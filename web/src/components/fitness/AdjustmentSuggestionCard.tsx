@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Check, X, ArrowRight } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface AdjustmentSuggestionCardProps {
   adjustment: any; // plan_adjustments row

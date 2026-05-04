@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Dumbbell, Flame, CheckCircle, ChevronRight, Apple } from 'lucide-react';
 import type { GeneratedPlan } from '@/types/fitness';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 interface PlanPreviewModalProps {

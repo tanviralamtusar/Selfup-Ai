@@ -311,7 +311,7 @@
       "label": "fetchConversations()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L71",
+      "source_location": "L72",
       "id": "chat_page_fetchconversations",
       "community": 20,
       "norm_label": "fetchconversations()"
@@ -320,7 +320,7 @@
       "label": "fetchMessages()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L83",
+      "source_location": "L84",
       "id": "chat_page_fetchmessages",
       "community": 20,
       "norm_label": "fetchmessages()"
@@ -329,7 +329,7 @@
       "label": "handleSendMessage()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L100",
+      "source_location": "L101",
       "id": "chat_page_handlesendmessage",
       "community": 20,
       "norm_label": "handlesendmessage()"
@@ -338,7 +338,7 @@
       "label": "startNewChat()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L140",
+      "source_location": "L141",
       "id": "chat_page_startnewchat",
       "community": 20,
       "norm_label": "startnewchat()"
@@ -347,7 +347,7 @@
       "label": "handleDeleteChat()",
       "file_type": "code",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L150",
+      "source_location": "L151",
       "id": "chat_page_handledeletechat",
       "community": 20,
       "norm_label": "handledeletechat()"
@@ -842,7 +842,7 @@
       "label": "DELETE()",
       "file_type": "code",
       "source_file": "web\\src\\app\\api\\ai\\chat\\route.ts",
-      "source_location": "L211",
+      "source_location": "L213",
       "id": "chat_route_delete",
       "community": 4,
       "norm_label": "delete()"
@@ -2252,6 +2252,15 @@
       "norm_label": "togglegoal()"
     },
     {
+      "label": "ActionWidget.tsx",
+      "file_type": "code",
+      "source_file": "web\\src\\components\\chat\\ActionWidget.tsx",
+      "source_location": "L1",
+      "id": "web_src_components_chat_actionwidget_tsx",
+      "community": 84,
+      "norm_label": "actionwidget.tsx"
+    },
+    {
       "label": "ChatInput.tsx",
       "file_type": "code",
       "source_file": "web\\src\\components\\chat\\ChatInput.tsx",
@@ -2282,7 +2291,7 @@
       "label": "ChatMessage()",
       "file_type": "code",
       "source_file": "web\\src\\components\\chat\\ChatMessage.tsx",
-      "source_location": "L16",
+      "source_location": "L18",
       "id": "chat_chatmessage_chatmessage",
       "community": 60,
       "norm_label": "chatmessage()"
@@ -2293,7 +2302,7 @@
       "source_file": "web\\src\\components\\chat\\ChatSidebar.tsx",
       "source_location": "L1",
       "id": "web_src_components_chat_chatsidebar_tsx",
-      "community": 84,
+      "community": 85,
       "norm_label": "chatsidebar.tsx"
     },
     {
@@ -2302,7 +2311,7 @@
       "source_file": "web\\src\\components\\chat\\MarkdownRenderer.tsx",
       "source_location": "L1",
       "id": "web_src_components_chat_markdownrenderer_tsx",
-      "community": 85,
+      "community": 86,
       "norm_label": "markdownrenderer.tsx"
     },
     {
@@ -2446,7 +2455,7 @@
       "source_file": "web\\src\\components\\fitness\\AiPlanGeneratorModal.tsx",
       "source_location": "L1",
       "id": "web_src_components_fitness_aiplangeneratormodal_tsx",
-      "community": 86,
+      "community": 87,
       "norm_label": "aiplangeneratormodal.tsx"
     },
     {
@@ -2500,7 +2509,7 @@
       "source_file": "web\\src\\components\\fitness\\ExerciseCard.tsx",
       "source_location": "L1",
       "id": "web_src_components_fitness_exercisecard_tsx",
-      "community": 87,
+      "community": 88,
       "norm_label": "exercisecard.tsx"
     },
     {
@@ -2635,7 +2644,7 @@
       "source_file": "web\\src\\components\\fitness\\WorkoutView.tsx",
       "source_location": "L1",
       "id": "web_src_components_fitness_workoutview_tsx",
-      "community": 88,
+      "community": 89,
       "norm_label": "workoutview.tsx"
     },
     {
@@ -2671,7 +2680,7 @@
       "source_file": "web\\src\\components\\gamification\\AiCoinWalletModal.tsx",
       "source_location": "L1",
       "id": "web_src_components_gamification_aicoinwalletmodal_tsx",
-      "community": 89,
+      "community": 90,
       "norm_label": "aicoinwalletmodal.tsx"
     },
     {
@@ -2716,7 +2725,7 @@
       "source_file": "web\\src\\components\\gamification\\LevelUpModal.tsx",
       "source_location": "L1",
       "id": "web_src_components_gamification_levelupmodal_tsx",
-      "community": 90,
+      "community": 91,
       "norm_label": "levelupmodal.tsx"
     },
     {
@@ -2752,7 +2761,7 @@
       "source_file": "web\\src\\components\\gamification\\StreakHistory.tsx",
       "source_location": "L1",
       "id": "web_src_components_gamification_streakhistory_tsx",
-      "community": 91,
+      "community": 92,
       "norm_label": "streakhistory.tsx"
     },
     {
@@ -2824,7 +2833,7 @@
       "source_file": "web\\src\\components\\skills\\SkillSessionsHistory.tsx",
       "source_location": "L1",
       "id": "web_src_components_skills_skillsessionshistory_tsx",
-      "community": 92,
+      "community": 93,
       "norm_label": "skillsessionshistory.tsx"
     },
     {
@@ -2869,7 +2878,7 @@
       "source_file": "web\\src\\components\\time\\HabitCalendarGrid.tsx",
       "source_location": "L1",
       "id": "web_src_components_time_habitcalendargrid_tsx",
-      "community": 93,
+      "community": 94,
       "norm_label": "habitcalendargrid.tsx"
     },
     {
@@ -2878,7 +2887,7 @@
       "source_file": "web\\src\\components\\time\\HabitHeatmap.tsx",
       "source_location": "L1",
       "id": "web_src_components_time_habitheatmap_tsx",
-      "community": 94,
+      "community": 95,
       "norm_label": "habitheatmap.tsx"
     },
     {
@@ -3166,7 +3175,7 @@
       "source_file": "web\\src\\components\\ui\\SystemFrame.tsx",
       "source_location": "L1",
       "id": "web_src_components_ui_systemframe_tsx",
-      "community": 95,
+      "community": 96,
       "norm_label": "systemframe.tsx"
     },
     {
@@ -3175,7 +3184,7 @@
       "source_file": "web\\src\\constants\\app.ts",
       "source_location": "L1",
       "id": "web_src_constants_app_ts",
-      "community": 96,
+      "community": 97,
       "norm_label": "app.ts"
     },
     {
@@ -3265,7 +3274,7 @@
       "source_file": "web\\src\\constants\\routes.ts",
       "source_location": "L1",
       "id": "web_src_constants_routes_ts",
-      "community": 97,
+      "community": 98,
       "norm_label": "routes.ts"
     },
     {
@@ -3724,7 +3733,7 @@
       "source_file": "web\\src\\lib\\queryClient.ts",
       "source_location": "L1",
       "id": "web_src_lib_queryclient_ts",
-      "community": 98,
+      "community": 99,
       "norm_label": "queryclient.ts"
     },
     {
@@ -3814,7 +3823,7 @@
       "source_file": "web\\src\\lib\\redis.ts",
       "source_location": "L1",
       "id": "web_src_lib_redis_ts",
-      "community": 99,
+      "community": 100,
       "norm_label": "redis.ts"
     },
     {
@@ -3841,7 +3850,7 @@
       "source_file": "web\\src\\lib\\supabase.ts",
       "source_location": "L1",
       "id": "web_src_lib_supabase_ts",
-      "community": 100,
+      "community": 101,
       "norm_label": "supabase.ts"
     },
     {
@@ -4516,7 +4525,7 @@
       "source_file": "web\\src\\store\\authStore.ts",
       "source_location": "L1",
       "id": "web_src_store_authstore_ts",
-      "community": 101,
+      "community": 102,
       "norm_label": "authstore.ts"
     },
     {
@@ -4552,14 +4561,14 @@
       "source_file": "web\\src\\types\\fitness.ts",
       "source_location": "L1",
       "id": "web_src_types_fitness_ts",
-      "community": 102,
+      "community": 103,
       "norm_label": "fitness.ts"
     },
     {
       "label": "SelfUp Architecture",
       "file_type": "document",
       "source_file": "architecture.md",
-      "community": 103,
+      "community": 104,
       "norm_label": "selfup architecture",
       "id": "architecture_overview"
     },
@@ -4671,7 +4680,7 @@
       "label": "Frontend Web (Next.js)",
       "file_type": "document",
       "source_file": "frontend.md",
-      "community": 104,
+      "community": 105,
       "norm_label": "frontend web (next.js)",
       "id": "frontend_web"
     },
@@ -4679,7 +4688,7 @@
       "label": "PostgreSQL Database Schema",
       "file_type": "document",
       "source_file": "database_structure.md",
-      "community": 105,
+      "community": 106,
       "norm_label": "postgresql database schema",
       "id": "database_schema"
     }
@@ -4857,7 +4866,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L71",
+      "source_location": "L72",
       "weight": 1.0,
       "_src": "web_src_app_protected_chat_page_tsx",
       "_tgt": "chat_page_fetchconversations",
@@ -4869,7 +4878,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L83",
+      "source_location": "L84",
       "weight": 1.0,
       "_src": "web_src_app_protected_chat_page_tsx",
       "_tgt": "chat_page_fetchmessages",
@@ -4881,7 +4890,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L100",
+      "source_location": "L101",
       "weight": 1.0,
       "_src": "web_src_app_protected_chat_page_tsx",
       "_tgt": "chat_page_handlesendmessage",
@@ -4893,7 +4902,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L140",
+      "source_location": "L141",
       "weight": 1.0,
       "_src": "web_src_app_protected_chat_page_tsx",
       "_tgt": "chat_page_startnewchat",
@@ -4905,7 +4914,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L150",
+      "source_location": "L151",
       "weight": 1.0,
       "_src": "web_src_app_protected_chat_page_tsx",
       "_tgt": "chat_page_handledeletechat",
@@ -4917,7 +4926,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L128",
+      "source_location": "L129",
       "weight": 1.0,
       "_src": "chat_page_handlesendmessage",
       "_tgt": "chat_page_fetchconversations",
@@ -4929,7 +4938,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
-      "source_location": "L163",
+      "source_location": "L164",
       "weight": 1.0,
       "_src": "chat_page_handledeletechat",
       "_tgt": "chat_page_startnewchat",
@@ -5625,7 +5634,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\api\\ai\\chat\\route.ts",
-      "source_location": "L211",
+      "source_location": "L213",
       "weight": 1.0,
       "_src": "web_src_app_api_ai_chat_route_ts",
       "_tgt": "chat_route_delete",
@@ -5649,7 +5658,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\api\\ai\\chat\\route.ts",
-      "source_location": "L218",
+      "source_location": "L220",
       "weight": 1.0,
       "_src": "chat_route_delete",
       "_tgt": "chat_route_get",
@@ -8673,7 +8682,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\components\\chat\\ChatMessage.tsx",
-      "source_location": "L16",
+      "source_location": "L18",
       "weight": 1.0,
       "_src": "web_src_components_chat_chatmessage_tsx",
       "_tgt": "chat_chatmessage_chatmessage",

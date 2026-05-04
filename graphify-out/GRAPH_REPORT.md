@@ -1,11 +1,11 @@
-# Graph Report - Selfup Ai  (2026-05-04)
+# Graph Report - Selfup Ai  (2026-05-05)
 
 ## Corpus Check
-- 167 files · ~166,695 words
+- 168 files · ~167,085 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 520 nodes · 591 edges · 32 communities detected
+- 521 nodes · 591 edges · 32 communities detected
 - Extraction: 76% EXTRACTED · 24% INFERRED · 0% AMBIGUOUS · INFERRED: 144 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -39,9 +39,9 @@
 - [[_COMMUNITY_Community 37|Community 37]]
 - [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
-- [[_COMMUNITY_Community 103|Community 103]]
 - [[_COMMUNITY_Community 104|Community 104]]
 - [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 106|Community 106]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `verifyAuth()` - 71 edges
@@ -188,15 +188,15 @@ Nodes (3): Backend API (Express/Supabase), SelfUp Focus Extension, Focus Mode
 Cohesion: 0.67
 Nodes (3): AI Companion (Aria), AI Memory System, Skill Roadmaps
 
-### Community 103 - "Community 103"
+### Community 104 - "Community 104"
 Cohesion: 1.0
 Nodes (1): SelfUp Architecture
 
-### Community 104 - "Community 104"
+### Community 105 - "Community 105"
 Cohesion: 1.0
 Nodes (1): Frontend Web (Next.js)
 
-### Community 105 - "Community 105"
+### Community 106 - "Community 106"
 Cohesion: 1.0
 Nodes (1): PostgreSQL Database Schema
 
@@ -225,22 +225,22 @@ Nodes (1): PostgreSQL Database Schema
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 37`** (3 nodes): `fetchMetrics()`, `handleSubmit()`, `BodyView.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 103`** (1 nodes): `SelfUp Architecture`
+- **Thin community `Community 104`** (1 nodes): `SelfUp Architecture`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 104`** (1 nodes): `Frontend Web (Next.js)`
+- **Thin community `Community 105`** (1 nodes): `Frontend Web (Next.js)`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 105`** (1 nodes): `PostgreSQL Database Schema`
+- **Thin community `Community 106`** (1 nodes): `PostgreSQL Database Schema`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `verifyAuth()` connect `Community 0` to `Community 1`, `Community 3`, `Community 4`, `Community 35`, `Community 6`, `Community 7`, `Community 8`, `Community 16`, `Community 25`?**
-  _High betweenness centrality (0.156) - this node is a cross-community bridge._
+  _High betweenness centrality (0.155) - this node is a cross-community bridge._
 - **Why does `calculateTaskXp()` connect `Community 3` to `Community 7`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
 - **Why does `POST()` connect `Community 4` to `Community 0`, `Community 1`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
 - **Are the 70 inferred relationships involving `verifyAuth()` (e.g. with `GET()` and `POST()`) actually correct?**
   _`verifyAuth()` has 70 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `PATCH()` (e.g. with `verifyAuth()` and `calculateTaskXp()`) actually correct?**

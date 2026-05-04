@@ -178,6 +178,7 @@ ${memoryContext}
       user_id: user.id,
       role: 'assistant',
       content: aiResponse,
+      metadata: actions.length > 0 ? { actions } : null,
       coin_cost: 0
     })
     if (saveAiMsgError) throw saveAiMsgError
@@ -198,6 +199,7 @@ ${memoryContext}
 
     return NextResponse.json({ 
       content: aiResponse, 
+      metadata: actions.length > 0 ? { actions } : undefined,
       conversationId: activeConversationId,
       coinsRemaining: profile.ai_coins - 1
     })

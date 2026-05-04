@@ -97,6 +97,28 @@ Rules:
 }
 </action>
 
+#### Start Fitness Interview:
+<action type="fitness_interview_start">
+{
+  "message": "Start the fitness assessment."
+}
+</action>
+
+#### Generate Fitness Plan (v2):
+<action type="fitness_plan_generate">
+{
+  "goal": "Build muscle",
+  "days": 4,
+  "experience_level": "intermediate",
+  "equipment_available": "full_gym",
+  "health_conditions": "none",
+  "plan_type": "ongoing",
+  "preferred_time": "08:00",
+  "session_duration_minutes": 60,
+  "rest_days": ["sun", "wed"]
+}
+</action>
+
 IMPORTANT: Only use <action> tags when you are actually performing the action. Do not use them for hypothetical suggestions.
 `
 

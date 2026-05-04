@@ -81,6 +81,12 @@ export async function executeActions(
         case 'memory_update':
           await handleMemoryUpdate(userId, action.payload, supabase)
           break
+        case 'fitness_interview_start':
+          await handleFitnessInterviewStart(userId, action.payload, supabase)
+          break
+        case 'fitness_plan_generate':
+          await handleFitnessPlanGenerate(userId, action.payload, supabase)
+          break
         default:
           console.warn(`[AI Actions] Unknown action type: ${action.type}`)
       }
@@ -214,4 +220,47 @@ async function handleMemoryUpdate(userId: string, payload: any, supabase: any) {
 
   if (error) throw error
   console.log(`[AI Actions] Saved memory: ${memoryKey} = ${memoryValue}`)
+}
+
+async function handleFitnessInterviewStart(userId: string, payload: any, supabase: any) {
+  // Update AI Memory to note that fitness interview is in progress
+  await handleMemoryUpdate(userId, {
+    key: 'fitness_status',
+    value: 'interview_in_progress'
+  }, supabase)
+
+  console.log(`[AI Actions] Started fitness interview for user ${userId}`)
+}
+
+async function handleFitnessPlanGenerate(userId: string, payload: any, supabase: any) {
+  // Enqueue a v2 fitness plan generation task
+  const { error } = await supabase.from('ai_task_queue').insert({
+    user_id: userId,
+    task_type: 'fitness_plan_v2',
+    status: 'pending',
+    payload: {
+      goal: payload.goal || 'General Fitness',
+      days: payload.days || 3,
+      experience_level: payload.experience_level || 'beginner',
+      equipment_available: payload.equipment_available || 'none',
+      health_conditions: payload.health_conditions || 'none',
+      plan_type: payload.plan_type || 'ongoing',
+      preferred_time: payload.preferred_time || '08:00',
+      session_duration_minutes: payload.session_duration_minutes || 45,
+      rest_days: payload.rest_days || []
+    }
+  })
+
+  if (error) {
+    console.error(`[AI Actions] Failed to queue fitness plan generation:`, error)
+    throw error
+  }
+
+  // Update memory state
+  await handleMemoryUpdate(userId, {
+    key: 'fitness_status',
+    value: 'plan_generating'
+  }, supabase)
+
+  console.log(`[AI Actions] Queued fitness_plan_v2 task for user ${userId}`)
 }

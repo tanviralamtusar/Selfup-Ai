@@ -3,7 +3,7 @@ import type { Queue } from 'bullmq'
 
 import { redis } from '@/lib/redis'
 
-export type AiJobType = 'roadmap' | 'fitness_plan' | 'nutrition_plan' | 'style_advice' | 'chat_analysis' | 'initial_plan'
+export type AiJobType = 'roadmap' | 'fitness_plan' | 'fitness_plan_v2' | 'fitness_interview_complete' | 'fitness_adaptation_check' | 'nutrition_plan' | 'style_advice' | 'chat_analysis' | 'initial_plan'
 
 export interface AiJobData {
   userId: string

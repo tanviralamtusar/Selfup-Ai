@@ -10452,8 +10452,8 @@
       "source_file": "web\\src\\lib\\fitness\\adaptationEngine.ts",
       "source_location": "L95",
       "weight": 1.0,
-      "_src": "fitness_adaptationengine_suggestadjustment",
-      "_tgt": "lib_gemma_generateresponse",
+      "_src": "lib_gemma_generateresponse",
+      "_tgt": "fitness_adaptationengine_suggestadjustment",
       "source": "lib_gemma_generateresponse",
       "target": "fitness_adaptationengine_suggestadjustment"
     },
@@ -10464,8 +10464,8 @@
       "source_file": "web\\src\\lib\\fitness\\planGenerator.ts",
       "source_location": "L118",
       "weight": 1.0,
-      "_src": "fitness_plangenerator_generatefitnessplan",
-      "_tgt": "lib_gemma_generateresponse",
+      "_src": "lib_gemma_generateresponse",
+      "_tgt": "fitness_plangenerator_generatefitnessplan",
       "source": "lib_gemma_generateresponse",
       "target": "fitness_plangenerator_generatefitnessplan"
     },
@@ -11268,8 +11268,8 @@
       "source_file": "web\\src\\lib\\fitness\\planGenerator.ts",
       "source_location": "L217",
       "weight": 1.0,
-      "_src": "fitness_plangenerator_saveplantodb",
-      "_tgt": "lib_youtube_batchgetexercisevideos",
+      "_src": "lib_youtube_batchgetexercisevideos",
+      "_tgt": "fitness_plangenerator_saveplantodb",
       "source": "lib_youtube_batchgetexercisevideos",
       "target": "fitness_plangenerator_saveplantodb"
     },

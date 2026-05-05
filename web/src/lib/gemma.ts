@@ -55,7 +55,7 @@ export async function generateEmbedding(
   const result = await ai.models.embedContent({
     model: 'gemini-embedding-2',
     contents: text,
-    config: { taskType },
+    config: { taskType, outputDimensionality: 768 },
   })
 
   return result.embeddings?.[0]?.values || []

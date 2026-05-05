@@ -13,13 +13,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: authError || 'Unauthorized' }, { status: 401 })
     }
 
-    const { action } = await req.json()
+    const { action, messageId } = await req.json()
 
     if (!action || !action.type) {
       return NextResponse.json({ success: false, error: 'Action is required' }, { status: 400 })
     }
 
-    const result = await executeConfirmedAction(user.id, action)
+    const result = await executeConfirmedAction(user.id, action, messageId)
 
     return NextResponse.json({
       success: result.success,

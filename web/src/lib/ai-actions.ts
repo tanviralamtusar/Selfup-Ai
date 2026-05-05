@@ -142,11 +142,38 @@ export async function executeActions(
  */
 export async function executeConfirmedAction(
   userId: string,
-  action: Action
+  action: any,
+  messageId?: string
 ): Promise<{ success: boolean; message: string }> {
   const supabase = getServiceClient()
 
   try {
+    // 1. Mark action as confirmed in message metadata if messageId provided
+    if (messageId) {
+      const { data: message } = await supabase
+        .from('ai_messages')
+        .select('metadata')
+        .eq('id', messageId)
+        .single()
+
+      if (message?.metadata?.actions) {
+        const updatedActions = message.metadata.actions.map((a: any) => {
+          // Match action by type and payload title/name
+          const isMatch = a.type === action.type && 
+                         (a.payload?.title === action.payload?.title || 
+                          a.payload?.skill_name === action.payload?.skill_name ||
+                          a.payload?.goal === action.payload?.goal);
+          return isMatch ? { ...a, confirmed: true } : a
+        })
+        
+        await supabase
+          .from('ai_messages')
+          .update({ metadata: { ...message.metadata, actions: updatedActions } })
+          .eq('id', messageId)
+      }
+    }
+
+    // 2. Execute the action
     switch (action.type) {
       case 'create_daily':
         return await handleCreateDaily(userId, action.payload, supabase)
@@ -156,10 +183,10 @@ export async function executeConfirmedAction(
         return await handleCreateTodo(userId, action.payload, supabase)
       case 'fitness_plan_generate':
         await handleFitnessPlanGenerate(userId, action.payload, supabase)
-        return { success: true, message: 'Fitness plan generation queued.' }
+        return { success: true, message: 'Fitness plan generation started.' }
       case 'skill_roadmap_generate':
         await handleSkillRoadmapGenerate(userId, action.payload, supabase)
-        return { success: true, message: 'Skill roadmap generation queued.' }
+        return { success: true, message: 'Skill roadmap generation started.' }
       case 'tasks_clear_all':
         return await handleTasksClearAll(userId, action.payload, supabase)
       default:

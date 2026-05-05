@@ -29,17 +29,21 @@ interface Action {
   type: string
   payload: any
   requires_confirmation?: boolean
+  confirmed?: boolean
 }
 
 interface ActionWidgetProps {
   action: Action
+  messageId?: string
   className?: string
   onConfirm?: (action: Action) => Promise<void>
   onCancel?: (action: Action) => void
 }
 
-export function ActionWidget({ action, className, onConfirm, onCancel }: ActionWidgetProps) {
-  const [status, setStatus] = useState<'idle' | 'confirming' | 'confirmed' | 'cancelled'>('idle')
+export function ActionWidget({ action, messageId, className, onConfirm, onCancel }: ActionWidgetProps) {
+  const [status, setStatus] = useState<'idle' | 'confirming' | 'confirmed' | 'cancelled'>(
+    action.confirmed ? 'confirmed' : 'idle'
+  )
 
   const handleConfirm = async () => {
     setStatus('confirming')
@@ -58,7 +62,7 @@ export function ActionWidget({ action, className, onConfirm, onCancel }: ActionW
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({ action }),
+          body: JSON.stringify({ action, messageId }),
         })
         const result = await response.json()
         if (!result.success) throw new Error(result.error || 'Failed to confirm action')

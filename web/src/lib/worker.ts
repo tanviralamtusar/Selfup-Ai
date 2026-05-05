@@ -3,7 +3,7 @@ import type { Worker, Job } from 'bullmq'
 import { redis } from '@/lib/redis'
 import { AiJobData } from './queue'
 import { generateResponse } from './gemma'
-import { supabase } from './supabase'
+import { createClient } from '@supabase/supabase-js'
 import { generateFitnessPlan, savePlanToDb, deactivateExistingPlan } from './fitness/planGenerator'
 import { checkAvailability } from './fitness/calendarCheck'
 import { injectWorkoutDailies, injectDietHabits } from './fitness/dailyInjector'
@@ -20,6 +20,11 @@ export async function executeAiTask(data: AiJobData) {
   const { userId, type, payload } = data
 
   console.log(`[AI Task] Processing ${type} for user ${userId}`)
+  
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   try {
 

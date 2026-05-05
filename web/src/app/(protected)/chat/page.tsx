@@ -11,6 +11,7 @@ import { Brain, Trash2, Menu, X, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Message {
+  id?: string
   role: 'user' | 'assistant'
   content: string
   metadata?: any
@@ -89,7 +90,7 @@ export default function ChatPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setMessages(data.map((m: any) => ({ role: m.role, content: m.content, metadata: m.metadata })))
+        setMessages(data.map((m: any) => ({ id: m.id, role: m.role, content: m.content, metadata: m.metadata })))
       }
     } catch (err) {
       toast.error('Failed to load history')
@@ -251,6 +252,7 @@ export default function ChatPage() {
           {messages.map((msg, i) => (
             <ChatMessage 
               key={i} 
+              id={msg.id}
               role={msg.role} 
               content={msg.content} 
               metadata={msg.metadata}

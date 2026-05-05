@@ -156,6 +156,7 @@ Use when: Starting a fitness assessment conversation.
   "includes_diet": "Boolean",
   "budget_bdt": "Number",
   "food_preference": "vegetarian | non_vegetarian | vegan | no_restriction",
+  "description": "String (A comprehensive preview of the plan, including workout days and key exercises. Use Markdown.)",
   "requires_confirmation": true
 }
 </action>
@@ -174,6 +175,7 @@ Use when: The user has provided enough info and you're ready to generate a fitne
   "study_days": ["mon", "wed"],
   "learning_style": "videos | reading | projects | mixed",
   "includes_tests": "Boolean",
+  "description": "String (A preview of the roadmap milestones and key resources. Use Markdown.)",
   "requires_confirmation": true
 }
 </action>
@@ -190,7 +192,15 @@ Use when: The user has provided enough info and you're ready to generate a skill
 </action>
 Use when: The user asks you to plan or schedule their day.
 
-#### update_memory:
+#### tasks_clear_all:
+<action type="tasks_clear_all">
+{
+  "task_type": "all | todos | dailies",
+  "reason": "String (Why the tasks are being cleared)",
+  "requires_confirmation": true
+}
+</action>
+Use when: The user wants to wipe their current task list or reset their agenda. Destructive action.
 <action type="update_memory">
 {
   "key": "String",

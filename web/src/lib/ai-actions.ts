@@ -159,6 +159,8 @@ export async function executeConfirmedAction(
       case 'skill_roadmap_generate':
         await handleSkillRoadmapGenerate(userId, action.payload, supabase)
         return { success: true, message: 'Skill roadmap generation queued.' }
+      case 'tasks_clear_all':
+        return await handleTasksClearAll(userId, action.payload, supabase)
       default:
         return { success: false, message: `Unknown action type: ${action.type}` }
     }
@@ -248,6 +250,30 @@ async function handleCreateTodo(
   if (error) throw error
   console.log(`[AI Actions] Created todo: ${payload.title}`)
   return { success: true, message: `To-Do "${payload.title}" created.` }
+}
+
+async function handleTasksClearAll(
+  userId: string,
+  payload: any,
+  supabase: any
+): Promise<{ success: boolean; message: string }> {
+  const type = payload.task_type || 'all'
+  let message = ''
+
+  if (type === 'all' || type === 'todos') {
+    const { error } = await supabase.from('todos').delete().eq('user_id', userId).eq('is_completed', false)
+    if (error) throw error
+    message += 'Active To-Dos cleared. '
+  }
+
+  if (type === 'all' || type === 'dailies') {
+    const { error } = await supabase.from('dailies').delete().eq('user_id', userId)
+    if (error) throw error
+    message += 'Dailies cleared.'
+  }
+
+  console.log(`[AI Actions] Tasks cleared for user ${userId}: ${type}`)
+  return { success: true, message: message.trim() || 'No tasks found to clear.' }
 }
 
 async function handleUpdateMemory(userId: string, payload: any): Promise<void> {

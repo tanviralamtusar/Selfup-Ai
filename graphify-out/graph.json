@@ -2369,13 +2369,13 @@
       "norm_label": "chatinput.tsx"
     },
     {
-      "label": "ChatInput()",
+      "label": "handleSubmit()",
       "file_type": "code",
       "source_file": "web\\src\\components\\chat\\ChatInput.tsx",
-      "source_location": "L14",
-      "id": "chat_chatinput_chatinput",
+      "source_location": "L17",
+      "id": "chat_chatinput_handlesubmit",
       "community": 60,
-      "norm_label": "chatinput()"
+      "norm_label": "handlesubmit()"
     },
     {
       "label": "ChatMessage.tsx",
@@ -9171,12 +9171,12 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\components\\chat\\ChatInput.tsx",
-      "source_location": "L14",
+      "source_location": "L17",
       "weight": 1.0,
       "_src": "web_src_components_chat_chatinput_tsx",
-      "_tgt": "chat_chatinput_chatinput",
+      "_tgt": "chat_chatinput_handlesubmit",
       "source": "web_src_components_chat_chatinput_tsx",
-      "target": "chat_chatinput_chatinput",
+      "target": "chat_chatinput_handlesubmit",
       "confidence_score": 1.0
     },
     {

@@ -10842,8 +10842,8 @@
       "source_file": "web\\src\\lib\\worker.ts",
       "source_location": "L321",
       "weight": 1.0,
-      "_src": "lib_worker_executeaitask",
-      "_tgt": "lib_ai_memory_embedandstoremessage",
+      "_src": "lib_ai_memory_embedandstoremessage",
+      "_tgt": "lib_worker_executeaitask",
       "source": "lib_ai_memory_embedandstoremessage",
       "target": "lib_worker_executeaitask"
     },
@@ -10878,8 +10878,8 @@
       "source_file": "web\\src\\lib\\worker.ts",
       "source_location": "L333",
       "weight": 1.0,
-      "_src": "lib_worker_executeaitask",
-      "_tgt": "lib_ai_memory_extractandsavememory",
+      "_src": "lib_ai_memory_extractandsavememory",
+      "_tgt": "lib_worker_executeaitask",
       "source": "lib_ai_memory_extractandsavememory",
       "target": "lib_worker_executeaitask"
     },
@@ -11442,8 +11442,8 @@
       "source_file": "web\\src\\lib\\worker.ts",
       "source_location": "L34",
       "weight": 1.0,
-      "_src": "lib_worker_executeaitask",
-      "_tgt": "lib_model_config_getusermodelconfig",
+      "_src": "lib_model_config_getusermodelconfig",
+      "_tgt": "lib_worker_executeaitask",
       "source": "lib_model_config_getusermodelconfig",
       "target": "lib_worker_executeaitask"
     },

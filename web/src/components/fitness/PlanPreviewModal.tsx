@@ -10,11 +10,10 @@ import { useRouter } from 'next/navigation';
 interface PlanPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  queueId: string;
   previewData: any; // Data stored in ai_queue.result
 }
 
-export function PlanPreviewModal({ isOpen, onClose, queueId, previewData }: PlanPreviewModalProps) {
+export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewModalProps) {
   const router = useRouter();
   const [isActivating, setIsActivating] = useState(false);
 

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateAction } from './validations/ai-actions'
 import { saveMemory } from './ai-memory'
+import { addAiTask } from './queue'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -295,30 +296,28 @@ async function handleFitnessPlanGenerate(
   payload: any,
   supabase: any
 ): Promise<void> {
-  // Queue a v3 fitness plan generation task
-  const { error } = await supabase.from('ai_task_queue').insert({
-    user_id: userId,
-    request_type: 'fitness_plan_generate',
+  // Execute fitness plan generation immediately (Queue system removed)
+  await addAiTask({
+    userId,
+    type: 'fitness_plan',
     payload: {
       goal: payload.goal || 'overall',
       plan_type: payload.plan_type || 'ongoing',
       days_per_week: payload.days_per_week || 4,
       experience_level: payload.experience_level || 'beginner',
-      equipment: payload.equipment || 'full_gym',
+      equipment: Array.isArray(payload.equipment) ? payload.equipment : (payload.equipment ? [payload.equipment] : ['full_gym']),
       preferred_time: payload.preferred_time || '08:00',
       session_duration_minutes: payload.session_duration_minutes || 60,
       health_conditions: payload.health_conditions || 'none',
-      rest_days: payload.rest_days || [],
+      rest_days: Array.isArray(payload.rest_days) ? payload.rest_days : (payload.rest_days ? [payload.rest_days] : []),
       includes_diet: payload.includes_diet || false,
       budget_bdt: payload.budget_bdt,
       food_preference: payload.food_preference,
     },
-    status: 'pending',
   })
 
-  if (error) throw error
   await saveMemory(userId, 'fitness_status', 'plan_generating', 'system', 'fitness')
-  console.log(`[AI Actions] Queued fitness_plan_generate for user ${userId}`)
+  console.log(`[AI Actions] Executed fitness_plan_generate directly for user ${userId}`)
 }
 
 async function handleSkillRoadmapGenerate(
@@ -326,26 +325,19 @@ async function handleSkillRoadmapGenerate(
   payload: any,
   supabase: any
 ): Promise<void> {
-  const { error } = await supabase.from('ai_task_queue').insert({
-    user_id: userId,
-    request_type: 'skill_roadmap_generate',
+  await addAiTask({
+    userId,
+    type: 'roadmap',
     payload: {
-      skill_name: payload.skill_name,
-      skill_category: payload.skill_category || 'other',
-      goal: payload.goal,
-      plan_type: payload.plan_type || 'open_ended',
-      duration_days: payload.duration_days,
-      experience_level: payload.experience_level || 'beginner',
-      daily_study_minutes: payload.daily_study_minutes || 30,
-      study_days: payload.study_days,
-      learning_style: payload.learning_style || 'mixed',
-      includes_tests: payload.includes_tests || false,
+      skillName: payload.skill_name,
+      category: payload.skill_category || 'other',
+      targetLevel: payload.experience_level || 'beginner',
+      // Pass other payload fields if needed by the worker
+      ...payload
     },
-    status: 'pending',
   })
-
-  if (error) throw error
-  console.log(`[AI Actions] Queued skill_roadmap_generate for user ${userId}`)
+  
+  console.log(`[AI Actions] Executed skill_roadmap_generate directly for user ${userId}`)
 }
 
 async function handleScheduleDay(
@@ -353,15 +345,18 @@ async function handleScheduleDay(
   payload: any,
   supabase: any
 ): Promise<void> {
-  const { error } = await supabase.from('ai_task_queue').insert({
-    user_id: userId,
-    request_type: 'schedule_day',
-    payload,
-    status: 'pending',
+  // Schedule day logic (previously queued, now direct or handled elsewhere)
+  // For now, we still use the task structure but execute it immediately
+  await addAiTask({
+    userId,
+    type: 'chat_analysis', // Or a new type if we had it
+    payload: {
+      intent: 'schedule_day',
+      ...payload
+    }
   })
-
-  if (error) throw error
-  console.log(`[AI Actions] Queued schedule_day for user ${userId}`)
+  
+  console.log(`[AI Actions] Executed schedule_day logic directly for user ${userId}`)
 }
 
 async function handleWeeklySummaryGenerate(
@@ -369,13 +364,11 @@ async function handleWeeklySummaryGenerate(
   payload: any,
   supabase: any
 ): Promise<void> {
-  const { error } = await supabase.from('ai_task_queue').insert({
-    user_id: userId,
-    request_type: 'weekly_summary_generate',
-    payload,
-    status: 'pending',
+  await addAiTask({
+    userId,
+    type: 'weekly_summary_generate',
+    payload
   })
-
-  if (error) throw error
-  console.log(`[AI Actions] Queued weekly_summary_generate for user ${userId}`)
+  
+  console.log(`[AI Actions] Executed weekly_summary_generate directly for user ${userId}`)
 }

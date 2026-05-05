@@ -25,7 +25,6 @@ export interface AiJobData {
   userId: string
   type: AiJobType
   payload: any
-  queueId?: string // Supabase ai_queue.id
 }
 
 const AI_QUEUE_NAME = 'ai-tasks'

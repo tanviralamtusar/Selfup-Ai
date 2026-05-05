@@ -17,18 +17,11 @@ import type { FitnessInterviewData } from '@/types/fitness'
 const AI_QUEUE_NAME = 'ai-tasks'
 
 export async function executeAiTask(data: AiJobData) {
-  const { userId, type, payload, queueId } = data
+  const { userId, type, payload } = data
 
   console.log(`[AI Task] Processing ${type} for user ${userId}`)
 
   try {
-    // 1. Update status to 'processing' in DB if we have a queueId
-    if (queueId) {
-      await supabase
-        .from('ai_queue')
-        .update({ status: 'processing' })
-        .eq('id', queueId)
-    }
 
     // Get user's model config
     const modelConfig = await getUserModelConfig(userId)
@@ -162,21 +155,6 @@ export async function executeAiTask(data: AiJobData) {
 
         result = `Success: Generated and activated fitness plan ${generatedPlan.plan_meta.name}.`;
         
-        if (queueId) {
-          await supabase.from('ai_queue').update({
-            result: {
-              plan_meta: generatedPlan.plan_meta,
-              schedule_summary: generatedPlan.workout_days.map(d => ({
-                day: d.day_label,
-                time: d.scheduled_time || interviewData.preferred_time || '08:00',
-                label: d.muscle_groups.join(', ')
-              })),
-              total_xp_per_week: generatedPlan.workout_days.reduce((acc, d) => acc + (d.session_xp_bonus || 0), 0),
-              coin_cost: AICOIN_COSTS.fitness_protocol
-            }
-          }).eq('id', queueId);
-        }
-
         break;
       }
       case 'fitness_adaptation_check': {
@@ -339,33 +317,9 @@ Strictly valid JSON. No markdown.`
         result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`, [], undefined, modelConfig.background_model)) || 'No response';
     }
 
-    // 3. Update status to 'done' and store result
-    if (queueId) {
-      await supabase
-        .from('ai_queue')
-        .update({ 
-          status: 'completed', 
-          result: result,
-          processed_at: new Date().toISOString()
-        })
-        .eq('id', queueId)
-    }
-
     return result
-
   } catch (err: any) {
     console.error(`[AI Task Error] Task failed:`, err)
-    
-    if (queueId) {
-      await supabase
-        .from('ai_queue')
-        .update({ 
-          status: 'failed',
-          result: err.message || 'Unknown error'
-        })
-        .eq('id', queueId)
-    }
-    
     throw err
   }
 }

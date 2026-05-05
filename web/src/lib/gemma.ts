@@ -53,9 +53,9 @@ export async function generateEmbedding(
   if (!apiKey) throw new Error('GOOGLE_AI_API_KEY is not set')
 
   const result = await ai.models.embedContent({
-    model: 'text-embedding-004',
+    model: 'gemini-embedding-2',
     contents: text,
-    config: { taskType },
+    config: { taskType, outputDimensionality: 768 },
   })
 
   return result.embeddings?.[0]?.values || []

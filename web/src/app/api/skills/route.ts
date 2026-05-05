@@ -92,28 +92,12 @@ export async function POST(req: NextRequest) {
 
     if (skillError) throw skillError
 
-    // 2. If roadmap generation is requested, queue the job
+    // 2. If roadmap generation is requested, execute immediately (Queue removed)
     if (generateRoadmap) {
-      // Create DB tracking record for the queue
-      const { data: queueItem, error: queueError } = await authSupabase
-        .from('ai_queue')
-        .insert({
-          user_id: user.id,
-          action_type: 'roadmap',
-          payload: { skillId: skill.id, skillName: name, category },
-          status: 'pending'
-        })
-        .select()
-        .single()
-
-      if (queueError) throw queueError
-
-      // Add to BullMQ
       await addAiTask({
         userId: user.id,
         type: 'roadmap',
-        payload: { skillId: skill.id, skillName: name, category },
-        queueId: queueItem.id
+        payload: { skillId: skill.id, skillName: name, category }
       })
     }
 

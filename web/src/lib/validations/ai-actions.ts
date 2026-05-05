@@ -54,6 +54,7 @@ export const fitnessPlanGenerateSchema = z.object({
   includes_diet: z.boolean().default(false),
   budget_bdt: z.number().optional(),
   food_preference: z.enum(['vegetarian', 'non_vegetarian', 'vegan', 'no_restriction']).optional(),
+  description: z.string().optional(),
   requires_confirmation: z.boolean().default(true),
 })
 
@@ -72,6 +73,7 @@ export const skillRoadmapGenerateSchema = z.object({
   includes_tests: z.boolean().default(false),
   learning_style: z.enum(['videos', 'reading', 'projects', 'mixed']).default('mixed'),
   target_date: z.string().optional(),
+  description: z.string().optional(),
   requires_confirmation: z.boolean().default(true),
 })
 
@@ -119,12 +121,20 @@ export const suggestGuildActionSchema = z.object({
   parameters: z.record(z.string(), z.unknown()).default({}),
 })
 
+// ─── Task Management Schemas ────────────────────
+export const tasksClearAllSchema = z.object({
+  task_type: z.enum(['all', 'todos', 'dailies']).default('all'),
+  reason: z.string().optional(),
+  requires_confirmation: z.boolean().default(true),
+})
+
 // ─── Schema Registry ────────────────────────────
 
 export const ACTION_SCHEMAS: Record<string, z.ZodTypeAny> = {
   create_daily: createDailySchema,
   create_habit: createHabitSchema,
   create_todo: createTodoSchema,
+  tasks_clear_all: tasksClearAllSchema,
   fitness_interview_start: fitnessInterviewStartSchema,
   fitness_plan_generate: fitnessPlanGenerateSchema,
   skill_roadmap_generate: skillRoadmapGenerateSchema,

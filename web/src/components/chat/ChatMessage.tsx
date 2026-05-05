@@ -7,6 +7,7 @@ import { MarkdownRenderer } from './MarkdownRenderer'
 import { ActionWidget } from './ActionWidget'
 
 interface ChatMessageProps {
+  id?: string
   role: 'user' | 'assistant'
   content: string
   metadata?: any
@@ -15,7 +16,7 @@ interface ChatMessageProps {
   style?: 'friendly' | 'strict' | 'motivational' | 'neutral'
 }
 
-export function ChatMessage({ role, content, metadata, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
+export function ChatMessage({ id, role, content, metadata, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
   const isAssistant = role === 'assistant'
 
   return (
@@ -85,7 +86,7 @@ export function ChatMessage({ role, content, metadata, isLast, name = 'SYSTEM', 
 
         {/* Render Action Widgets OUTSIDE the text bubble */}
         {metadata?.actions?.map((action: any, idx: number) => (
-          <ActionWidget key={idx} action={action} className={content ? "mt-2" : "mt-0"} />
+          <ActionWidget key={idx} action={action} messageId={id} className={content ? "mt-2" : "mt-0"} />
         ))}
       </div>
 

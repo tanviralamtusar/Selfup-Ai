@@ -21,7 +21,6 @@ export default function FitnessPage() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
-  const [previewQueueId, setPreviewQueueId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
 
   // Level up state
@@ -73,52 +72,25 @@ export default function FitnessPage() {
         headers,
         body: JSON.stringify({
           type: 'fitness_plan',
-          payload: {
-            goal,
-            days
-          }
+          payload: { goal, days }
         })
       });
       
       const data = await res.json();
       
-      if (res.ok && data.queueId) {
-        toast.success('System is drafting your plan. Please wait...');
+      if (res.ok && data.status === 'completed') {
+        setIsGenerating(false);
+        setIsAiModalOpen(false);
         
-        // Start polling
-        const intervalId = setInterval(async () => {
-          try {
-            const { data: { session: pollSession } } = await supabase.auth.getSession();
-            const pollRes = await fetch(`/api/ai/queue?queueId=${data.queueId}`, {
-              headers: { 'Authorization': `Bearer ${pollSession?.access_token}` }
-            });
-            if (pollRes.ok) {
-              const pollData = await pollRes.json();
-              
-              if (pollData.status === 'completed') {
-                clearInterval(intervalId);
-                setIsGenerating(false);
-                setIsAiModalOpen(false);
-                if (pollData.result && pollData.result.plan_meta) {
-                  setPreviewData(pollData.result);
-                  setPreviewQueueId(data.queueId);
-                  setIsPreviewModalOpen(true);
-                } else {
-                  toast.success('Your AI fitness plan is ready!');
-                  fetchDashboardData();
-                }
-              } else if (pollData.status === 'failed') {
-                clearInterval(intervalId);
-                setIsGenerating(false);
-                toast.error('AI generation failed. Please try again.');
-              }
-            }
-          } catch (err) {
-            console.error('Polling error', err);
-          }
-        }, 3000);
+        if (data.result && data.result.plan_meta) {
+          setPreviewData(data.result);
+          setIsPreviewModalOpen(true);
+        } else {
+          toast.success('Your AI fitness plan is ready!');
+          fetchDashboardData();
+        }
       } else {
-        throw new Error(data.error || 'Failed to start generation');
+        throw new Error(data.error || 'Failed to generate plan');
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to start AI generation');
@@ -260,7 +232,6 @@ export default function FitnessPage() {
           setIsPreviewModalOpen(false);
           fetchDashboardData();
         }}
-        queueId={previewQueueId}
         previewData={previewData}
       />
     </div>

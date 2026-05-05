@@ -26,11 +26,11 @@ Interview Data:
 - Height: ${interviewData.height_cm} cm
 - Injuries: ${interviewData.injuries || 'None'}
 - Days per week: ${interviewData.days_per_week}
-- Rest days: ${interviewData.rest_days.join(', ')}
+- Rest days: ${Array.isArray(interviewData.rest_days) ? interviewData.rest_days.join(', ') : interviewData.rest_days || 'None'}
 - Preferred time: ${interviewData.preferred_time}
 - Session duration: ${interviewData.session_duration_minutes} min
 - Location: ${interviewData.training_location}
-- Equipment: ${interviewData.equipment.join(', ')}
+- Equipment: ${Array.isArray(interviewData.equipment) ? interviewData.equipment.join(', ') : interviewData.equipment || 'None'}
 - Training style: ${interviewData.training_style}
 - Target: ${interviewData.target_goal || 'General improvement'}
 - Plan type: ${interviewData.plan_type}

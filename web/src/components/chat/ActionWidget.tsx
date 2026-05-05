@@ -16,33 +16,66 @@ import {
   Calendar,
   Shield,
   Loader2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { MarkdownRenderer } from './MarkdownRenderer'
 
 interface Action {
   type: string
   payload: any
   requires_confirmation?: boolean
+  confirmed?: boolean
 }
 
 interface ActionWidgetProps {
   action: Action
+  messageId?: string
   className?: string
   onConfirm?: (action: Action) => Promise<void>
   onCancel?: (action: Action) => void
 }
 
-export function ActionWidget({ action, className, onConfirm, onCancel }: ActionWidgetProps) {
-  const [status, setStatus] = useState<'idle' | 'confirming' | 'confirmed' | 'cancelled'>('idle')
+export function ActionWidget({ action, messageId, className, onConfirm, onCancel }: ActionWidgetProps) {
+  const [status, setStatus] = useState<'idle' | 'confirming' | 'confirmed' | 'cancelled'>(
+    action.confirmed ? 'confirmed' : 'idle'
+  )
 
   const handleConfirm = async () => {
     setStatus('confirming')
     try {
-      await onConfirm?.(action)
+      if (onConfirm) {
+        await onConfirm(action)
+      } else {
+        // Get current session for JWT token
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) throw new Error('No active session found. Please log in.')
+
+        // Default: Call the backend confirmation API
+        const response = await fetch('/api/ai/chat/confirm', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ action, messageId }),
+        })
+        const result = await response.json()
+        if (!result.success) throw new Error(result.error || 'Failed to confirm action')
+        
+        if (result.data?.message) {
+          toast.success(result.data.message)
+        }
+      }
       setStatus('confirmed')
-    } catch {
+    } catch (err: any) {
+      console.error('[ActionWidget] Confirmation failed:', err)
       setStatus('idle')
+      toast.error(err.message || 'Action confirmation failed')
     }
   }
 
@@ -53,7 +86,14 @@ export function ActionWidget({ action, className, onConfirm, onCancel }: ActionW
 
   // If requires confirmation and hasn't been acted upon yet
   if (action.requires_confirmation && status === 'idle') {
-    return renderConfirmationWidget(action, className, handleConfirm, handleCancel)
+    return (
+      <ConfirmationWidget
+        action={action}
+        className={className}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+    )
   }
 
   if (status === 'confirming') {
@@ -182,13 +222,23 @@ export function ActionWidget({ action, className, onConfirm, onCancel }: ActionW
 
 // ─── Confirmation Widget ────────────────────────
 
-function renderConfirmationWidget(
-  action: Action,
-  className: string | undefined,
-  onConfirm: () => void,
+function ConfirmationWidget({
+  action,
+  className,
+  onConfirm,
+  onCancel,
+}: {
+  action: Action
+  className?: string
+  onConfirm: () => void
   onCancel: () => void
-) {
+}) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const config = getConfirmationConfig(action)
+  
+  // Use provided description or generate a fallback from payload fields
+  const description = action.payload.description || getFallbackDescription(action)
+  const hasDetailedPlan = !!description
 
   return (
     <motion.div
@@ -196,91 +246,163 @@ function renderConfirmationWidget(
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       className={cn(
-        'mt-4 p-4 rounded-xl border shadow-lg',
+        'mt-4 p-4 rounded-xl border shadow-lg overflow-hidden',
         config.bgClass,
         config.borderClass,
         className
       )}
     >
       <div className="flex items-start gap-4">
-        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0', config.iconBgClass, config.textClass)}>
+        <div
+          className={cn(
+            'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
+            config.iconBgClass,
+            config.textClass
+          )}
+        >
           {config.icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className={cn('font-bold mb-1 text-sm', config.textClass)}>
-            {config.label}
-          </h4>
-          <p className="text-white font-semibold text-base mb-1">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <h4 className={cn('font-bold text-xs uppercase tracking-wider', config.textClass)}>
+              {config.label}
+            </h4>
+            {hasDetailedPlan && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/70 hover:text-white transition-colors"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp size={12} /> HIDE DETAILS
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={12} /> VIEW FULL PLAN
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          <p className="text-white font-headline font-bold text-lg mb-1 truncate">
             {action.payload.title || action.payload.skill_name || action.payload.goal || 'Untitled'}
           </p>
 
-          {/* Details */}
+          {/* Parameters Tags */}
           <div className="flex flex-wrap gap-2 mt-2 mb-3">
             {action.payload.priority && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300 capitalize">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
                 {action.payload.priority}
               </span>
             )}
             {action.payload.category && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300 capitalize">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
                 {action.payload.category}
               </span>
             )}
             {action.payload.due_date && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium">
                 Due: {action.payload.due_date}
               </span>
             )}
             {action.payload.scheduled_time && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium">
                 {action.payload.scheduled_time}
               </span>
             )}
-            {action.payload.repeat_type && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300 capitalize">
-                {action.payload.repeat_type}
-              </span>
-            )}
             {action.payload.days_per_week && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium">
                 {action.payload.days_per_week}x/week
               </span>
             )}
             {action.payload.experience_level && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300 capitalize">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
                 {action.payload.experience_level}
               </span>
             )}
           </div>
 
-          {action.payload.description && (
-            <p className="text-xs text-gray-400 mb-3 line-clamp-2">{action.payload.description}</p>
+          {/* Expandable Plan Detail */}
+          {hasDetailedPlan && (
+            <motion.div
+              initial={false}
+              animate={{ height: isExpanded ? 'auto' : '0px', opacity: isExpanded ? 1 : 0 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="mt-2 p-3 rounded-lg bg-black/40 border border-white/5 max-h-[300px] overflow-y-auto custom-scrollbar">
+                <MarkdownRenderer content={description} />
+              </div>
+            </motion.div>
+          )}
+
+          {/* Simple Description (fallback/unexpanded) */}
+          {!isExpanded && description && (
+            <p className="text-xs text-gray-400 mb-4 line-clamp-2 italic">
+              {description.replace(/[#*`]/g, '')}
+            </p>
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-4">
             <button
               onClick={onConfirm}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+                'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-black/20 active:scale-95',
                 config.confirmBtnClass
               )}
-              aria-label={`Confirm ${config.label}`}
             >
-              <Check size={14} /> Confirm
+              <Check size={16} /> Confirm Protocol
             </button>
             <button
               onClick={onCancel}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 rounded-lg text-sm font-medium transition-colors"
-              aria-label={`Cancel ${config.label}`}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 rounded-lg text-sm font-medium transition-colors border border-white/5"
             >
-              <X size={14} /> Cancel
+              <X size={16} />
             </button>
           </div>
         </div>
       </div>
     </motion.div>
   )
+}
+
+function getFallbackDescription(action: Action): string {
+  const p = action.payload
+  if (action.type === 'fitness_plan_generate') {
+    return `### Protocol Summary
+- **Goal**: ${p.goal || 'Overall'}
+- **Level**: ${p.experience_level || 'Beginner'}
+- **Schedule**: ${p.days_per_week || 3} sessions per week
+- **Equipment**: ${p.equipment || 'Bodyweight'}
+- **Session Length**: ${p.session_duration_minutes || 30} minutes
+${p.rest_days ? `- **Rest Days**: ${p.rest_days.join(', ')}` : ''}
+${p.includes_diet ? `- **Includes Nutrition**: Yes (${p.food_preference || 'Balanced'})` : ''}
+
+*Click Confirm to finalize and generate your full workout schedule.*`
+  }
+
+  if (action.type === 'skill_roadmap_generate') {
+    return `### Roadmap Summary
+- **Skill**: ${p.skill_name}
+- **Category**: ${p.skill_category}
+- **Goal**: ${p.goal || 'General Mastery'}
+- **Study Time**: ${p.daily_study_minutes || 30} min/day
+
+*Click Confirm to generate your personalized learning path.*`
+  }
+
+  if (action.type === 'tasks_clear_all') {
+    return `### ⚠️ Warning: Destructive Action
+This will permanently remove your current **${p.task_type || 'all'}** tasks.
+
+- **Type**: ${p.task_type || 'All Tasks'}
+- **Reason**: ${p.reason || 'Manual cleanup'}
+
+*Confirm if you are sure you want to wipe this list.*`
+  }
+
+  return p.description || ''
 }
 
 // ─── Status Widget (non-confirmation) ───────────
@@ -399,6 +521,16 @@ function getConfirmationConfig(action: Action) {
         iconBgClass: 'bg-violet-500/20',
         textClass: 'text-violet-400',
         confirmBtnClass: 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 border border-violet-500/30',
+      }
+    case 'tasks_clear_all':
+      return {
+        label: 'CLEAR ALL TASKS',
+        icon: <X size={20} />,
+        bgClass: 'bg-gradient-to-r from-red-500/10 to-orange-500/5',
+        borderClass: 'border-red-500/20',
+        iconBgClass: 'bg-red-500/20',
+        textClass: 'text-red-400',
+        confirmBtnClass: 'bg-red-500/60 hover:bg-red-500/70 text-white border border-red-500/30',
       }
     default:
       return {

@@ -36,21 +36,9 @@ export async function GET(
     if (error) throw error
 
     if (!roadmap) {
-      // Check if there is a pending/processing task in the queue
-      const { data: queueTask } = await authSupabase
-        .from('ai_queue')
-        .select('status, error')
-        .eq('action_type', 'roadmap')
-        .eq('user_id', user.id)
-        .contains('payload', { skillId })
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
       return NextResponse.json({ 
         roadmap: null, 
-        status: queueTask?.status || 'not_started',
-        error: queueTask?.error
+        status: 'not_started'
       })
     }
 

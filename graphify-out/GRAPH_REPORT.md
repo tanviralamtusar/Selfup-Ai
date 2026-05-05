@@ -1,11 +1,11 @@
 # Graph Report - Selfup Ai  (2026-05-05)
 
 ## Corpus Check
-- 175 files · ~178,559 words
+- 175 files · ~179,220 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 554 nodes · 653 edges · 33 communities detected
+- 555 nodes · 655 edges · 31 communities detected
 - Extraction: 75% EXTRACTED · 25% INFERRED · 0% AMBIGUOUS · INFERRED: 164 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -33,16 +33,14 @@
 - [[_COMMUNITY_Community 22|Community 22]]
 - [[_COMMUNITY_Community 23|Community 23]]
 - [[_COMMUNITY_Community 24|Community 24]]
-- [[_COMMUNITY_Community 28|Community 28]]
-- [[_COMMUNITY_Community 32|Community 32]]
-- [[_COMMUNITY_Community 35|Community 35]]
-- [[_COMMUNITY_Community 36|Community 36]]
-- [[_COMMUNITY_Community 39|Community 39]]
-- [[_COMMUNITY_Community 43|Community 43]]
-- [[_COMMUNITY_Community 44|Community 44]]
+- [[_COMMUNITY_Community 33|Community 33]]
+- [[_COMMUNITY_Community 34|Community 34]]
+- [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 41|Community 41]]
+- [[_COMMUNITY_Community 42|Community 42]]
+- [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 106|Community 106]]
 - [[_COMMUNITY_Community 107|Community 107]]
-- [[_COMMUNITY_Community 108|Community 108]]
-- [[_COMMUNITY_Community 109|Community 109]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `verifyAuth()` - 75 edges
@@ -75,35 +73,35 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.03
-Nodes (57): POST(), POST(), GET(), GET(), PATCH(), GET(), POST(), PATCH() (+49 more)
+Nodes (53): POST(), POST(), GET(), GET(), PATCH(), GET(), POST(), PATCH() (+45 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.09
-Nodes (29): POST(), buildLiveStateBlock(), DELETE(), fetchConversationHistory(), GET(), POST(), suggestAdjustment(), buildPlanPrompt() (+21 more)
+Cohesion: 0.08
+Nodes (32): POST(), buildLiveStateBlock(), DELETE(), fetchConversationHistory(), GET(), POST(), suggestAdjustment(), buildPlanPrompt() (+24 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
-Nodes (8): fetchData(), handleLogFood(), handleAutoSchedule(), handleRevertSchedule(), handleTimelineDrop(), handleUnscheduleTask(), handleAddHabit(), handleAddTodo()
+Nodes (13): GET(), getDb(), POST(), GET(), getDb(), POST(), calculateHpPenalty(), calculateTaskXp() (+5 more)
 
 ### Community 3 - "Community 3"
+Cohesion: 0.08
+Nodes (8): fetchData(), handleLogFood(), handleAutoSchedule(), handleRevertSchedule(), handleTimelineDrop(), handleUnscheduleTask(), handleAddHabit(), handleAddTodo()
+
+### Community 4 - "Community 4"
 Cohesion: 0.12
 Nodes (9): calculateHpDamageReduction(), calculateMaxHp(), getHpState(), getRank(), getRankLetter(), getXpModifier(), xpToNextLevel(), AttributeService (+1 more)
 
-### Community 4 - "Community 4"
-Cohesion: 0.15
-Nodes (8): GET(), getDb(), POST(), calculateTaskXp(), TaskInjectionService, GET(), getDb(), POST()
-
 ### Community 5 - "Community 5"
-Cohesion: 0.19
-Nodes (16): POST(), executeActions(), executeConfirmedAction(), getServiceClient(), handleCreateDaily(), handleCreateHabit(), handleCreateTodo(), handleFitnessInterviewStart() (+8 more)
+Cohesion: 0.18
+Nodes (17): POST(), executeActions(), executeConfirmedAction(), getServiceClient(), handleCreateDaily(), handleCreateHabit(), handleCreateTodo(), handleFitnessInterviewStart() (+9 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.14
-Nodes (5): GET(), getDb(), POST(), calculateHpPenalty(), TaskEconomyService
-
-### Community 7 - "Community 7"
 Cohesion: 0.26
 Nodes (7): cleanupPlanTasks(), injectDietHabits(), injectWorkoutDailies(), DELETE(), GET(), getDb(), PATCH()
+
+### Community 7 - "Community 7"
+Cohesion: 0.24
+Nodes (7): addAiTask(), GET(), POST(), GET(), POST(), GET(), POST()
 
 ### Community 8 - "Community 8"
 Cohesion: 0.27
@@ -165,43 +163,35 @@ Nodes (2): getDb(), POST()
 Cohesion: 0.4
 Nodes (2): setLoggingHabit(), fetchActivities()
 
-### Community 28 - "Community 28"
-Cohesion: 0.83
-Nodes (3): GET(), getDb(), POST()
-
-### Community 32 - "Community 32"
-Cohesion: 0.83
-Nodes (3): batchGetExerciseVideos(), cacheExerciseVideo(), getExerciseVideo()
-
-### Community 35 - "Community 35"
+### Community 33 - "Community 33"
 Cohesion: 1.0
 Nodes (2): fetchAll(), handleAddFriend()
 
-### Community 36 - "Community 36"
+### Community 34 - "Community 34"
 Cohesion: 1.0
 Nodes (2): getDb(), POST()
 
-### Community 39 - "Community 39"
+### Community 37 - "Community 37"
 Cohesion: 1.0
 Nodes (2): fetchMetrics(), handleSubmit()
 
-### Community 43 - "Community 43"
-Cohesion: 0.67
-Nodes (3): Backend API (Express/Supabase), SelfUp Focus Extension, Focus Mode
-
-### Community 44 - "Community 44"
+### Community 41 - "Community 41"
 Cohesion: 0.67
 Nodes (3): AI Companion (Aria), AI Memory System, Skill Roadmaps
 
-### Community 107 - "Community 107"
+### Community 42 - "Community 42"
+Cohesion: 0.67
+Nodes (3): Backend API (Express/Supabase), SelfUp Focus Extension, Focus Mode
+
+### Community 105 - "Community 105"
 Cohesion: 1.0
 Nodes (1): SelfUp Architecture
 
-### Community 108 - "Community 108"
+### Community 106 - "Community 106"
 Cohesion: 1.0
 Nodes (1): Frontend Web (Next.js)
 
-### Community 109 - "Community 109"
+### Community 107 - "Community 107"
 Cohesion: 1.0
 Nodes (1): PostgreSQL Database Schema
 
@@ -220,27 +210,27 @@ Nodes (1): PostgreSQL Database Schema
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 24`** (5 nodes): `setLoggingHabit()`, `cn()`, `fetchActivities()`, `page.tsx`, `ActivityFeed.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 35`** (3 nodes): `fetchAll()`, `handleAddFriend()`, `page.tsx`
+- **Thin community `Community 33`** (3 nodes): `fetchAll()`, `handleAddFriend()`, `page.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 36`** (3 nodes): `getDb()`, `POST()`, `route.ts`
+- **Thin community `Community 34`** (3 nodes): `getDb()`, `POST()`, `route.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (3 nodes): `fetchMetrics()`, `handleSubmit()`, `BodyView.tsx`
+- **Thin community `Community 37`** (3 nodes): `fetchMetrics()`, `handleSubmit()`, `BodyView.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 107`** (1 nodes): `SelfUp Architecture`
+- **Thin community `Community 105`** (1 nodes): `SelfUp Architecture`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 108`** (1 nodes): `Frontend Web (Next.js)`
+- **Thin community `Community 106`** (1 nodes): `Frontend Web (Next.js)`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 109`** (1 nodes): `PostgreSQL Database Schema`
+- **Thin community `Community 107`** (1 nodes): `PostgreSQL Database Schema`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `verifyAuth()` connect `Community 0` to `Community 1`, `Community 4`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 36`, `Community 16`, `Community 17`, `Community 23`, `Community 28`?**
-  _High betweenness centrality (0.170) - this node is a cross-community bridge._
+- **Why does `verifyAuth()` connect `Community 0` to `Community 1`, `Community 2`, `Community 34`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 16`, `Community 17`, `Community 23`?**
+  _High betweenness centrality (0.171) - this node is a cross-community bridge._
 - **Why does `POST()` connect `Community 1` to `Community 0`, `Community 5`?**
   _High betweenness centrality (0.043) - this node is a cross-community bridge._
-- **Why does `calculateTaskXp()` connect `Community 4` to `Community 6`, `Community 7`?**
+- **Why does `calculateTaskXp()` connect `Community 2` to `Community 6`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
 - **Are the 74 inferred relationships involving `verifyAuth()` (e.g. with `GET()` and `POST()`) actually correct?**
   _`verifyAuth()` has 74 INFERRED edges - model-reasoned connections that need verification._

@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
-import { generateResponse, SYSTEM_PROMPT, PERSONA_PROMPTS } from '@/lib/gemma'
-import { fetchUserMemory, formatMemoryContext, extractAndSaveMemory } from '@/lib/ai-memory'
+import { generateResponse, buildSystemPrompt } from '@/lib/gemma'
+import {
+  fetchUserMemory,
+  formatMemoryContext,
+  extractAndSaveMemory,
+  needsRetrieval,
+  retrieveRelevantMemories,
+  embedAndStoreMessage,
+} from '@/lib/ai-memory'
 import { parseActions, executeActions } from '@/lib/ai-actions'
+import { getUserModelConfig } from '@/lib/model-config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// ─── GET — Fetch conversations or messages ──────
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,14 +28,13 @@ export async function GET(req: NextRequest) {
 
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
     const authSupabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } }
+      global: { headers: { Authorization: `Bearer ${token}` } },
     })
 
     const { searchParams } = new URL(req.url)
     const conversationId = searchParams.get('conversationId')
 
     if (conversationId) {
-      // Fetch messages for a specific conversation
       const { data: messages, error } = await authSupabase
         .from('ai_messages')
         .select('*')
@@ -34,22 +44,23 @@ export async function GET(req: NextRequest) {
       if (error) throw error
       return NextResponse.json(messages)
     } else {
-      // Fetch all conversations for the user
       const { data: conversations, error } = await authSupabase
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
+        .eq('is_archived', false)
         .order('updated_at', { ascending: false })
 
       if (error) throw error
       return NextResponse.json(conversations)
     }
-
   } catch (err: any) {
     console.error('[AI Chat Fetch Error]:', err)
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }
+
+// ─── POST — Send a message ──────────────────────
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,16 +72,44 @@ export async function POST(req: NextRequest) {
 
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
     const authSupabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } }
+      global: { headers: { Authorization: `Bearer ${token}` } },
     })
 
-    const { content, conversationId, modelName } = await req.json()
+    const { content, conversationId, modelName: requestedModel } = await req.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Message content is required' }, { status: 400 })
     }
 
-    // 2. Manage Conversation
+    // 2. Fetch User Profile for context, coins, persona
+    const serviceSupabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
+
+    const { data: profile, error: profileError } = await serviceSupabase
+      .from('user_profiles')
+      .select(`
+        id, display_name, level, xp, xp_to_next_level, total_xp,
+        ai_coins, hp, max_hp, hp_state, rank,
+        streak_overall, streak_best,
+        ai_persona_name, ai_persona_style, ai_custom_persona,
+        ai_chat_model, ai_background_model,
+        timezone, weekly_summary_day, weekly_summary_time
+      `)
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) throw profileError
+
+    // 3. AiCoin Pre-flight Check
+    if (profile.ai_coins < 1) {
+      return NextResponse.json({
+        success: false,
+        error: 'Insufficient AiCoins. Need at least 1 coin per message. Earn more by completing tasks.',
+      }, { status: 403 })
+    }
+
+    // 4. Manage Conversation
     let activeConversationId = conversationId
     if (!activeConversationId) {
       const { data: newConv, error: convError } = await authSupabase
@@ -78,135 +117,151 @@ export async function POST(req: NextRequest) {
         .insert({ user_id: user.id, title: content.substring(0, 50) })
         .select()
         .single()
-      
+
       if (convError) throw convError
       activeConversationId = newConv.id
     }
 
-    // 3. Fetch History (last 10 messages for context)
-    const { data: messages, error: msgError } = await authSupabase
-      .from('ai_messages')
-      .select('role, content')
-      .eq('conversation_id', activeConversationId)
-      .order('created_at', { ascending: false })
-      .limit(10)
+    // 5. Build Context Pipeline (all layers in parallel)
+    const [
+      memoryFacts,
+      conversationHistory,
+      modelConfig,
+    ] = await Promise.all([
+      fetchUserMemory(user.id),                                     // Layer 2
+      fetchConversationHistory(authSupabase, activeConversationId),  // Layer 1
+      getUserModelConfig(user.id),                                  // Model config
+    ])
 
-    if (msgError) throw msgError
-
-    const history = messages?.reverse().map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
-    })) || []
-
-    // 4. Fetch User Profile for Coins and Stats
-    const { data: profile, error: profileError } = await authSupabase
-      .from('user_profiles')
-      .select('ai_coins, level, xp, display_name, ai_persona_name, ai_persona_style, timezone')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError) throw profileError
-
-    if (profile.ai_coins < 1) {
-      return NextResponse.json({ error: 'Insufficient AiCoins. Need at least 1 coin per message.' }, { status: 403 })
+    // Layer 3: RAG retrieval (only if needed)
+    let retrievedMemories: string[] = []
+    if (needsRetrieval(content)) {
+      retrievedMemories = await retrieveRelevantMemories(user.id, content, 5)
+      console.log(`[RAG] Retrieved ${retrievedMemories.length} relevant memories`)
     }
 
-    // 5. Fetch User Memory for Cross-Session Context
-    const userMemory = await fetchUserMemory(user.id, token || '')
-    const memoryContext = await formatMemoryContext(userMemory)
+    // 6. Format Context Blocks
+    const memoryContext = await formatMemoryContext(memoryFacts)
+    const liveStateBlock = buildLiveStateBlock(profile)
+    const retrievedMemoriesBlock = retrievedMemories.length > 0
+      ? retrievedMemories.join('\n')
+      : ''
 
-    // 6. Build System Prompt with Profile Context + Memory + Persona
-    const rawPersonaName = profile.ai_persona_name || 'SYSTEM'
-    const personaName = profile?.ai_persona_name || 'SYSTEM'
+    // 7. Build System Prompt
+    const personaName = profile.ai_persona_name || 'SYSTEM'
     const personaStyle = profile.ai_persona_style || 'friendly'
-    const personaTone = PERSONA_PROMPTS[personaStyle] || PERSONA_PROMPTS['friendly']
-    const userTimezone = profile.timezone || 'UTC'
+    const customPersona = profile.ai_custom_persona || null
 
-    // Calculate user's current local time
-    const now = new Date()
-    const userLocalTime = now.toLocaleString('en-US', { 
-      timeZone: userTimezone,
-      dateStyle: 'full',
-      timeStyle: 'medium'
-    })
+    const systemPrompt = buildSystemPrompt(
+      personaName,
+      personaStyle,
+      customPersona,
+      memoryContext,
+      liveStateBlock,
+      retrievedMemoriesBlock
+    )
 
-    const basePrompt = SYSTEM_PROMPT.replaceAll('{{NAME}}', personaName)
-    const contextualPrompt = `
-${basePrompt}
+    // 8. Determine model to use
+    const chatModel = requestedModel || modelConfig.chat_model || 'gemma-4-31b-it'
 
-Persona Context:
-- Name: ${personaName}
-- Coaching Style: ${personaStyle}
-- Instructions: ${personaTone}
+    // 9. Generate Response
+    const rawAiResponse = (await generateResponse(
+      content,
+      conversationHistory as any,
+      systemPrompt,
+      chatModel,
+      'chat'
+    )) || ''
 
-User Profile Context:
-- Name: ${profile.display_name}
-- Level: ${profile.level}
-- Current XP: ${profile.xp}
-- User Local Time: ${userLocalTime} (Timezone: ${userTimezone})
+    // 10. Parse Actions
+    const { cleanText, actions, confirmationActions } = parseActions(rawAiResponse)
 
-${memoryContext}
-`
-
-    // 7. Generate Response
-    const rawAiResponse = (await generateResponse(content, history as any, contextualPrompt, modelName)) || ''
-
-    // 8. Parse and Execute Actions
-    const { cleanText, actions } = parseActions(rawAiResponse)
-    
-    if (actions.length > 0 && token) {
-      // Execute actions (non-blocking for the chat response, but we wait a bit to ensure they start)
-      executeActions(user.id, actions, token).catch(err => 
+    // Execute non-confirmation actions (memory updates, etc.)
+    if (actions.length > 0) {
+      executeActions(user.id, actions).catch(err =>
         console.error('[AI Action Execution Failed]:', err)
       )
     }
 
     const aiResponse = cleanText || rawAiResponse
 
-    // 8. Save Messages & Deduct Coin
-    const { error: saveUserMsgError } = await authSupabase.from('ai_messages').insert({
-      conversation_id: activeConversationId,
-      user_id: user.id,
-      role: 'user',
-      content: content,
-      coin_cost: 1
-    })
+    // 11. Save Messages
+    const { data: savedUserMsg, error: saveUserMsgError } = await authSupabase
+      .from('ai_messages')
+      .insert({
+        conversation_id: activeConversationId,
+        user_id: user.id,
+        role: 'user',
+        content,
+        coin_cost: 1,
+      })
+      .select('id')
+      .single()
+
     if (saveUserMsgError) throw saveUserMsgError
 
-    const { error: saveAiMsgError } = await authSupabase.from('ai_messages').insert({
-      conversation_id: activeConversationId,
-      user_id: user.id,
-      role: 'assistant',
-      content: aiResponse,
-      coin_cost: 0
-    })
+    const allActions = [...actions, ...confirmationActions]
+    const { data: savedAiMsg, error: saveAiMsgError } = await authSupabase
+      .from('ai_messages')
+      .insert({
+        conversation_id: activeConversationId,
+        user_id: user.id,
+        role: 'assistant',
+        content: aiResponse,
+        metadata: allActions.length > 0
+          ? { actions: allActions, retrieved_memories: retrievedMemories.length }
+          : {},
+        coin_cost: 0,
+      })
+      .select('id')
+      .single()
+
     if (saveAiMsgError) throw saveAiMsgError
 
-    // 9. Extract and Save Memory from Conversation (non-blocking)
-    if (token) {
-      extractAndSaveMemory(user.id, content as string, aiResponse, token).catch(err => 
-        console.error('[AI Memory Extraction Failed]:', err)
-      )
-    }
+    // 12. Update conversation timestamp
+    await authSupabase
+      .from('ai_conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', activeConversationId)
 
-    // 10. Deduct Coin
-    const { error: updateProfileError } = await authSupabase
+    // 13. Deduct 1 AiCoin
+    await serviceSupabase
       .from('user_profiles')
       .update({ ai_coins: profile.ai_coins - 1 })
       .eq('id', user.id)
-    if (updateProfileError) throw updateProfileError
 
-    return NextResponse.json({ 
-      content: aiResponse, 
-      conversationId: activeConversationId,
-      coinsRemaining: profile.ai_coins - 1
+    // 14. Post-processing (non-blocking)
+    // Queue embedding for both messages into vector store
+    if (savedUserMsg?.id && savedAiMsg?.id) {
+      Promise.all([
+        embedAndStoreMessage(user.id, activeConversationId, savedUserMsg.id, content, 'user'),
+        embedAndStoreMessage(user.id, activeConversationId, savedAiMsg.id, aiResponse, 'assistant'),
+      ]).catch(err => console.error('[Vector Embed Failed]:', err))
+    }
+
+    // AI-driven memory extraction (non-blocking)
+    extractAndSaveMemory(user.id, content, aiResponse).catch(err =>
+      console.error('[Memory Extraction Failed]:', err)
+    )
+
+    // 15. Return Response
+    return NextResponse.json({
+      success: true,
+      data: {
+        content: aiResponse,
+        conversationId: activeConversationId,
+        coinsRemaining: profile.ai_coins - 1,
+        metadata: allActions.length > 0 ? { actions: allActions } : undefined,
+        confirmationActions: confirmationActions.length > 0 ? confirmationActions : undefined,
+      },
     })
-
   } catch (err: any) {
     console.error('[AI Chat Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ success: false, error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }
+
+// ─── DELETE — Archive a conversation ────────────
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -217,27 +272,72 @@ export async function DELETE(req: NextRequest) {
 
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
     const authSupabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } }
+      global: { headers: { Authorization: `Bearer ${token}` } },
     })
 
     const { searchParams } = new URL(req.url)
     const conversationId = searchParams.get('conversationId')
 
     if (!conversationId) {
-      return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Conversation ID is required' }, { status: 400 })
     }
 
+    // Soft-delete: archive instead of hard delete
     const { error } = await authSupabase
       .from('ai_conversations')
-      .delete()
+      .update({ is_archived: true })
       .eq('id', conversationId)
-      .eq('user_id', user.id) // Ensure the user owns this conversation
+      .eq('user_id', user.id)
 
     if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error('[AI Chat Delete Error]:', err)
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ success: false, error: err.message || 'Internal Server Error' }, { status: 500 })
   }
+}
+
+// ─── Helpers ────────────────────────────────────
+
+async function fetchConversationHistory(supabase: any, conversationId: string) {
+  const { data: messages, error } = await supabase
+    .from('ai_messages')
+    .select('role, content')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: false })
+    .limit(20) // Layer 1: last 20 messages
+
+  if (error) throw error
+
+  return (messages?.reverse() || []).map((m: any) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }],
+  }))
+}
+
+function buildLiveStateBlock(profile: any): string {
+  const userTimezone = profile.timezone || 'UTC'
+  const now = new Date()
+
+  let userLocalTime: string
+  try {
+    userLocalTime = now.toLocaleString('en-US', {
+      timeZone: userTimezone,
+      dateStyle: 'full',
+      timeStyle: 'medium',
+    })
+  } catch {
+    userLocalTime = now.toISOString()
+  }
+
+  return `LIVE STATE SNAPSHOT:
+- Player: ${profile.display_name || 'Unknown'}
+- Level: ${profile.level || 1} | Rank: ${profile.rank || 'E'}
+- XP: ${profile.xp || 0} / ${profile.xp_to_next_level || 100}
+- HP: ${profile.hp || 100} / ${profile.max_hp || 100} (${profile.hp_state || 'healthy'})
+- Active Streak: ${profile.streak_overall || 0} days (Best: ${profile.streak_best || 0})
+- AiCoin Balance: ${profile.ai_coins || 0}
+- User Local Time: ${userLocalTime} (${userTimezone})
+- Weekly Summary: ${profile.weekly_summary_day || 'not set'} at ${profile.weekly_summary_time || 'not set'}`
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
-import { generateResponse, SYSTEM_PROMPT } from '@/lib/gemma'
+import { generateResponse, CORE_IDENTITY_BLOCK } from '@/lib/gemma'
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       ]
     `
 
-    const responseText = await generateResponse(prompt, [], SYSTEM_PROMPT)
+    const responseText = await generateResponse(prompt, [], CORE_IDENTITY_BLOCK)
     
     if (!responseText) {
       throw new Error('AI returned an empty response')

@@ -1,6 +1,9 @@
 import React from 'react'
 import { Dumbbell, ArrowRight } from 'lucide-react'
 import WorkoutCard from '@/components/fitness/WorkoutCard'
+import { AdjustmentSuggestionCard } from './AdjustmentSuggestionCard'
+import { Play } from 'lucide-react'
+import Link from 'next/link'
 
 interface WorkoutViewProps {
   plans: any[]
@@ -25,15 +28,28 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
           <div className="space-y-6">
             <WorkoutCard plan={activePlan} isActive={true} />
             
+            {/* Adjustments */}
+            {activePlan.plan_adjustments?.filter((a: any) => a.status === 'pending').map((adj: any) => (
+              <AdjustmentSuggestionCard key={adj.id} adjustment={adj} onResolve={() => window.location.reload()} />
+            ))}
+
             {/* Day Overview */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {activePlan.workout_days?.map((day: any) => (
-                <div key={day.id} className="p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg text-center group hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative overflow-hidden">
-                  <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-2">Phase {day.day_number}</span>
-                  <span className="block text-[11px] font-black text-blue-50 uppercase tracking-widest">{day.name}</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500/0 group-hover:bg-blue-500/40 transition-colors" />
-                </div>
-              ))}
+              {activePlan.workout_days?.map((day: any) => {
+                const isToday = new Date(day.scheduled_date).toDateString() === new Date().toDateString();
+                return (
+                  <div key={day.id} className={`p-4 bg-slate-950/60 border rounded-lg text-center group transition-all relative overflow-hidden ${isToday ? 'border-primary-500/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]' : 'border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10'}`}>
+                    <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-2">Phase {day.day_number}</span>
+                    <span className="block text-[11px] font-black text-blue-50 uppercase tracking-widest">{day.name}</span>
+                    {isToday && (
+                      <Link href={`/fitness/session/${day.id}`} className="mt-3 inline-flex items-center gap-1 text-[10px] uppercase tracking-widest font-bold text-primary-400 hover:text-primary-300">
+                        <Play size={12} /> Start
+                      </Link>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500/0 group-hover:bg-blue-500/40 transition-colors" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : (

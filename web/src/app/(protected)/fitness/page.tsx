@@ -11,13 +11,17 @@ import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
 import { LevelUpModal } from '@/components/gamification/LevelUpModal';
 import { AiPlanGeneratorModal } from '@/components/fitness/AiPlanGeneratorModal';
-
+import { PlanPreviewModal } from '@/components/fitness/PlanPreviewModal';
+import { DietPlanView } from '@/components/fitness/DietPlanView';
 export default function FitnessPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewQueueId, setPreviewQueueId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
 
   // Level up state
@@ -95,8 +99,14 @@ export default function FitnessPage() {
                 clearInterval(intervalId);
                 setIsGenerating(false);
                 setIsAiModalOpen(false);
-                toast.success('Your AI fitness plan is ready!');
-                fetchDashboardData();
+                if (pollData.result && pollData.result.plan_meta) {
+                  setPreviewData(pollData.result);
+                  setPreviewQueueId(data.queueId);
+                  setIsPreviewModalOpen(true);
+                } else {
+                  toast.success('Your AI fitness plan is ready!');
+                  fetchDashboardData();
+                }
               } else if (pollData.status === 'failed') {
                 clearInterval(intervalId);
                 setIsGenerating(false);
@@ -218,7 +228,13 @@ export default function FitnessPage() {
             </div>
           )}
 
-          {activeTab === 'nutrition' && <NutritionView />}
+          {activeTab === 'nutrition' && (
+            activePlan?.diet_plans?.[0] ? (
+              <DietPlanView dietPlan={activePlan.diet_plans[0]} />
+            ) : (
+              <NutritionView />
+            )
+          )}
           {activeTab === 'body' && <BodyView />}
         </motion.div>
       </AnimatePresence>
@@ -236,6 +252,16 @@ export default function FitnessPage() {
         onClose={() => setIsAiModalOpen(false)}
         onSubmit={handleGeneratePlan}
         isGenerating={isGenerating}
+      />
+
+      <PlanPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => {
+          setIsPreviewModalOpen(false);
+          fetchDashboardData();
+        }}
+        queueId={previewQueueId}
+        previewData={previewData}
       />
     </div>
   );

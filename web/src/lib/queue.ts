@@ -3,7 +3,23 @@ import type { Queue } from 'bullmq'
 
 import { redis } from '@/lib/redis'
 
-export type AiJobType = 'roadmap' | 'fitness_plan' | 'nutrition_plan' | 'style_advice' | 'chat_analysis' | 'initial_plan'
+export type AiJobType =
+  | 'roadmap'
+  | 'fitness_plan'
+  | 'fitness_plan_v2'
+  | 'fitness_interview_complete'
+  | 'fitness_adaptation_check'
+  | 'nutrition_plan'
+  | 'style_advice'
+  | 'chat_analysis'
+  | 'initial_plan'
+  // V3 job types
+  | 'weekly_summary_generate'
+  | 'embed_message'
+  | 'memory_extraction'
+  | 'proactive_alert_check'
+  | 'plan_adaptation_check'
+  | 'test_generate'
 
 export interface AiJobData {
   userId: string
@@ -39,13 +55,10 @@ if (aiQueue) {
 }
 
 /**
- * Helper to add a job to the AI queue
- * UPDATED: Now executes directly to remove Redis dependency for now
+ * Helper to add a job to the AI queue.
+ * Currently executes directly (Redis bypass) for simplicity.
  */
 export async function addAiTask(data: AiJobData) {
   console.log(`[Queue Bypass] Executing ${data.type} directly...`)
-  // We don't await this if we want it to be "background", 
-  // but in serverless/Next.js it's safer to await or use a different mechanism.
-  // For now, let's await it to ensure completion.
   return await executeAiTask(data)
 }

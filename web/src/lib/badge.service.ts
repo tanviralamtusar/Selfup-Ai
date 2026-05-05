@@ -150,6 +150,8 @@ export class BadgeService {
       skillCount?: number
       pomodoroCount?: number
       attributes?: Record<string, number>
+      perfectSessionCount?: number
+      adaptationCount?: number
     }
   ): Promise<string[]> {
     const awarded: string[] = []
@@ -202,6 +204,17 @@ export class BadgeService {
         const r = await this.awardBadge(userId, 'iron_will')
         if (r) awarded.push('iron_will')
       }
+    }
+
+    // Fitness v2 Badges
+    if (context.perfectSessionCount && context.perfectSessionCount >= 1) {
+      const r = await this.awardBadge(userId, 'perfect_form')
+      if (r) awarded.push('perfect_form')
+    }
+
+    if (context.adaptationCount && context.adaptationCount >= 1) {
+      const r = await this.awardBadge(userId, 'adaptive_machine')
+      if (r) awarded.push('adaptive_machine')
     }
 
     // Task badges

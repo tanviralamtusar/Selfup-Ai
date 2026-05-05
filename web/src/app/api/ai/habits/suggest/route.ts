@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     })
 
     // 1. Fetch User Context
-    const userMemory = await fetchUserMemory(user.id, token!)
+    const userMemory = await fetchUserMemory(user.id)
     const memoryContext = await formatMemoryContext(userMemory)
 
     const { data: profile } = await authSupabase

@@ -4,16 +4,18 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Brain, User } from 'lucide-react'
 import { MarkdownRenderer } from './MarkdownRenderer'
+import { ActionWidget } from './ActionWidget'
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
   content: string
+  metadata?: any
   isLast?: boolean
   name?: string
   style?: 'friendly' | 'strict' | 'motivational' | 'neutral'
 }
 
-export function ChatMessage({ role, content, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
+export function ChatMessage({ role, content, metadata, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
   const isAssistant = role === 'assistant'
 
   return (
@@ -59,6 +61,11 @@ export function ChatMessage({ role, content, isLast, name = 'SYSTEM', style = 'f
           ) : (
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
           )}
+
+          {/* Render Action Widgets if any */}
+          {metadata?.actions?.map((action: any, idx: number) => (
+            <ActionWidget key={idx} action={action} />
+          ))}
           
           {isLast && isAssistant && (
             <div className="flex gap-1 mt-2">

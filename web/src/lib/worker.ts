@@ -4,6 +4,15 @@ import { redis } from '@/lib/redis'
 import { AiJobData } from './queue'
 import { generateResponse } from './gemma'
 import { supabase } from './supabase'
+import { generateFitnessPlan, savePlanToDb, deactivateExistingPlan } from './fitness/planGenerator'
+import { checkAvailability } from './fitness/calendarCheck'
+import { injectWorkoutDailies, injectDietHabits } from './fitness/dailyInjector'
+import { analyzePerformance, suggestAdjustment } from './fitness/adaptationEngine'
+import { GamificationService } from './gamification.service'
+import { BadgeService } from './badge.service'
+import { getUserModelConfig, AICOIN_COSTS } from './model-config'
+import { embedAndStoreMessage, extractAndSaveMemory } from './ai-memory'
+import type { FitnessInterviewData } from '@/types/fitness'
 
 const AI_QUEUE_NAME = 'ai-tasks'
 
@@ -21,6 +30,9 @@ export async function executeAiTask(data: AiJobData) {
         .eq('id', queueId)
     }
 
+    // Get user's model config
+    const modelConfig = await getUserModelConfig(userId)
+
     // 2. Perform AI Task
     let result = ''
     switch (type) {
@@ -31,7 +43,7 @@ export async function executeAiTask(data: AiJobData) {
         Respond ONLY with a valid JSON array of objects, each with these exact keys: "title", "description", "estimated_hours".
         Do not include any intro or outro text.`
         
-        const rawResponse = await generateResponse(prompt)
+        const rawResponse = await generateResponse(prompt, [], undefined, modelConfig.background_model, 'plan_generation')
         if (!rawResponse) throw new Error('No response from AI');
         
         const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
@@ -90,7 +102,7 @@ export async function executeAiTask(data: AiJobData) {
         "estimated_price" (a number matching the budget).
         No markdown blocks, no intro, no outro, strictly JSON.`
 
-        const rawResponse = await generateResponse(prompt)
+        const rawResponse = await generateResponse(prompt, [], undefined, modelConfig.background_model, 'plan_generation')
         if (!rawResponse) throw new Error('No response from AI');
         const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
         let items = []
@@ -116,94 +128,67 @@ export async function executeAiTask(data: AiJobData) {
         result = `Success: Generated style with ${items.length} items.`
         break
       }
-      case 'fitness_plan': {
-        const prompt = `You are a world-class personal trainer.
-        Create a structured workout plan.
-        Target goal: "${payload.goal}".
-        Days per week: ${payload.days}.
-
-        Return ONLY a valid JSON object with the following structure:
-        {
-          "name": "Title of the plan",
-          "description": "Short explanation",
-          "workouts": [
-            {
-              "day_number": 1,
-              "name": "E.g., Upper Body Focus",
-              "muscle_groups": ["Chest", "Back"],
-              "exercises": [
-                { "name": "Bench Press", "sets": 3, "reps": "8-12", "rest_seconds": 90, "notes": "Keep core tight" }
-              ]
-            }
-          ]
-        }
-        No markdown blocks, no text outside JSON.`
+      case 'fitness_plan':
+      case 'fitness_plan_v2':
+      case 'fitness_interview_complete': {
+        const interviewData = payload as FitnessInterviewData;
         
-        const rawResponse = await generateResponse(prompt)
-        if (!rawResponse) throw new Error('No response from AI');
-        const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
-        let planData = null
-        try {
-          planData = JSON.parse(cleanJson)
-        } catch (err) {
-          console.error('[AI Worker] Fitness JSON Parse Error:', err, cleanJson)
-          throw new Error('Failed to parse fitness AI response')
+        let conflicts: string[] = [];
+        if (interviewData.preferred_time) {
+          const { conflicts: c } = await checkAvailability(
+            userId, 
+            'mon',
+            interviewData.preferred_time,
+            interviewData.session_duration_minutes || 60,
+            supabase
+          );
+          conflicts = c.map(x => `${x.title} at ${x.time}`);
         }
 
-        const { data: planRow, error: planError } = await supabase
-          .from('workout_plans')
-          .insert({
-            user_id: userId,
-            name: planData.name,
-            description: planData.description,
-            goal: payload.goal,
-            days_per_week: payload.days,
-            difficulty: 'intermediate',
-            is_ai_generated: true,
-            is_active: true
-          })
-          .select().single()
+        const generatedPlan = await generateFitnessPlan(interviewData, conflicts);
+        await deactivateExistingPlan(userId, interviewData.plan_type || 'ongoing', supabase);
+        const { planId, dietPlanId } = await savePlanToDb(userId, generatedPlan, supabase);
 
-        if (planError) throw planError
+        await injectWorkoutDailies(userId, planId, generatedPlan, supabase);
+        if (dietPlanId && generatedPlan.diet_plan) {
+           await injectDietHabits(userId, planId, generatedPlan.diet_plan, interviewData.plan_type !== 'fixed', null, supabase);
+        }
 
-        for (const d of planData.workouts) {
-          const { data: dayRow, error: dayError } = await supabase
-            .from('workout_days')
-            .insert({
-              plan_id: planRow.id,
-              day_number: d.day_number,
-              name: d.name,
-              muscle_groups: d.muscle_groups || []
-            })
-            .select().single()
+        const gamification = new GamificationService(supabase);
+        await gamification.addCoins(userId, -AICOIN_COSTS.fitness_protocol, 'Fitness Plan Generation');
 
-          if (dayError) throw dayError
+        const badgeService = new BadgeService(supabase);
+        await badgeService.awardBadge(userId, 'first_protocol');
 
-          for (const ex of d.exercises) {
-            const { data: exRow, error: exError } = await supabase
-              .from('exercises')
-              .upsert({
-                name: ex.name,
-                muscle_group: (d.muscle_groups || ['general'])[0],
-                difficulty: 'intermediate'
-              }, { onConflict: 'name' })
-              .select().single()
-
-            if (!exError && exRow) {
-              await supabase.from('workout_day_exercises').insert({
-                workout_day_id: dayRow.id,
-                exercise_id: exRow.id,
-                sets: ex.sets || 3,
-                reps: ex.reps || "10",
-                rest_seconds: ex.rest_seconds || 60,
-                notes: ex.notes || ""
-              })
+        result = `Success: Generated and activated fitness plan ${generatedPlan.plan_meta.name}.`;
+        
+        if (queueId) {
+          await supabase.from('ai_queue').update({
+            result: {
+              plan_meta: generatedPlan.plan_meta,
+              schedule_summary: generatedPlan.workout_days.map(d => ({
+                day: d.day_label,
+                time: d.scheduled_time || interviewData.preferred_time || '08:00',
+                label: d.muscle_groups.join(', ')
+              })),
+              total_xp_per_week: generatedPlan.workout_days.reduce((acc, d) => acc + (d.session_xp_bonus || 0), 0),
+              coin_cost: AICOIN_COSTS.fitness_protocol
             }
-          }
+          }).eq('id', queueId);
         }
 
-        result = `Success: Generated fitness plan ${planData.name}.`
-        break
+        break;
+      }
+      case 'fitness_adaptation_check': {
+        const { planId } = payload;
+        const analysis = await analyzePerformance(userId, planId, supabase);
+        if (analysis.needsAdjustment) {
+          await suggestAdjustment(userId, planId, analysis, supabase);
+          result = `Success: Suggested adjustment for plan ${planId} (${analysis.reason}).`;
+        } else {
+          result = `Success: Checked plan ${planId}, no adjustment needed.`;
+        }
+        break;
       }
       case 'initial_plan': {
         const prompt = `You are System, an elite AI life coach.
@@ -228,7 +213,7 @@ export async function executeAiTask(data: AiJobData) {
         Generate 2-3 habits, 2-3 tasks, and 1 starter quest.
         Do not include any markdown blocks or text outside JSON. Strictly valid JSON.`
 
-        const rawResponse = await generateResponse(prompt)
+        const rawResponse = await generateResponse(prompt, [], undefined, modelConfig.background_model, 'plan_generation')
         if (!rawResponse) throw new Error('No response from AI');
         const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
         let initPlan = null
@@ -297,8 +282,61 @@ export async function executeAiTask(data: AiJobData) {
         result = 'Success: Initial plan generated.'
         break
       }
+
+      // ─── V3 Job Types ────────────────────────────
+      case 'weekly_summary_generate': {
+        const summaryPrompt = `Generate a weekly performance summary for a self-improvement app user.
+Period: ${payload.period_start} to ${payload.period_end}.
+Return a JSON object with these keys:
+{
+  "highlights": ["top win 1", "top win 2", "top win 3"],
+  "ai_observation": "2-3 sentence coaching note",
+  "focus_recommendation": "what to focus on next week"
+}
+Strictly valid JSON. No markdown.`
+
+        const rawResponse = await generateResponse(summaryPrompt, [], undefined, modelConfig.background_model, 'weekly_summary')
+        if (!rawResponse) throw new Error('No response from AI')
+
+        const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()
+        let summaryContent = {}
+        try {
+          summaryContent = JSON.parse(cleanJson)
+        } catch {
+          summaryContent = { highlights: [], ai_observation: rawResponse, focus_recommendation: '' }
+        }
+
+        await supabase.from('ai_weekly_summaries').insert({
+          user_id: userId,
+          period_start: payload.period_start,
+          period_end: payload.period_end,
+          content: summaryContent,
+        })
+
+        result = 'Success: Weekly summary generated.'
+        break
+      }
+
+      case 'embed_message': {
+        await embedAndStoreMessage(
+          userId,
+          payload.conversationId,
+          payload.messageId,
+          payload.content,
+          payload.role
+        )
+        result = 'Success: Message embedded.'
+        break
+      }
+
+      case 'memory_extraction': {
+        await extractAndSaveMemory(userId, payload.userMessage, payload.aiResponse)
+        result = 'Success: Memory extraction complete.'
+        break
+      }
+
       default:
-        result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`)) || 'No response';
+        result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`, [], undefined, modelConfig.background_model)) || 'No response';
     }
 
     // 3. Update status to 'done' and store result
@@ -333,7 +371,6 @@ export async function executeAiTask(data: AiJobData) {
 }
 
 export function setupAiWorker(): Worker<AiJobData> | null {
-  // Return null or disable if redis is missing
   if (!redis) {
     console.warn('[AI Worker] Redis connection missing. Worker will not start.')
     return null
@@ -346,7 +383,11 @@ export function setupAiWorker(): Worker<AiJobData> | null {
     },
     { 
       connection: redis,
-      concurrency: 2,
+      concurrency: 5,
+      limiter: {
+        max: 10,
+        duration: 1000  // max 10 jobs per second
+      }
     }
   )
 

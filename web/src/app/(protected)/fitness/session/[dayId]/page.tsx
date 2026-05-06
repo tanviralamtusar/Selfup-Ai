@@ -1,5 +1,5 @@
 import React from 'react';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@/lib/supabase-server-user';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SessionView } from '@/components/fitness/SessionView';
@@ -7,7 +7,8 @@ import { SessionView } from '@/components/fitness/SessionView';
 export const dynamic = 'force-dynamic';
 
 export default async function FitnessSessionPage({ params }: { params: { dayId: string } }) {
-  const supabase = createServerComponentClient({ cookies });
+  const { dayId } = await params;
+  const supabase = await createServerClient();
   
   const { data: { session: authSession } } = await supabase.auth.getSession();
   if (!authSession) redirect('/login');
@@ -24,7 +25,7 @@ export default async function FitnessSessionPage({ params }: { params: { dayId: 
         exercises (*)
       )
     `)
-    .eq('id', params.dayId)
+    .eq('id', dayId)
     .single();
 
   if (dayError || !workoutDay) {

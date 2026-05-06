@@ -86,6 +86,10 @@ export function parseActions(text: string): ParsedResult {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getServiceClient(): any {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('[AI Actions] Missing Supabase URL or Service Role Key')
+    throw new Error('Supabase configuration missing in actions')
+  }
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   })

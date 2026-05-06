@@ -11,6 +11,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     global: { headers: { Authorization: `Bearer ${token}` } }
   });
 
+  const { id } = await params;
   const body = await request.json();
   const { day_id, scheduled_date, scheduled_time, rest_day } = body;
 
@@ -23,10 +24,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     .from('workout_days')
     .select('id, plan_id, workout_plans!inner(user_id)')
     .eq('id', day_id)
-    .eq('plan_id', params.id)
+    .eq('plan_id', id)
     .single();
 
-  if (dayInfoError || !dayInfo || dayInfo.workout_plans.user_id !== user.id) {
+  const workoutPlan = dayInfo?.workout_plans as any;
+  if (dayInfoError || !dayInfo || (Array.isArray(workoutPlan) ? workoutPlan[0]?.user_id : workoutPlan?.user_id) !== user.id) {
     return NextResponse.json({ error: 'Unauthorized or day not found' }, { status: 404 });
   }
 

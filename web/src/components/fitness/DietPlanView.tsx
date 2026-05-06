@@ -14,8 +14,12 @@ interface DietPlanViewProps {
 export function DietPlanView({ dietPlan }: DietPlanViewProps) {
   if (!dietPlan) return null;
 
-  const { daily_targets } = dietPlan;
-  const targets = typeof daily_targets === 'string' ? JSON.parse(daily_targets) : daily_targets;
+  const targets = {
+    calories: dietPlan.daily_calories,
+    protein_g: dietPlan.protein_target_g,
+    carbs_g: dietPlan.carbs_target_g,
+    fats_g: dietPlan.fat_target_g
+  };
 
   return (
     <div className="space-y-6">
@@ -64,18 +68,18 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
               <div className="flex justify-between items-start mb-4">
                 <h4 className="font-semibold text-white text-lg capitalize">{meal.meal_type}</h4>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-orange-400">{meal.target_calories} kcal</span>
+                  <span className="text-sm font-bold text-orange-400">{meal.total_calories} kcal</span>
                 </div>
               </div>
               
               <ul className="space-y-3">
                 {meal.meal_template_foods?.map((food, fIdx) => (
                   <li key={fIdx} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
-                    <span className="text-gray-300">{food.amount} {food.unit} {food.food_name}</span>
+                    <span className="text-gray-300">{food.quantity} {food.food_name}</span>
                     <div className="flex gap-2 text-xs text-gray-500">
                       <span>P:{food.protein_g}</span>
                       <span>C:{food.carbs_g}</span>
-                      <span>F:{food.fats_g}</span>
+                      <span>F:{food.fat_g}</span>
                     </div>
                   </li>
                 ))}

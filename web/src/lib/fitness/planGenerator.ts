@@ -56,7 +56,7 @@ Return ONLY a valid JSON object matching this structure:
     "difficulty": "beginner|intermediate|advanced",
     "days_per_week": ${interviewData.days_per_week},
     "session_duration_minutes": ${interviewData.session_duration_minutes},
-    "includes_diet": ${interviewData.wants_diet}
+    "includes_diet": ${!!interviewData.wants_diet}
   },
   "workout_days": [
     {

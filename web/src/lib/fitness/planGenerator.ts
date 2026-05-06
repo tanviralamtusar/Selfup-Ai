@@ -51,7 +51,7 @@ Return ONLY a valid JSON object matching this structure:
   "plan_meta": {
     "name": "string - descriptive name",
     "goal": "string",
-    "plan_type": "${interviewData.plan_type}",
+    "plan_type": "${interviewData.plan_type === 'fixed_duration' ? 'fixed' : (interviewData.plan_type === 'full_complete' ? 'full' : interviewData.plan_type)}",
     ${interviewData.duration_days ? `"duration_days": ${interviewData.duration_days},` : ''}
     "difficulty": "beginner|intermediate|advanced",
     "days_per_week": ${interviewData.days_per_week},

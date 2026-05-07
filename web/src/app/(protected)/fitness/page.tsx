@@ -43,8 +43,8 @@ export default function FitnessPage() {
         plansRes.json(),
         logsRes.json()
       ]);
-      setPlans(Array.isArray(plansData) ? plansData : []);
-      setLogs(Array.isArray(logsData) ? logsData : []);
+      setPlans(Array.isArray(plansData.data) ? plansData.data : []);
+      setLogs(Array.isArray(logsData.data) ? logsData.data : []);
     } catch (err) {
       toast.error('Failed to load fitness data');
     } finally {

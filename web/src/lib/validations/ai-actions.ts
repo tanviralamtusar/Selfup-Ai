@@ -42,7 +42,7 @@ export const fitnessInterviewStartSchema = z.object({
 
 export const fitnessPlanGenerateSchema = z.object({
   goal: z.enum(['build_muscle', 'lose_fat', 'endurance', 'strength', 'overall']).default('overall'),
-  plan_type: z.enum(['ongoing', 'fixed_duration', 'full_complete', 'diet_only']).default('ongoing'),
+  plan_type: z.enum(['ongoing', 'fixed', 'full', 'diet_only']).default('ongoing'),
   duration_days: z.number().optional(),
   days_per_week: z.number().min(1).max(7).default(4),
   rest_days: z.array(z.string()).optional(),

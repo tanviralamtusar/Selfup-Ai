@@ -144,7 +144,7 @@ Use when: Starting a fitness assessment conversation.
 <action type="fitness_plan_generate">
 {
   "goal": "build_muscle | lose_fat | endurance | strength | overall",
-  "plan_type": "ongoing | fixed_duration | full_complete | diet_only",
+  "plan_type": "ongoing | fixed | full | diet_only",
   "duration_days": "Number (for fixed plans)",
   "days_per_week": "Number",
   "rest_days": ["sat", "sun"],

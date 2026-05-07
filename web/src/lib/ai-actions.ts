@@ -333,7 +333,7 @@ async function handleFitnessPlanGenerate(
     type: 'fitness_plan',
     payload: {
       goal: payload.goal || 'overall',
-      plan_type: payload.plan_type || 'ongoing',
+      plan_type: payload.plan_type === 'fixed_duration' ? 'fixed' : (payload.plan_type === 'full_complete' ? 'full' : (payload.plan_type || 'ongoing')),
       days_per_week: payload.days_per_week || 4,
       experience_level: payload.experience_level || 'beginner',
       equipment: Array.isArray(payload.equipment) ? payload.equipment : (payload.equipment ? [payload.equipment] : ['full_gym']),

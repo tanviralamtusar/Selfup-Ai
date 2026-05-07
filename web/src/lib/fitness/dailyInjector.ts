@@ -39,7 +39,11 @@ export async function injectWorkoutDailies(
       repeat_type: plan.plan_meta.plan_type === 'fixed' ? 'daily' : 'weekly',
       repeat_days: day.repeat_day ? [day.repeat_day] : undefined,
       scheduled_time: day.scheduled_time || undefined,
-      expires_on: day.scheduled_date || undefined,
+      expires_on: plan.plan_meta.plan_type === 'fixed' 
+        ? (day.scheduled_date || undefined)
+        : (plan.plan_meta.duration_days 
+            ? new Date(Date.now() + plan.plan_meta.duration_days * 86400000).toISOString().split('T')[0]
+            : undefined),
     })
 
     if (result.injected || result.updated) {

@@ -37,5 +37,5 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  return NextResponse.json(badges)
+  return NextResponse.json({ success: true, data: badges })
 }

@@ -17,10 +17,15 @@ interface WorkoutPlan {
 interface WorkoutCardProps {
   plan: WorkoutPlan;
   isActive?: boolean;
+  currentDayId?: string;
   onSelect?: (id: string) => void;
 }
 
-const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, onSelect }) => {
+import Link from 'next/link';
+
+const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId, onSelect }) => {
+  const resumeUrl = currentDayId ? `/fitness/session/${currentDayId}` : undefined;
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -32,10 +37,9 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, onSelect }) =
       )}
       onClick={() => onSelect?.(plan.id)}
     >
-      {/* Scanline Effect for Active Card */}
+      {/* ... scanline and glow code ... */}
       {isActive && <div className="absolute inset-0 scanline pointer-events-none opacity-10" />}
       
-      {/* Glow Effect */}
       <div className={cn(
         "absolute -top-24 -right-24 w-48 h-48 blur-[80px] rounded-full pointer-events-none transition-opacity duration-500",
         isActive ? "bg-blue-500/20 opacity-100" : "bg-blue-500/10 opacity-0 group-hover:opacity-100"
@@ -49,11 +53,11 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, onSelect }) =
           <Dumbbell size={22} />
         </div>
         <div className="flex gap-3">
-          <span className="px-3 py-1 rounded text-[9px] font-black uppercase tracking-[0.2em] bg-slate-950 border border-blue-500/20 text-blue-500/60 shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]">
+          <span className="px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-[0.2em] bg-slate-950 border border-blue-500/20 text-blue-400/80 shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]">
             {plan.difficulty}
           </span>
           {isActive && (
-            <span className="px-3 py-1 rounded text-[9px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-300 border border-blue-400/30 animate-pulse">
+            <span className="px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-300 border border-blue-400/40 animate-pulse">
               Active
             </span>
           )}
@@ -63,30 +67,41 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, onSelect }) =
       <h3 className="text-xl font-black text-blue-50 mb-2 group-hover:text-blue-300 transition-colors uppercase tracking-[0.2em] system-text-glow">
         {plan.name}
       </h3>
-      <p className="text-[11px] text-blue-500/40 line-clamp-2 mb-6 leading-relaxed font-bold">
+      <p className="text-[13px] text-blue-400/60 line-clamp-2 mb-6 leading-relaxed font-medium italic">
         {plan.description || 'System-generated physical vessel optimization protocol.'}
       </p>
 
-      <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-blue-500/30">
+      <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40">
         <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-blue-500/40" />
+          <Calendar size={16} className="text-blue-400/50" />
           <span>{plan.days_per_week} PHASES / WEEK</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-1 h-1 rounded-full bg-blue-500/40" />
-          <span className="text-blue-400/60">{plan.goal.replace('_', ' ')}</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+          <span className="text-blue-300/80">{plan.goal.replace('_', ' ')}</span>
         </div>
       </div>
 
       <div className="mt-8 flex items-center justify-between">
         {isActive ? (
-          <button className="flex items-center gap-3 px-6 py-3 rounded-lg bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400 hover:scale-105 transition-all">
-            <Play size={14} fill="currentColor" />
-            Resume Protocol
-          </button>
+          resumeUrl ? (
+            <Link 
+              href={resumeUrl}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400 hover:scale-105 transition-all"
+            >
+              <Play size={16} fill="currentColor" />
+              Resume Protocol
+            </Link>
+          ) : (
+            <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600/50 text-white/50 text-xs font-black uppercase tracking-[0.2em] border border-blue-400/30 cursor-not-allowed">
+              <Play size={16} fill="currentColor" />
+              Next Phase Scheduled
+            </button>
+          )
         ) : (
-          <div className="flex items-center gap-2 text-[10px] font-black text-blue-500/40 uppercase tracking-[0.2em] group-hover:text-blue-400 transition-colors">
-            Protocol Details <ChevronRight size={14} />
+          <div className="flex items-center gap-2 text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] group-hover:text-blue-300 transition-colors italic">
+            Protocol Details <ChevronRight size={16} />
           </div>
         )}
       </div>

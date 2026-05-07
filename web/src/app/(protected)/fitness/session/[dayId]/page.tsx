@@ -1,77 +1,117 @@
-import React from 'react';
-import { createServerClient } from '@/lib/supabase-server-user';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+
+import React, { useEffect, useState, use } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
 import { SessionView } from '@/components/fitness/SessionView';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
-export const dynamic = 'force-dynamic';
-
-export default async function FitnessSessionPage({ params }: { params: { dayId: string } }) {
-  const { dayId } = await params;
-  const supabase = await createServerClient();
+export default function FitnessSessionPage({ params }: { params: Promise<{ dayId: string }> }) {
+  const resolvedParams = use(params);
+  const dayId = resolvedParams.dayId;
   
-  const { data: { session: authSession } } = await supabase.auth.getSession();
-  if (!authSession) redirect('/login');
+  const router = useRouter();
+  const { session, user } = useAuthStore();
+  
+  const [workoutDay, setWorkoutDay] = useState<any>(null);
+  const [sessionLog, setSessionLog] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const userId = authSession.user.id;
+  useEffect(() => {
+    async function initSession() {
+      if (!session || !user) return;
 
-  // 1. Fetch Workout Day and Exercises
-  const { data: workoutDay, error: dayError } = await supabase
-    .from('workout_days')
-    .select(`
-      *,
-      workout_day_exercises (
-        *,
-        exercises (*)
-      )
-    `)
-    .eq('id', dayId)
-    .single();
+      try {
+        setLoading(true);
+        setError(null);
 
-  if (dayError || !workoutDay) {
+        // 1. Fetch Workout Day Details
+        const { data: dayData, error: dayError } = await supabase
+          .from('workout_days')
+          .select(`
+            *,
+            workout_day_exercises (
+              *,
+              exercises (*)
+            )
+          `)
+          .eq('id', dayId)
+          .single();
+
+        if (dayError || !dayData) {
+          throw new Error('Workout protocol not found.');
+        }
+
+        setWorkoutDay(dayData);
+
+        // 2. Initialize or Get Session via API
+        const res = await fetch('/api/fitness/sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            workout_day_id: dayId,
+            plan_id: dayData.plan_id
+          })
+        });
+
+        const sessionResult = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(sessionResult.error || 'Failed to initialize session.');
+        }
+
+        setSessionLog(sessionResult.data);
+      } catch (err: any) {
+        console.error('[SessionPage Error]', err);
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initSession();
+  }, [dayId, session, user]);
+
+  if (loading) {
     return (
-      <div className="p-8 text-center text-white">
-        <h1 className="text-2xl font-bold mb-4">Workout Day Not Found</h1>
-        <p className="text-gray-400">Unable to load the requested workout session.</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <p className="text-blue-400/60 text-xs font-black uppercase tracking-widest">Synchronizing Protocol...</p>
       </div>
     );
   }
 
-  // 2. Fetch or Create Session Log (simulate via a server-side API call or direct DB logic here)
-  // For simplicity, we query the latest session log for this day, or pass empty sets if new
-  const today = new Date().toISOString().split('T')[0];
-  const { data: sessionLog } = await supabase
-    .from('workout_session_logs')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('workout_day_id', workoutDay.id)
-    .eq('logged_date', today)
-    .maybeSingle();
-
-  // If no session log exists, we'd normally create one. The SessionView component
-  // will just use a temporary ID or call the API on mount to initialize if needed.
-  // For this page, we assume the user clicked "Start Session" which already created the log.
-
-  if (!sessionLog) {
+  if (error || !workoutDay || !sessionLog) {
     return (
-      <div className="p-8 text-center text-white">
-        <h1 className="text-2xl font-bold mb-4">Session Not Initialized</h1>
-        <p className="text-gray-400">Please start the session from your fitness dashboard.</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8">
+        <AlertCircle className="w-12 h-12 text-red-500/50 mb-4" />
+        <h1 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Protocol Error</h1>
+        <p className="text-blue-200/40 text-sm text-center max-w-md mb-8">{error || 'Unable to load workout session.'}</p>
+        <button 
+          onClick={() => router.back()}
+          className="px-6 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-widest rounded-lg hover:bg-blue-500/20 transition-all"
+        >
+          Return to Dashboard
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-dark-bg text-white">
+    <div className="h-screen w-full bg-slate-950 text-white">
       <SessionView 
         sessionId={sessionLog.id}
-        workoutDay={workoutDay as any}
+        workoutDay={workoutDay}
         initialSetsDone={sessionLog.sets_done || {}}
-        onClose={() => {
-           // This requires client-side navigation in real app, handled differently
-           // For a server component wrapper, the onClose prop in SessionView should use next/navigation router.back()
-        }}
-        onComplete={() => {}}
+        onClose={() => router.back()}
+        onComplete={() => router.push('/fitness')}
       />
     </div>
   );

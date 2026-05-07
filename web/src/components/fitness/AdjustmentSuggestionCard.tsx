@@ -53,26 +53,26 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
-            <Sparkles size={20} className={isPositive ? "text-primary-400" : "text-orange-400"} />
+          <h3 className="text-xl font-black text-white flex items-center gap-2 mb-2 uppercase tracking-wide">
+            <Sparkles size={22} className={isPositive ? "text-primary-400" : "text-orange-400"} />
             AI Protocol Adjustment
           </h3>
-          <p className="text-sm text-gray-300">
+          <p className="text-base text-gray-300 font-medium italic">
             {isPositive 
               ? "You've been crushing it! The AI suggests increasing the difficulty to maximize growth." 
               : "Looks like you missed a few sessions. The AI suggests a slight adjustment to help you stay consistent."}
           </p>
           
-          <div className="mt-4 bg-black/30 p-3 rounded-lg border border-white/5 inline-block">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                <ArrowRight size={16} className="text-white" />
+          <div className="mt-5 bg-black/40 p-4 rounded-xl border border-white/5 inline-block shadow-inner">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                <ArrowRight size={20} className="text-white" />
               </div>
               <div>
-                <span className="block text-sm font-semibold text-white">
+                <span className="block text-base font-black text-white uppercase tracking-wider">
                   {adjustment.suggestion?.change || "Optimize Protocol"}
                 </span>
-                <span className="block text-xs text-gray-400">
+                <span className="block text-[11px] text-gray-400 uppercase font-black tracking-widest mt-1">
                   {adjustment.suggestion?.details || "Tap approve to apply this change."}
                 </span>
               </div>

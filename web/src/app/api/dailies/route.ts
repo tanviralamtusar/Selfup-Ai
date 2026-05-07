@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
   // Filter: only show dailies active today
   const activeDailies = (data || []).filter((d: any) => {
     // Check if expired
-    if (d.expires_on && new Date(d.expires_on) < today) return false
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    if (d.expires_on && new Date(d.expires_on) < todayStart) return false
 
     // If weekly repeat, check if today is an active day
     if (d.repeat_type === 'weekly' && d.repeat_days) {

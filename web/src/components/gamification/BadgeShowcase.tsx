@@ -1,23 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, ChevronRight, Loader2 } from 'lucide-react'
+import { Trophy, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/store/authStore'
 import Link from 'next/link'
 import { ROUTES } from '@/constants/routes'
-
-interface UserBadge {
-  id: string
-  earned_at: string
-  badges: {
-    name: string
-    icon: string
-    category: string
-    rarity: 'common' | 'rare' | 'epic' | 'legendary'
-  }
-}
+import { useUserBadges, type Badge } from '@/lib/hooks/useUser'
 
 const RARITY_COLORS = {
   common: 'text-blue-500/50',
@@ -27,32 +15,7 @@ const RARITY_COLORS = {
 }
 
 export function BadgeShowcase() {
-  const [badges, setBadges] = useState<UserBadge[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { session } = useAuthStore()
-
-  useEffect(() => {
-    if (session?.access_token) {
-      fetchBadges()
-    }
-  }, [session])
-
-  const fetchBadges = async () => {
-    try {
-      const res = await fetch('/api/user/badges', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`
-        }
-      })
-      if (res.ok) {
-        setBadges(await res.json())
-      }
-    } catch (err) {
-      console.error('Failed to fetch badges')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { data: badges = [], isLoading } = useUserBadges()
 
   if (isLoading) {
     return (
@@ -81,23 +44,23 @@ export function BadgeShowcase() {
         </div>
       ) : (
         <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar -mx-1 px-1">
-          {badges.slice(0, 8).map((ub) => (
+          {badges.slice(0, 8).map((badge: Badge) => (
             <motion.div
-              key={ub.id}
+              key={badge.id}
               whileHover={{ scale: 1.1, rotate: 5 }}
               className={cn(
                 "flex-shrink-0 w-14 h-14 rounded-xl bg-slate-900 flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)] relative cursor-help group",
-                ub.badges.rarity === 'legendary' ? 'ring-2 ring-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.2)]' : 
-                ub.badges.rarity === 'epic' ? 'ring-2 ring-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : ''
+                badge.rarity === 'legendary' ? 'ring-2 ring-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.2)]' : 
+                badge.rarity === 'epic' ? 'ring-2 ring-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : ''
               )}
             >
               <span className="text-2xl filter drop-shadow-sm group-hover:drop-shadow-lg transition-all">
-                {ub.badges.icon}
+                {badge.icon}
               </span>
               
               {/* Tooltip on hover */}
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-950 text-blue-50 px-2 py-1.5 rounded border border-blue-500/40 text-[8px] font-black uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <span className={cn(RARITY_COLORS[ub.badges.rarity])}>{ub.badges.rarity}</span>: {ub.badges.name}
+                <span className={cn(RARITY_COLORS[badge.rarity])}>{badge.rarity}</span>: {badge.name}
               </div>
             </motion.div>
           ))}

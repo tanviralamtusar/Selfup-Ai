@@ -44,7 +44,7 @@ export function BadgeShowcase() {
         </div>
       ) : (
         <div className="flex items-center gap-4 overflow-x-auto pb-4 custom-scrollbar -mx-1 px-1">
-          {badges.slice(0, 8).map((badge: Badge) => (
+          {badges.filter((b: any) => !!b).slice(0, 8).map((badge: Badge) => (
             <motion.div
               key={badge.id}
               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -61,7 +61,7 @@ export function BadgeShowcase() {
               
               {/* Improved Tooltip */}
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-950 text-blue-50 px-3 py-2 rounded-lg border border-blue-500/40 text-[10px] font-black uppercase tracking-[0.1em] opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 whitespace-nowrap pointer-events-none z-20 shadow-[0_10px_20px_rgba(0,0,0,0.5),0_0_15px_rgba(59,130,246,0.2)]">
-                <span className={cn("mr-1", RARITY_COLORS[badge.rarity])}>{badge.rarity}</span>: {badge.name}
+                <span className={cn("mr-1", badge.rarity && RARITY_COLORS[badge.rarity as keyof typeof RARITY_COLORS])}>{badge.rarity}</span>: {badge.name}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 border-r border-b border-blue-500/40 rotate-45" />
               </div>
             </motion.div>

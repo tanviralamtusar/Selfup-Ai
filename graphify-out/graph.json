@@ -277,7 +277,7 @@
       "source_file": "web\\src\\app\\(auth)\\signup\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_auth_signup_page_tsx",
-      "community": 24,
+      "community": 25,
       "norm_label": "page.tsx"
     },
     {
@@ -286,7 +286,7 @@
       "source_file": "web\\src\\app\\(auth)\\signup\\page.tsx",
       "source_location": "L20",
       "id": "signup_page_updatefield",
-      "community": 24,
+      "community": 25,
       "norm_label": "updatefield()"
     },
     {
@@ -295,7 +295,7 @@
       "source_file": "web\\src\\app\\(auth)\\signup\\page.tsx",
       "source_location": "L22",
       "id": "signup_page_handlesignup",
-      "community": 24,
+      "community": 25,
       "norm_label": "handlesignup()"
     },
     {
@@ -304,7 +304,7 @@
       "source_file": "web\\src\\app\\(auth)\\signup\\page.tsx",
       "source_location": "L68",
       "id": "signup_page_handlegooglesignup",
-      "community": 24,
+      "community": 25,
       "norm_label": "handlegooglesignup()"
     },
     {
@@ -358,7 +358,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_protected_chat_page_tsx",
-      "community": 8,
+      "community": 7,
       "norm_label": "page.tsx"
     },
     {
@@ -367,7 +367,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L73",
       "id": "chat_page_fetchconversations",
-      "community": 8,
+      "community": 7,
       "norm_label": "fetchconversations()"
     },
     {
@@ -376,7 +376,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L85",
       "id": "chat_page_fetchmessages",
-      "community": 8,
+      "community": 7,
       "norm_label": "fetchmessages()"
     },
     {
@@ -385,7 +385,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L102",
       "id": "chat_page_handlesendmessage",
-      "community": 8,
+      "community": 7,
       "norm_label": "handlesendmessage()"
     },
     {
@@ -394,7 +394,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L142",
       "id": "chat_page_startnewchat",
-      "community": 8,
+      "community": 7,
       "norm_label": "startnewchat()"
     },
     {
@@ -403,7 +403,7 @@
       "source_file": "web\\src\\app\\(protected)\\chat\\page.tsx",
       "source_location": "L152",
       "id": "chat_page_handledeletechat",
-      "community": 8,
+      "community": 7,
       "norm_label": "handledeletechat()"
     },
     {
@@ -412,7 +412,7 @@
       "source_file": "web\\src\\app\\(protected)\\dashboard\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_protected_dashboard_page_tsx",
-      "community": 8,
+      "community": 7,
       "norm_label": "page.tsx"
     },
     {
@@ -421,7 +421,7 @@
       "source_file": "web\\src\\app\\(protected)\\dashboard\\page.tsx",
       "source_location": "L484",
       "id": "dashboard_page_setlogginghabit",
-      "community": 8,
+      "community": 7,
       "norm_label": "setlogginghabit()"
     },
     {
@@ -430,7 +430,7 @@
       "source_file": "web\\src\\app\\(protected)\\dashboard\\page.tsx",
       "source_location": "L511",
       "id": "dashboard_page_setprofile",
-      "community": 8,
+      "community": 7,
       "norm_label": "setprofile()"
     },
     {
@@ -439,7 +439,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_protected_fitness_page_tsx",
-      "community": 25,
+      "community": 26,
       "norm_label": "page.tsx"
     },
     {
@@ -448,7 +448,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\page.tsx",
       "source_location": "L30",
       "id": "fitness_page_fetchdashboarddata",
-      "community": 25,
+      "community": 26,
       "norm_label": "fetchdashboarddata()"
     },
     {
@@ -457,7 +457,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\page.tsx",
       "source_location": "L59",
       "id": "fitness_page_handleopenaimodal",
-      "community": 25,
+      "community": 26,
       "norm_label": "handleopenaimodal()"
     },
     {
@@ -466,7 +466,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\page.tsx",
       "source_location": "L61",
       "id": "fitness_page_handlegenerateplan",
-      "community": 25,
+      "community": 26,
       "norm_label": "handlegenerateplan()"
     },
     {
@@ -475,7 +475,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\session\\[dayId]\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_protected_fitness_session_dayid_page_tsx",
-      "community": 30,
+      "community": 27,
       "norm_label": "page.tsx"
     },
     {
@@ -484,7 +484,7 @@
       "source_file": "web\\src\\app\\(protected)\\fitness\\session\\[dayId]\\page.tsx",
       "source_location": "L11",
       "id": "dayid_page_fitnesssessionpage",
-      "community": 30,
+      "community": 27,
       "norm_label": "fitnesssessionpage()"
     },
     {
@@ -565,7 +565,7 @@
       "source_file": "web\\src\\app\\(protected)\\settings\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_protected_settings_page_tsx",
-      "community": 26,
+      "community": 28,
       "norm_label": "page.tsx"
     },
     {
@@ -574,7 +574,7 @@
       "source_file": "web\\src\\app\\(protected)\\settings\\page.tsx",
       "source_location": "L22",
       "id": "settings_page_sectionheader",
-      "community": 26,
+      "community": 28,
       "norm_label": "sectionheader()"
     },
     {
@@ -583,7 +583,7 @@
       "source_file": "web\\src\\app\\(protected)\\settings\\page.tsx",
       "source_location": "L71",
       "id": "settings_page_handlesaveprofile",
-      "community": 26,
+      "community": 28,
       "norm_label": "handlesaveprofile()"
     },
     {
@@ -592,7 +592,7 @@
       "source_file": "web\\src\\app\\(protected)\\settings\\page.tsx",
       "source_location": "L88",
       "id": "settings_page_handlesaveai",
-      "community": 26,
+      "community": 28,
       "norm_label": "handlesaveai()"
     },
     {
@@ -970,7 +970,7 @@
       "source_file": "web\\src\\app\\api\\ai\\memory\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_ai_memory_route_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "route.ts"
     },
     {
@@ -979,7 +979,7 @@
       "source_file": "web\\src\\app\\api\\ai\\memory\\route.ts",
       "source_location": "L9",
       "id": "memory_route_get",
-      "community": 7,
+      "community": 8,
       "norm_label": "get()"
     },
     {
@@ -988,7 +988,7 @@
       "source_file": "web\\src\\app\\api\\ai\\memory\\route.ts",
       "source_location": "L36",
       "id": "memory_route_delete",
-      "community": 7,
+      "community": 8,
       "norm_label": "delete()"
     },
     {
@@ -997,7 +997,7 @@
       "source_file": "web\\src\\app\\api\\ai\\memory\\route.ts",
       "source_location": "L70",
       "id": "memory_route_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -1006,7 +1006,7 @@
       "source_file": "web\\src\\app\\api\\ai\\memory\\route.ts",
       "source_location": "L108",
       "id": "memory_route_put",
-      "community": 7,
+      "community": 8,
       "norm_label": "put()"
     },
     {
@@ -1195,7 +1195,7 @@
       "source_file": "web\\src\\app\\api\\dailies\\[id]\\complete\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_dailies_id_complete_route_ts",
-      "community": 23,
+      "community": 24,
       "norm_label": "route.ts"
     },
     {
@@ -1204,7 +1204,7 @@
       "source_file": "web\\src\\app\\api\\todos\\[id]\\complete\\route.ts",
       "source_location": "L9",
       "id": "complete_route_getdb",
-      "community": 23,
+      "community": 24,
       "norm_label": "getdb()"
     },
     {
@@ -1213,7 +1213,7 @@
       "source_file": "web\\src\\app\\api\\todos\\[id]\\complete\\route.ts",
       "source_location": "L20",
       "id": "complete_route_post",
-      "community": 23,
+      "community": 24,
       "norm_label": "post()"
     },
     {
@@ -1240,7 +1240,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\body\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_fitness_body_route_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "route.ts"
     },
     {
@@ -1249,7 +1249,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\body\\route.ts",
       "source_location": "L4",
       "id": "body_route_get",
-      "community": 7,
+      "community": 8,
       "norm_label": "get()"
     },
     {
@@ -1258,7 +1258,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\body\\route.ts",
       "source_location": "L32",
       "id": "body_route_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -1339,7 +1339,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\nutrition\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_fitness_nutrition_route_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "route.ts"
     },
     {
@@ -1348,7 +1348,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\nutrition\\route.ts",
       "source_location": "L4",
       "id": "nutrition_route_get",
-      "community": 7,
+      "community": 8,
       "norm_label": "get()"
     },
     {
@@ -1357,7 +1357,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\nutrition\\route.ts",
       "source_location": "L33",
       "id": "nutrition_route_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -1456,7 +1456,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\sessions\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_fitness_sessions_route_ts",
-      "community": 12,
+      "community": 11,
       "norm_label": "route.ts"
     },
     {
@@ -1465,7 +1465,7 @@
       "source_file": "web\\src\\app\\api\\skills\\[id]\\sessions\\route.ts",
       "source_location": "L9",
       "id": "sessions_route_post",
-      "community": 12,
+      "community": 11,
       "norm_label": "post()"
     },
     {
@@ -1474,7 +1474,7 @@
       "source_file": "web\\src\\app\\api\\skills\\[id]\\sessions\\route.ts",
       "source_location": "L74",
       "id": "sessions_route_get",
-      "community": 12,
+      "community": 11,
       "norm_label": "get()"
     },
     {
@@ -1483,7 +1483,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\sessions\\[id]\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_fitness_sessions_id_route_ts",
-      "community": 12,
+      "community": 11,
       "norm_label": "route.ts"
     },
     {
@@ -1492,7 +1492,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\sessions\\[id]\\route.ts",
       "source_location": "L6",
       "id": "id_route_post",
-      "community": 12,
+      "community": 11,
       "norm_label": "post()"
     },
     {
@@ -1501,7 +1501,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\water\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_fitness_water_route_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "route.ts"
     },
     {
@@ -1510,7 +1510,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\water\\route.ts",
       "source_location": "L6",
       "id": "water_route_get",
-      "community": 7,
+      "community": 8,
       "norm_label": "get()"
     },
     {
@@ -1519,7 +1519,7 @@
       "source_file": "web\\src\\app\\api\\fitness\\water\\route.ts",
       "source_location": "L34",
       "id": "water_route_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -1681,7 +1681,7 @@
       "source_file": "web\\src\\app\\api\\onboarding\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_onboarding_route_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "route.ts"
     },
     {
@@ -1690,7 +1690,7 @@
       "source_file": "web\\src\\app\\api\\onboarding\\route.ts",
       "source_location": "L6",
       "id": "onboarding_route_post",
-      "community": 7,
+      "community": 8,
       "norm_label": "post()"
     },
     {
@@ -1825,7 +1825,7 @@
       "source_file": "web\\src\\app\\api\\quests\\[id]\\complete\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_quests_id_complete_route_ts",
-      "community": 23,
+      "community": 24,
       "norm_label": "route.ts"
     },
     {
@@ -1870,7 +1870,7 @@
       "source_file": "web\\src\\app\\api\\skills\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_skills_route_ts",
-      "community": 0,
+      "community": 5,
       "norm_label": "route.ts"
     },
     {
@@ -1879,17 +1879,125 @@
       "source_file": "web\\src\\app\\api\\skills\\route.ts",
       "source_location": "L9",
       "id": "skills_route_get",
-      "community": 0,
+      "community": 5,
       "norm_label": "get()"
     },
     {
       "label": "POST()",
       "file_type": "code",
       "source_file": "web\\src\\app\\api\\skills\\route.ts",
-      "source_location": "L64",
+      "source_location": "L81",
       "id": "skills_route_post",
+      "community": 5,
+      "norm_label": "post()"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L1",
+      "id": "web_src_app_api_skills_resources_library_route_ts",
+      "community": 20,
+      "norm_label": "route.ts"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L13",
+      "id": "library_route_get",
+      "community": 20,
+      "norm_label": "get()"
+    },
+    {
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L47",
+      "id": "library_route_post",
+      "community": 20,
+      "norm_label": "post()"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L1",
+      "id": "web_src_app_api_skills_tests_route_ts",
+      "community": 0,
+      "norm_label": "route.ts"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L13",
+      "id": "tests_route_get",
+      "community": 0,
+      "norm_label": "get()"
+    },
+    {
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L63",
+      "id": "tests_route_post",
       "community": 0,
       "norm_label": "post()"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L1",
+      "id": "web_src_app_api_skills_tests_testid_attempt_route_ts",
+      "community": 5,
+      "norm_label": "route.ts"
+    },
+    {
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L14",
+      "id": "attempt_route_post",
+      "community": 5,
+      "norm_label": "post()"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L93",
+      "id": "attempt_route_get",
+      "community": 5,
+      "norm_label": "get()"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L1",
+      "id": "web_src_app_api_skills_id_milestones_route_ts",
+      "community": 0,
+      "norm_label": "route.ts"
+    },
+    {
+      "label": "PATCH()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L14",
+      "id": "milestones_route_patch",
+      "community": 0,
+      "norm_label": "patch()"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L97",
+      "id": "milestones_route_get",
+      "community": 0,
+      "norm_label": "get()"
     },
     {
       "label": "route.ts",
@@ -1915,8 +2023,26 @@
       "source_file": "web\\src\\app\\api\\skills\\[id]\\sessions\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_skills_id_sessions_route_ts",
-      "community": 12,
+      "community": 11,
       "norm_label": "route.ts"
+    },
+    {
+      "label": "route.ts",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\topics\\route.ts",
+      "source_location": "L1",
+      "id": "web_src_app_api_skills_id_topics_route_ts",
+      "community": 0,
+      "norm_label": "route.ts"
+    },
+    {
+      "label": "PATCH()",
+      "file_type": "code",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\topics\\route.ts",
+      "source_location": "L13",
+      "id": "topics_route_patch",
+      "community": 0,
+      "norm_label": "patch()"
     },
     {
       "label": "route.ts",
@@ -2248,7 +2374,7 @@
       "source_file": "web\\src\\app\\api\\todos\\[id]\\complete\\route.ts",
       "source_location": "L1",
       "id": "web_src_app_api_todos_id_complete_route_ts",
-      "community": 23,
+      "community": 24,
       "norm_label": "route.ts"
     },
     {
@@ -2347,7 +2473,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L1",
       "id": "web_src_app_onboarding_page_tsx",
-      "community": 8,
+      "community": 7,
       "norm_label": "page.tsx"
     },
     {
@@ -2356,7 +2482,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L41",
       "id": "onboarding_page_fetchaiquestions",
-      "community": 8,
+      "community": 7,
       "norm_label": "fetchaiquestions()"
     },
     {
@@ -2365,7 +2491,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L81",
       "id": "onboarding_page_handlenext",
-      "community": 8,
+      "community": 7,
       "norm_label": "handlenext()"
     },
     {
@@ -2374,7 +2500,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L107",
       "id": "onboarding_page_handleback",
-      "community": 8,
+      "community": 7,
       "norm_label": "handleback()"
     },
     {
@@ -2383,7 +2509,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L114",
       "id": "onboarding_page_handlecomplete",
-      "community": 8,
+      "community": 7,
       "norm_label": "handlecomplete()"
     },
     {
@@ -2392,7 +2518,7 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L159",
       "id": "onboarding_page_togglegoal",
-      "community": 8,
+      "community": 7,
       "norm_label": "togglegoal()"
     },
     {
@@ -2509,7 +2635,7 @@
       "source_file": "web\\src\\components\\dashboard\\HabitModal.tsx",
       "source_location": "L1",
       "id": "web_src_components_dashboard_habitmodal_tsx",
-      "community": 27,
+      "community": 29,
       "norm_label": "habitmodal.tsx"
     },
     {
@@ -2518,7 +2644,7 @@
       "source_file": "web\\src\\components\\dashboard\\HabitModal.tsx",
       "source_location": "L78",
       "id": "dashboard_habitmodal_onsubmit",
-      "community": 27,
+      "community": 29,
       "norm_label": "onsubmit()"
     },
     {
@@ -2527,7 +2653,7 @@
       "source_file": "web\\src\\components\\dashboard\\HabitModal.tsx",
       "source_location": "L87",
       "id": "dashboard_habitmodal_togglepositive",
-      "community": 27,
+      "community": 29,
       "norm_label": "togglepositive()"
     },
     {
@@ -2536,7 +2662,7 @@
       "source_file": "web\\src\\components\\dashboard\\HabitModal.tsx",
       "source_location": "L88",
       "id": "dashboard_habitmodal_togglenegative",
-      "community": 27,
+      "community": 29,
       "norm_label": "togglenegative()"
     },
     {
@@ -2545,7 +2671,7 @@
       "source_file": "web\\src\\components\\dashboard\\SystemKnowledge.tsx",
       "source_location": "L1",
       "id": "web_src_components_dashboard_systemknowledge_tsx",
-      "community": 28,
+      "community": 30,
       "norm_label": "systemknowledge.tsx"
     },
     {
@@ -2554,7 +2680,7 @@
       "source_file": "web\\src\\components\\dashboard\\SystemKnowledge.tsx",
       "source_location": "L21",
       "id": "dashboard_systemknowledge_fetchmemories",
-      "community": 28,
+      "community": 30,
       "norm_label": "fetchmemories()"
     },
     {
@@ -2563,7 +2689,7 @@
       "source_file": "web\\src\\components\\dashboard\\SystemKnowledge.tsx",
       "source_location": "L46",
       "id": "dashboard_systemknowledge_deletememory",
-      "community": 28,
+      "community": 30,
       "norm_label": "deletememory()"
     },
     {
@@ -2572,7 +2698,7 @@
       "source_file": "web\\src\\components\\dashboard\\SystemKnowledge.tsx",
       "source_location": "L64",
       "id": "dashboard_systemknowledge_formatkey",
-      "community": 28,
+      "community": 30,
       "norm_label": "formatkey()"
     },
     {
@@ -2761,7 +2887,7 @@
       "source_file": "web\\src\\components\\fitness\\SessionView.tsx",
       "source_location": "L1",
       "id": "web_src_components_fitness_sessionview_tsx",
-      "community": 29,
+      "community": 31,
       "norm_label": "sessionview.tsx"
     },
     {
@@ -2770,7 +2896,7 @@
       "source_file": "web\\src\\components\\fitness\\SessionView.tsx",
       "source_location": "L32",
       "id": "fitness_sessionview_formattime",
-      "community": 29,
+      "community": 31,
       "norm_label": "formattime()"
     },
     {
@@ -2779,7 +2905,7 @@
       "source_file": "web\\src\\components\\fitness\\SessionView.tsx",
       "source_location": "L38",
       "id": "fitness_sessionview_handlelogset",
-      "community": 29,
+      "community": 31,
       "norm_label": "handlelogset()"
     },
     {
@@ -2788,7 +2914,7 @@
       "source_file": "web\\src\\components\\fitness\\SessionView.tsx",
       "source_location": "L73",
       "id": "fitness_sessionview_handlefinishsession",
-      "community": 29,
+      "community": 31,
       "norm_label": "handlefinishsession()"
     },
     {
@@ -2824,7 +2950,7 @@
       "source_file": "web\\src\\components\\gamification\\ActivityFeed.tsx",
       "source_location": "L1",
       "id": "web_src_components_gamification_activityfeed_tsx",
-      "community": 8,
+      "community": 7,
       "norm_label": "activityfeed.tsx"
     },
     {
@@ -2833,7 +2959,7 @@
       "source_file": "web\\src\\components\\gamification\\ActivityFeed.tsx",
       "source_location": "L70",
       "id": "gamification_activityfeed_fetchactivities",
-      "community": 8,
+      "community": 7,
       "norm_label": "fetchactivities()"
     },
     {
@@ -2842,7 +2968,7 @@
       "source_file": "web\\src\\components\\gamification\\ActivityFeed.tsx",
       "source_location": "L146",
       "id": "gamification_activityfeed_cn",
-      "community": 8,
+      "community": 7,
       "norm_label": "cn()"
     },
     {
@@ -3094,7 +3220,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L1",
       "id": "web_src_components_time_habitsview_tsx",
-      "community": 21,
+      "community": 22,
       "norm_label": "habitsview.tsx"
     },
     {
@@ -3103,7 +3229,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L89",
       "id": "time_habitsview_handleaddhabit",
-      "community": 21,
+      "community": 22,
       "norm_label": "handleaddhabit()"
     },
     {
@@ -3112,7 +3238,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L106",
       "id": "time_habitsview_handlecompletehabit",
-      "community": 21,
+      "community": 22,
       "norm_label": "handlecompletehabit()"
     },
     {
@@ -3121,7 +3247,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L130",
       "id": "time_habitsview_handledeletehabit",
-      "community": 21,
+      "community": 22,
       "norm_label": "handledeletehabit()"
     },
     {
@@ -3130,7 +3256,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L144",
       "id": "time_habitsview_handleupdatehabit",
-      "community": 21,
+      "community": 22,
       "norm_label": "handleupdatehabit()"
     },
     {
@@ -3139,7 +3265,7 @@
       "source_file": "web\\src\\components\\time\\HabitsView.tsx",
       "source_location": "L158",
       "id": "time_habitsview_handleaisuggest",
-      "community": 21,
+      "community": 22,
       "norm_label": "handleaisuggest()"
     },
     {
@@ -3490,7 +3616,7 @@
       "source_file": "web\\src\\lib\\ai-actions.ts",
       "source_location": "L29",
       "id": "lib_ai_actions_parseactions",
-      "community": 5,
+      "community": 6,
       "norm_label": "parseactions()"
     },
     {
@@ -3787,7 +3913,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L1",
       "id": "web_src_lib_badge_service_ts",
-      "community": 22,
+      "community": 23,
       "norm_label": "badge.service.ts"
     },
     {
@@ -3796,7 +3922,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L19",
       "id": "lib_badge_service_badgeservice",
-      "community": 22,
+      "community": 23,
       "norm_label": "badgeservice"
     },
     {
@@ -3805,7 +3931,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L22",
       "id": "lib_badge_service_badgeservice_constructor",
-      "community": 22,
+      "community": 23,
       "norm_label": ".constructor()"
     },
     {
@@ -3814,7 +3940,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L30",
       "id": "lib_badge_service_badgeservice_getuserbadges",
-      "community": 22,
+      "community": 23,
       "norm_label": ".getuserbadges()"
     },
     {
@@ -3823,7 +3949,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L89",
       "id": "lib_badge_service_badgeservice_awardbadge",
-      "community": 22,
+      "community": 23,
       "norm_label": ".awardbadge()"
     },
     {
@@ -3832,7 +3958,7 @@
       "source_file": "web\\src\\lib\\badge.service.ts",
       "source_location": "L140",
       "id": "lib_badge_service_badgeservice_checkbadgeunlocks",
-      "community": 22,
+      "community": 23,
       "norm_label": ".checkbadgeunlocks()"
     },
     {
@@ -4064,7 +4190,7 @@
       "label": "getUserModelConfig()",
       "file_type": "code",
       "source_file": "web\\src\\lib\\model-config.ts",
-      "source_location": "L80",
+      "source_location": "L81",
       "id": "lib_model_config_getusermodelconfig",
       "community": 1,
       "norm_label": "getusermodelconfig()"
@@ -4073,7 +4199,7 @@
       "label": "checkCoinBalance()",
       "file_type": "code",
       "source_file": "web\\src\\lib\\model-config.ts",
-      "source_location": "L106",
+      "source_location": "L107",
       "id": "lib_model_config_checkcoinbalance",
       "community": 1,
       "norm_label": "checkcoinbalance()"
@@ -4163,7 +4289,7 @@
       "label": "addAiTask()",
       "file_type": "code",
       "source_file": "web\\src\\lib\\queue.ts",
-      "source_location": "L60",
+      "source_location": "L64",
       "id": "lib_queue_addaitask",
       "community": 5,
       "norm_label": "addaitask()"
@@ -4183,7 +4309,7 @@
       "source_file": "web\\src\\lib\\supabase-server-user.ts",
       "source_location": "L1",
       "id": "web_src_lib_supabase_server_user_ts",
-      "community": 30,
+      "community": 27,
       "norm_label": "supabase-server-user.ts"
     },
     {
@@ -4192,7 +4318,7 @@
       "source_file": "web\\src\\lib\\supabase-server-user.ts",
       "source_location": "L8",
       "id": "lib_supabase_server_user_createserverclient",
-      "community": 30,
+      "community": 27,
       "norm_label": "createserverclient()"
     },
     {
@@ -4201,7 +4327,7 @@
       "source_file": "web\\src\\lib\\supabase-server.ts",
       "source_location": "L1",
       "id": "web_src_lib_supabase_server_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "supabase-server.ts"
     },
     {
@@ -4210,7 +4336,7 @@
       "source_file": "web\\src\\lib\\supabase-server.ts",
       "source_location": "L11",
       "id": "lib_supabase_server_supabaseserver",
-      "community": 7,
+      "community": 8,
       "norm_label": "supabaseserver()"
     },
     {
@@ -4237,7 +4363,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L69",
       "id": "lib_task_economy_service_taskeconomyservice",
-      "community": 11,
+      "community": 12,
       "norm_label": "taskeconomyservice"
     },
     {
@@ -4246,7 +4372,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L72",
       "id": "lib_task_economy_service_taskeconomyservice_constructor",
-      "community": 11,
+      "community": 12,
       "norm_label": ".constructor()"
     },
     {
@@ -4255,7 +4381,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L79",
       "id": "lib_task_economy_service_taskeconomyservice_getxpreward",
-      "community": 11,
+      "community": 12,
       "norm_label": ".getxpreward()"
     },
     {
@@ -4264,7 +4390,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L89",
       "id": "lib_task_economy_service_taskeconomyservice_getxppenalty",
-      "community": 11,
+      "community": 12,
       "norm_label": ".getxppenalty()"
     },
     {
@@ -4273,7 +4399,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L99",
       "id": "lib_task_economy_service_taskeconomyservice_gethppenalty",
-      "community": 11,
+      "community": 12,
       "norm_label": ".gethppenalty()"
     },
     {
@@ -4282,7 +4408,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L107",
       "id": "lib_task_economy_service_taskeconomyservice_applyattributemultiplier",
-      "community": 11,
+      "community": 12,
       "norm_label": ".applyattributemultiplier()"
     },
     {
@@ -4291,7 +4417,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L124",
       "id": "lib_task_economy_service_taskeconomyservice_awardxp",
-      "community": 11,
+      "community": 12,
       "norm_label": ".awardxp()"
     },
     {
@@ -4300,7 +4426,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L198",
       "id": "lib_task_economy_service_taskeconomyservice_applyxppenalty",
-      "community": 11,
+      "community": 12,
       "norm_label": ".applyxppenalty()"
     },
     {
@@ -4309,7 +4435,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L246",
       "id": "lib_task_economy_service_taskeconomyservice_applyhpdamage",
-      "community": 11,
+      "community": 12,
       "norm_label": ".applyhpdamage()"
     },
     {
@@ -4318,7 +4444,7 @@
       "source_file": "web\\src\\lib\\task-economy.service.ts",
       "source_location": "L281",
       "id": "lib_task_economy_service_taskeconomyservice_recoverhp",
-      "community": 11,
+      "community": 12,
       "norm_label": ".recoverhp()"
     },
     {
@@ -4786,7 +4912,7 @@
       "source_file": "web\\src\\lib\\fitness\\sessionTracker.ts",
       "source_location": "L1",
       "id": "web_src_lib_fitness_sessiontracker_ts",
-      "community": 12,
+      "community": 11,
       "norm_label": "sessiontracker.ts"
     },
     {
@@ -4795,7 +4921,7 @@
       "source_file": "web\\src\\lib\\fitness\\sessionTracker.ts",
       "source_location": "L11",
       "id": "fitness_sessiontracker_getorcreatesession",
-      "community": 12,
+      "community": 11,
       "norm_label": "getorcreatesession()"
     },
     {
@@ -4804,7 +4930,7 @@
       "source_file": "web\\src\\lib\\fitness\\sessionTracker.ts",
       "source_location": "L50",
       "id": "fitness_sessiontracker_logsetcomplete",
-      "community": 12,
+      "community": 11,
       "norm_label": "logsetcomplete()"
     },
     {
@@ -4813,7 +4939,7 @@
       "source_file": "web\\src\\lib\\fitness\\sessionTracker.ts",
       "source_location": "L92",
       "id": "fitness_sessiontracker_completesession",
-      "community": 12,
+      "community": 11,
       "norm_label": "completesession()"
     },
     {
@@ -4993,7 +5119,7 @@
       "source_file": "web\\src\\lib\\skills\\resourceResolver.ts",
       "source_location": "L1",
       "id": "web_src_lib_skills_resourceresolver_ts",
-      "community": 31,
+      "community": 20,
       "norm_label": "resourceresolver.ts"
     },
     {
@@ -5002,7 +5128,7 @@
       "source_file": "web\\src\\lib\\skills\\resourceResolver.ts",
       "source_location": "L5",
       "id": "skills_resourceresolver_resolveskillresource",
-      "community": 31,
+      "community": 20,
       "norm_label": "resolveskillresource()"
     },
     {
@@ -5011,7 +5137,7 @@
       "source_file": "web\\src\\lib\\skills\\resourceResolver.ts",
       "source_location": "L73",
       "id": "skills_resourceresolver_cacheskillresource",
-      "community": 31,
+      "community": 20,
       "norm_label": "cacheskillresource()"
     },
     {
@@ -5020,7 +5146,7 @@
       "source_file": "web\\src\\lib\\skills\\resourceResolver.ts",
       "source_location": "L98",
       "id": "skills_resourceresolver_batchresolveskillresources",
-      "community": 31,
+      "community": 20,
       "norm_label": "batchresolveskillresources()"
     },
     {
@@ -5092,7 +5218,7 @@
       "source_file": "web\\src\\lib\\validations\\ai-actions.ts",
       "source_location": "L1",
       "id": "web_src_lib_validations_ai_actions_ts",
-      "community": 5,
+      "community": 6,
       "norm_label": "ai-actions.ts"
     },
     {
@@ -5101,7 +5227,7 @@
       "source_file": "web\\src\\lib\\validations\\ai-actions.ts",
       "source_location": "L152",
       "id": "validations_ai_actions_validateaction",
-      "community": 5,
+      "community": 6,
       "norm_label": "validateaction()"
     },
     {
@@ -5179,7 +5305,7 @@
       "label": "Gamification System",
       "file_type": "document",
       "source_file": "gamification.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "gamification system",
       "id": "gamification_system"
     },
@@ -5187,7 +5313,7 @@
       "label": "AI Memory System",
       "file_type": "document",
       "source_file": "AI_MEMORY_SYSTEM.md",
-      "community": 43,
+      "community": 42,
       "norm_label": "ai memory system",
       "id": "ai_memory_system"
     },
@@ -5195,7 +5321,7 @@
       "label": "Task Management",
       "file_type": "document",
       "source_file": "features.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "task management",
       "id": "task_management"
     },
@@ -5203,7 +5329,7 @@
       "label": "Habit Tracking",
       "file_type": "document",
       "source_file": "features.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "habit tracking",
       "id": "habit_tracking"
     },
@@ -5211,7 +5337,7 @@
       "label": "Fitness Module",
       "file_type": "document",
       "source_file": "features.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "fitness module",
       "id": "fitness_module"
     },
@@ -5219,7 +5345,7 @@
       "label": "Skill Roadmaps",
       "file_type": "document",
       "source_file": "features.md",
-      "community": 43,
+      "community": 42,
       "norm_label": "skill roadmaps",
       "id": "skill_roadmaps"
     },
@@ -5227,7 +5353,7 @@
       "label": "Focus Mode",
       "file_type": "document",
       "source_file": "extension.md",
-      "community": 42,
+      "community": 43,
       "norm_label": "focus mode",
       "id": "focus_mode"
     },
@@ -5235,7 +5361,7 @@
       "label": "SelfUp Focus Extension",
       "file_type": "document",
       "source_file": "extension.md",
-      "community": 42,
+      "community": 43,
       "norm_label": "selfup focus extension",
       "id": "browser_extension"
     },
@@ -5243,7 +5369,7 @@
       "label": "AI Companion (Aria)",
       "file_type": "document",
       "source_file": "ai_system.md",
-      "community": 43,
+      "community": 42,
       "norm_label": "ai companion (aria)",
       "id": "ai_companion"
     },
@@ -5251,7 +5377,7 @@
       "label": "XP & Leveling",
       "file_type": "document",
       "source_file": "gamification.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "xp & leveling",
       "id": "xp_system"
     },
@@ -5259,7 +5385,7 @@
       "label": "Streak System",
       "file_type": "document",
       "source_file": "gamification.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "streak system",
       "id": "streak_system"
     },
@@ -5267,7 +5393,7 @@
       "label": "AI Coin Economy",
       "file_type": "document",
       "source_file": "gamification.md",
-      "community": 20,
+      "community": 21,
       "norm_label": "ai coin economy",
       "id": "coin_economy"
     },
@@ -5275,7 +5401,7 @@
       "label": "Backend API (Express/Supabase)",
       "file_type": "document",
       "source_file": "backend.md",
-      "community": 42,
+      "community": 43,
       "norm_label": "backend api (express/supabase)",
       "id": "backend_api"
     },
@@ -8757,7 +8883,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\api\\skills\\route.ts",
-      "source_location": "L64",
+      "source_location": "L81",
       "weight": 1.0,
       "_src": "web_src_app_api_skills_route_ts",
       "_tgt": "skills_route_post",
@@ -8769,7 +8895,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\api\\skills\\route.ts",
-      "source_location": "L74",
+      "source_location": "L92",
       "weight": 1.0,
       "_src": "skills_route_post",
       "_tgt": "skills_route_get",
@@ -8816,6 +8942,282 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_resources_library_route_ts",
+      "_tgt": "library_route_get",
+      "source": "web_src_app_api_skills_resources_library_route_ts",
+      "target": "library_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_resources_library_route_ts",
+      "_tgt": "library_route_post",
+      "source": "web_src_app_api_skills_resources_library_route_ts",
+      "target": "library_route_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "library_route_post",
+      "_tgt": "library_route_get",
+      "source": "library_route_get",
+      "target": "library_route_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "library_route_get",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "library_route_get",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "library_route_get",
+      "_tgt": "skills_resourceresolver_resolveskillresource",
+      "source": "library_route_get",
+      "target": "skills_resourceresolver_resolveskillresource"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "library_route_post",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "library_route_post",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\resources\\library\\route.ts",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "library_route_post",
+      "_tgt": "skills_resourceresolver_batchresolveskillresources",
+      "source": "library_route_post",
+      "target": "skills_resourceresolver_batchresolveskillresources"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_tests_route_ts",
+      "_tgt": "tests_route_get",
+      "source": "web_src_app_api_skills_tests_route_ts",
+      "target": "tests_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_tests_route_ts",
+      "_tgt": "tests_route_post",
+      "source": "web_src_app_api_skills_tests_route_ts",
+      "target": "tests_route_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "tests_route_get",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "tests_route_get",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_src": "tests_route_post",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "tests_route_post",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\route.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "tests_route_post",
+      "_tgt": "lib_queue_addaitask",
+      "source": "tests_route_post",
+      "target": "lib_queue_addaitask"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_tests_testid_attempt_route_ts",
+      "_tgt": "attempt_route_post",
+      "source": "web_src_app_api_skills_tests_testid_attempt_route_ts",
+      "target": "attempt_route_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_tests_testid_attempt_route_ts",
+      "_tgt": "attempt_route_get",
+      "source": "web_src_app_api_skills_tests_testid_attempt_route_ts",
+      "target": "attempt_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "attempt_route_post",
+      "_tgt": "attempt_route_get",
+      "source": "attempt_route_post",
+      "target": "attempt_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "attempt_route_post",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "attempt_route_post",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "attempt_route_post",
+      "_tgt": "lib_queue_addaitask",
+      "source": "attempt_route_post",
+      "target": "lib_queue_addaitask"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\tests\\[testId]\\attempt\\route.ts",
+      "source_location": "L99",
+      "weight": 1.0,
+      "_src": "attempt_route_get",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "attempt_route_get",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_id_milestones_route_ts",
+      "_tgt": "milestones_route_patch",
+      "source": "web_src_app_api_skills_id_milestones_route_ts",
+      "target": "milestones_route_patch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_id_milestones_route_ts",
+      "_tgt": "milestones_route_get",
+      "source": "web_src_app_api_skills_id_milestones_route_ts",
+      "target": "milestones_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "milestones_route_patch",
+      "_tgt": "milestones_route_get",
+      "source": "milestones_route_patch",
+      "target": "milestones_route_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "milestones_route_patch",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "milestones_route_patch",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\milestones\\route.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_src": "milestones_route_get",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "milestones_route_get",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "web\\src\\app\\api\\skills\\[id]\\roadmap\\route.ts",
       "source_location": "L8",
       "weight": 1.0,
@@ -8835,6 +9237,30 @@
       "_src": "roadmap_route_get",
       "_tgt": "lib_api_auth_verifyauth",
       "source": "roadmap_route_get",
+      "target": "lib_api_auth_verifyauth"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\topics\\route.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "web_src_app_api_skills_id_topics_route_ts",
+      "_tgt": "topics_route_patch",
+      "source": "web_src_app_api_skills_id_topics_route_ts",
+      "target": "topics_route_patch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "web\\src\\app\\api\\skills\\[id]\\topics\\route.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "topics_route_patch",
+      "_tgt": "lib_api_auth_verifyauth",
+      "source": "topics_route_patch",
       "target": "lib_api_auth_verifyauth"
     },
     {
@@ -11985,7 +12411,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\lib\\model-config.ts",
-      "source_location": "L80",
+      "source_location": "L81",
       "weight": 1.0,
       "_src": "web_src_lib_model_config_ts",
       "_tgt": "lib_model_config_getusermodelconfig",
@@ -11997,7 +12423,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\lib\\model-config.ts",
-      "source_location": "L106",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "web_src_lib_model_config_ts",
       "_tgt": "lib_model_config_checkcoinbalance",
@@ -12141,7 +12567,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "web\\src\\lib\\queue.ts",
-      "source_location": "L60",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "web_src_lib_queue_ts",
       "_tgt": "lib_queue_addaitask",

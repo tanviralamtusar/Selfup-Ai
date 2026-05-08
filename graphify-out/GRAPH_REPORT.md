@@ -1,7 +1,7 @@
 # Graph Report - Selfup Ai  (2026-05-09)
 
 ## Corpus Check
-- 182 files · ~182,150 words
+- 181 files · ~182,119 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

@@ -1,11 +1,11 @@
 # Graph Report - Selfup Ai  (2026-05-09)
 
 ## Corpus Check
-- 195 files · ~196,079 words
+- 196 files · ~197,136 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 605 nodes · 726 edges · 33 communities detected
+- 611 nodes · 732 edges · 34 communities detected
 - Extraction: 73% EXTRACTED · 27% INFERRED · 0% AMBIGUOUS · INFERRED: 197 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -22,7 +22,7 @@
 - [[_COMMUNITY_Community 9|Community 9]]
 - [[_COMMUNITY_Community 10|Community 10]]
 - [[_COMMUNITY_Community 11|Community 11]]
-- [[_COMMUNITY_Community 12|Community 12]]
+- [[_COMMUNITY_Community 13|Community 13]]
 - [[_COMMUNITY_Community 14|Community 14]]
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
@@ -32,17 +32,18 @@
 - [[_COMMUNITY_Community 20|Community 20]]
 - [[_COMMUNITY_Community 22|Community 22]]
 - [[_COMMUNITY_Community 23|Community 23]]
-- [[_COMMUNITY_Community 25|Community 25]]
 - [[_COMMUNITY_Community 26|Community 26]]
-- [[_COMMUNITY_Community 31|Community 31]]
-- [[_COMMUNITY_Community 34|Community 34]]
+- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 32|Community 32]]
 - [[_COMMUNITY_Community 35|Community 35]]
-- [[_COMMUNITY_Community 38|Community 38]]
-- [[_COMMUNITY_Community 43|Community 43]]
-- [[_COMMUNITY_Community 44|Community 44]]
-- [[_COMMUNITY_Community 113|Community 113]]
-- [[_COMMUNITY_Community 114|Community 114]]
+- [[_COMMUNITY_Community 36|Community 36]]
+- [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_Community 45|Community 45]]
+- [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 115|Community 115]]
+- [[_COMMUNITY_Community 116|Community 116]]
+- [[_COMMUNITY_Community 117|Community 117]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `verifyAuth()` - 84 edges
@@ -57,16 +58,16 @@
 10. `TaskEconomyService` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `executeAiTask()` --calls--> `deactivateExistingPlan()`  [INFERRED]
+  web\src\lib\worker.ts → web\src\lib\fitness\planGenerator.ts
+- `executeAiTask()` --calls--> `analyzePerformance()`  [INFERRED]
+  web\src\lib\worker.ts → web\src\lib\fitness\adaptationEngine.ts
 - `GET()` --calls--> `verifyAuth()`  [INFERRED]
   web\src\app\api\ai\chat\route.ts → web\src\lib\api-auth.ts
 - `POST()` --calls--> `verifyAuth()`  [INFERRED]
   web\src\app\api\ai\chat\route.ts → web\src\lib\api-auth.ts
-- `POST()` --calls--> `getUserModelConfig()`  [INFERRED]
-  web\src\app\api\ai\chat\route.ts → web\src\lib\model-config.ts
 - `POST()` --calls--> `needsRetrieval()`  [INFERRED]
   web\src\app\api\ai\chat\route.ts → web\src\lib\ai-memory.ts
-- `POST()` --calls--> `generateResponse()`  [INFERRED]
-  web\src\app\api\ai\chat\route.ts → web\src\lib\gemma.ts
 
 ## Hyperedges (group relationships)
 - **Core Product Modules** — task_management, habit_tracking, fitness_module, skill_roadmaps [EXTRACTED 1.00]
@@ -75,59 +76,59 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.03
-Nodes (50): POST(), POST(), GET(), GET(), PATCH(), PATCH(), GET(), GET() (+42 more)
+Nodes (56): POST(), POST(), GET(), GET(), GET(), POST(), PATCH(), GET() (+48 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (27): GET(), POST(), POST(), analyzePerformance(), applyAdjustment(), ignoreAdjustment(), suggestAdjustment(), injectDietHabits() (+19 more)
+Cohesion: 0.08
+Nodes (30): POST(), buildLiveStateBlock(), DELETE(), fetchConversationHistory(), GET(), POST(), suggestAdjustment(), injectDietHabits() (+22 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.1
-Nodes (14): GET(), getDb(), POST(), cleanupPlanTasks(), DELETE(), GET(), getDb(), PATCH() (+6 more)
+Cohesion: 0.08
+Nodes (13): GET(), getDb(), POST(), GET(), getDb(), POST(), calculateHpPenalty(), calculateTaskXp() (+5 more)
 
 ### Community 3 - "Community 3"
+Cohesion: 0.11
+Nodes (24): GET(), POST(), POST(), executeActions(), executeConfirmedAction(), getServiceClient(), handleCreateDaily(), handleCreateHabit() (+16 more)
+
+### Community 4 - "Community 4"
 Cohesion: 0.08
 Nodes (8): fetchData(), handleLogFood(), handleAutoSchedule(), handleRevertSchedule(), handleTimelineDrop(), handleUnscheduleTask(), handleAddHabit(), handleAddTodo()
 
-### Community 4 - "Community 4"
+### Community 5 - "Community 5"
 Cohesion: 0.12
 Nodes (9): calculateHpDamageReduction(), calculateMaxHp(), getHpState(), getRank(), getRankLetter(), getXpModifier(), xpToNextLevel(), AttributeService (+1 more)
 
-### Community 5 - "Community 5"
-Cohesion: 0.15
-Nodes (20): GET(), POST(), POST(), executeActions(), executeConfirmedAction(), getServiceClient(), handleCreateDaily(), handleCreateHabit() (+12 more)
-
 ### Community 6 - "Community 6"
-Cohesion: 0.15
-Nodes (19): buildLiveStateBlock(), DELETE(), fetchConversationHistory(), GET(), POST(), parseActions(), clearUserMemory(), embedAndStoreMessage() (+11 more)
-
-### Community 7 - "Community 7"
 Cohesion: 0.13
 Nodes (10): fetchConversations(), handleDeleteChat(), handleSendMessage(), startNewChat(), setLoggingHabit(), setProfile(), fetchActivities(), fetchAiQuestions() (+2 more)
 
-### Community 8 - "Community 8"
-Cohesion: 0.16
-Nodes (12): GET(), POST(), supabaseServer(), DELETE(), GET(), POST(), PUT(), GET() (+4 more)
-
-### Community 9 - "Community 9"
+### Community 7 - "Community 7"
 Cohesion: 0.26
 Nodes (9): GET(), batchCheckAvailability(), checkAvailability(), findNextFreeSlots(), timeOverlaps(), batchCheckAvailability(), checkAvailability(), findNextFreeSlots() (+1 more)
+
+### Community 8 - "Community 8"
+Cohesion: 0.38
+Nodes (5): cleanupPlanTasks(), DELETE(), GET(), getDb(), PATCH()
+
+### Community 9 - "Community 9"
+Cohesion: 0.27
+Nodes (9): buildPlanPrompt(), deactivateExistingPlan(), generateFitnessPlan(), saveDietPlan(), savePlanToDb(), upsertExercise(), batchGetExerciseVideos(), cacheExerciseVideo() (+1 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.27
 Nodes (6): completeSession(), getOrCreateSession(), logSetComplete(), POST(), GET(), POST()
 
 ### Community 11 - "Community 11"
-Cohesion: 0.2
-Nodes (1): TaskEconomyService
-
-### Community 12 - "Community 12"
 Cohesion: 0.28
 Nodes (4): fetchMoodboard(), fetchOutfits(), handleAddMoodboard(), handleAddOutfit()
 
-### Community 14 - "Community 14"
+### Community 13 - "Community 13"
 Cohesion: 0.39
 Nodes (5): async(), fetchQuests(), handleAbandon(), handleAccept(), handleComplete()
+
+### Community 14 - "Community 14"
+Cohesion: 0.46
+Nodes (7): fetchRoadmap(), fetchSessions(), fetchSkills(), handleAddSkill(), handleCompleteMilestone(), handleCompleteTopic(), handleLogSession()
 
 ### Community 15 - "Community 15"
 Cohesion: 0.32
@@ -138,16 +139,16 @@ Cohesion: 0.29
 Nodes (1): DungeonService
 
 ### Community 17 - "Community 17"
-Cohesion: 0.52
-Nodes (6): fetchRoadmap(), fetchSessions(), fetchSkills(), handleAddSkill(), handleLogSession(), handleToggleMilestone()
+Cohesion: 0.38
+Nodes (5): GET(), POST(), analyzePerformance(), applyAdjustment(), ignoreAdjustment()
 
 ### Community 18 - "Community 18"
-Cohesion: 0.33
-Nodes (1): QuestService
-
-### Community 19 - "Community 19"
 Cohesion: 0.48
 Nodes (5): GET(), POST(), batchResolveSkillResources(), cacheSkillResource(), resolveSkillResource()
+
+### Community 19 - "Community 19"
+Cohesion: 0.33
+Nodes (1): QuestService
 
 ### Community 20 - "Community 20"
 Cohesion: 0.29
@@ -161,89 +162,93 @@ Nodes (1): BadgeService
 Cohesion: 0.6
 Nodes (2): getDb(), POST()
 
-### Community 25 - "Community 25"
+### Community 26 - "Community 26"
 Cohesion: 0.67
 Nodes (2): fetchDashboardData(), handleGeneratePlan()
 
-### Community 26 - "Community 26"
-Cohesion: 0.5
-Nodes (2): FitnessSessionPage(), createServerClient()
-
-### Community 31 - "Community 31"
+### Community 28 - "Community 28"
 Cohesion: 0.83
 Nodes (3): GET(), getDb(), POST()
 
-### Community 34 - "Community 34"
-Cohesion: 1.0
-Nodes (2): fetchAll(), handleAddFriend()
+### Community 32 - "Community 32"
+Cohesion: 0.5
+Nodes (2): FitnessSessionPage(), createServerClient()
 
 ### Community 35 - "Community 35"
 Cohesion: 1.0
+Nodes (2): fetchAll(), handleAddFriend()
+
+### Community 36 - "Community 36"
+Cohesion: 1.0
 Nodes (2): getDb(), POST()
 
-### Community 38 - "Community 38"
+### Community 37 - "Community 37"
+Cohesion: 0.67
+Nodes (1): PATCH()
+
+### Community 40 - "Community 40"
 Cohesion: 1.0
 Nodes (2): fetchMetrics(), handleSubmit()
 
-### Community 43 - "Community 43"
+### Community 45 - "Community 45"
 Cohesion: 0.67
 Nodes (3): AI Companion (Aria), AI Memory System, Skill Roadmaps
 
-### Community 44 - "Community 44"
+### Community 46 - "Community 46"
 Cohesion: 0.67
 Nodes (3): Backend API (Express/Supabase), SelfUp Focus Extension, Focus Mode
 
-### Community 113 - "Community 113"
+### Community 115 - "Community 115"
 Cohesion: 1.0
 Nodes (1): SelfUp Architecture
 
-### Community 114 - "Community 114"
+### Community 116 - "Community 116"
 Cohesion: 1.0
 Nodes (1): Frontend Web (Next.js)
 
-### Community 115 - "Community 115"
+### Community 117 - "Community 117"
 Cohesion: 1.0
 Nodes (1): PostgreSQL Database Schema
 
 ## Knowledge Gaps
 - **13 isolated node(s):** `SelfUp Architecture`, `AI Memory System`, `Task Management`, `Habit Tracking`, `Fitness Module` (+8 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 11`** (10 nodes): `TaskEconomyService`, `.applyAttributeMultiplier()`, `.applyHpDamage()`, `.applyXpPenalty()`, `.awardXp()`, `.constructor()`, `.getHpPenalty()`, `.getXpPenalty()`, `.getXpReward()`, `.recoverHp()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 16`** (8 nodes): `DungeonService`, `.checkDungeonProgress()`, `.constructor()`, `.expireUserDungeons()`, `.formatDungeon()`, `.getActiveDungeons()`, `.spawnDailyDungeon()`, `dungeon.service.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 18`** (7 nodes): `QuestService`, `.checkAndUpdateProgress()`, `.computeExpiration()`, `.constructor()`, `.expireStaleQuests()`, `.getTargetValue()`, `quest.service.ts`
+- **Thin community `Community 19`** (7 nodes): `QuestService`, `.checkAndUpdateProgress()`, `.computeExpiration()`, `.constructor()`, `.expireStaleQuests()`, `.getTargetValue()`, `quest.service.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 22`** (6 nodes): `BadgeService`, `.awardBadge()`, `.checkBadgeUnlocks()`, `.constructor()`, `.getUserBadges()`, `badge.service.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 23`** (5 nodes): `getDb()`, `POST()`, `route.ts`, `route.ts`, `route.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 25`** (4 nodes): `fetchDashboardData()`, `handleGeneratePlan()`, `handleOpenAiModal()`, `page.tsx`
+- **Thin community `Community 26`** (4 nodes): `fetchDashboardData()`, `handleGeneratePlan()`, `handleOpenAiModal()`, `page.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 26`** (4 nodes): `FitnessSessionPage()`, `createServerClient()`, `page.tsx`, `supabase-server-user.ts`
+- **Thin community `Community 32`** (4 nodes): `FitnessSessionPage()`, `createServerClient()`, `page.tsx`, `supabase-server-user.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 34`** (3 nodes): `fetchAll()`, `handleAddFriend()`, `page.tsx`
+- **Thin community `Community 35`** (3 nodes): `fetchAll()`, `handleAddFriend()`, `page.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 35`** (3 nodes): `getDb()`, `POST()`, `route.ts`
+- **Thin community `Community 36`** (3 nodes): `getDb()`, `POST()`, `route.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (3 nodes): `fetchMetrics()`, `handleSubmit()`, `BodyView.tsx`
+- **Thin community `Community 37`** (3 nodes): `PATCH()`, `route.ts`, `route.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 113`** (1 nodes): `SelfUp Architecture`
+- **Thin community `Community 40`** (3 nodes): `fetchMetrics()`, `handleSubmit()`, `BodyView.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 114`** (1 nodes): `Frontend Web (Next.js)`
+- **Thin community `Community 115`** (1 nodes): `SelfUp Architecture`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 115`** (1 nodes): `PostgreSQL Database Schema`
+- **Thin community `Community 116`** (1 nodes): `Frontend Web (Next.js)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 117`** (1 nodes): `PostgreSQL Database Schema`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `verifyAuth()` connect `Community 0` to `Community 1`, `Community 2`, `Community 35`, `Community 5`, `Community 6`, `Community 8`, `Community 9`, `Community 10`, `Community 19`, `Community 23`, `Community 31`?**
-  _High betweenness centrality (0.179) - this node is a cross-community bridge._
-- **Why does `POST()` connect `Community 6` to `Community 0`, `Community 1`, `Community 5`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `executeAiTask()` connect `Community 1` to `Community 9`, `Community 5`, `Community 6`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+- **Why does `verifyAuth()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 36`, `Community 37`, `Community 7`, `Community 8`, `Community 10`, `Community 17`, `Community 18`, `Community 23`, `Community 28`?**
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+- **Why does `POST()` connect `Community 1` to `Community 0`, `Community 3`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `executeAiTask()` connect `Community 1` to `Community 9`, `Community 3`, `Community 17`, `Community 7`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Are the 83 inferred relationships involving `verifyAuth()` (e.g. with `GET()` and `POST()`) actually correct?**
   _`verifyAuth()` has 83 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 19 inferred relationships involving `executeAiTask()` (e.g. with `addAiTask()` and `getUserModelConfig()`) actually correct?**

@@ -313,10 +313,10 @@ export default function DashboardPage() {
       })
       if (res.ok) {
         fetchDailies()
-        toast.success(`Protocol ${editingDaily ? 'updated' : 'initialized'}!`)
+        toast.success(`Daily ${editingDaily ? 'updated' : 'created'}!`)
       } else {
         const err = await res.json()
-        toast.error(err.error || 'Failed to save protocol')
+        toast.error(err.error || 'Failed to save daily')
       }
     } catch (e: any) {
       toast.error('Network error. Could not connect to the system.')
@@ -331,11 +331,11 @@ export default function DashboardPage() {
       })
       if (res.ok) {
         fetchDailies()
-        toast.success('Protocol terminated')
+        toast.success('Daily deleted')
         setIsDailyModalOpen(false)
       } else {
         const err = await res.json()
-        toast.error(err.error || 'Failed to terminate protocol')
+        toast.error(err.error || 'Failed to delete daily')
       }
     } catch (e: any) {
       toast.error('Network error. Could not connect to the system.')
@@ -728,8 +728,8 @@ export default function DashboardPage() {
               <div className="space-y-3 relative z-10">
                 {habits.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-blue-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
-                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">+ Initialize Protocol</Link>
+                    <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active habits</p>
+                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">+ New Habit</Link>
                   </div>
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn("group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic cursor-pointer", habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]')} onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}>
@@ -765,7 +765,7 @@ export default function DashboardPage() {
               <div className="space-y-3 relative z-10">
                 {dailies.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active dailies</p>
                   </div>
                 ) : dailies.slice(0, 4).map(daily => (
                   <div key={daily.id} onClick={() => handleCompleteDaily(daily)} className={cn("flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden", daily.is_completed ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer')}>
@@ -826,7 +826,7 @@ export default function DashboardPage() {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-blue-500/30 z-10" />
           <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-slate-950/80 backdrop-blur-md pb-2 z-10 -mx-1 px-1">
             <div className="w-4 h-px bg-blue-500" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SELFUP EVENT LOG</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">ACTIVITY LOG</p>
           </div>
           <ActivityFeed />
         </motion.div>
@@ -839,7 +839,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-2">
               <div className="w-5 h-px bg-blue-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 italic">STATUS ATTRIBUTES</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 italic">ATTRIBUTES</p>
             </div>
             <h2 className="text-3xl font-black tracking-tighter text-blue-50 font-headline leading-none italic uppercase system-text-glow">Attributes of the Awakened</h2>
           </div>

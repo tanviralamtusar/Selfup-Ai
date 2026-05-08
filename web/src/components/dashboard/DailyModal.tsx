@@ -131,7 +131,7 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-blue-500/10 bg-slate-900/50">
                 <h2 className="text-sm font-black uppercase tracking-widest text-blue-50 flex items-center gap-2 system-text-glow italic">
-                  {daily ? 'Edit Protocol' : 'New Protocol'}
+                  {daily ? 'Edit Daily' : 'New Daily'}
                 </h2>
                 <button
                   onClick={onClose}
@@ -328,7 +328,7 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
                     disabled={isSubmitting}
                     className="px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-xs font-black uppercase tracking-widest shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all flex items-center gap-2 disabled:opacity-50"
                   >
-                    {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save Protocol'}
+                    {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save Daily'}
                   </button>
                 </div>
               </div>

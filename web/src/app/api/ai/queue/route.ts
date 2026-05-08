@@ -7,84 +7,73 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 /**
- * GET: Check job status in ai_queue table
+ * AI Queue system has been removed. 
+ * Tasks are now executed immediately via POST.
  */
-export async function GET(req: NextRequest) {
-  try {
-    const { user, error: authError } = await verifyAuth(req)
-    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    const authSupabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } }
-    })
-
-    const { searchParams } = new URL(req.url)
-    const queueId = searchParams.get('queueId')
-
-    if (!queueId) return NextResponse.json({ error: 'queueId is required' }, { status: 400 })
-
-    const { data, error } = await authSupabase
-      .from('ai_queue')
-      .select('*')
-      .eq('id', queueId)
-      .eq('user_id', user.id)
-      .single()
-
-    if (error) throw error
-
-    return NextResponse.json(data)
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
-}
 
 /**
- * POST: Manually enqueue an AI job (for testing or specific long tasks)
+ * POST: Execute an AI task immediately (Queue system removed)
  */
 export async function POST(req: NextRequest) {
   try {
     const { user, error: authError } = await verifyAuth(req)
     if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const { type, payload } = await req.json()
+    if (!type || !payload) return NextResponse.json({ error: 'type and payload are required' }, { status: 400 })
+
+    console.log(`[AI Direct] Executing ${type} for user ${user.id}`)
+
+    // Execute immediately and return result
+    const result = await addAiTask({
+      userId: user.id,
+      type: type,
+      payload: payload
+    })
+
+    return NextResponse.json({ 
+      success: true,
+      status: 'completed',
+      result: result
+    })
+
+  } catch (err: any) {
+    console.error('[AI Direct Error]:', err)
+    return NextResponse.json({ error: err.message, status: 'failed' }, { status: 500 })
+  }
+}
+
+/**
+ * GET: Fetch recent background tasks from ai_queue
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
     const authSupabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: `Bearer ${token}` } }
     })
 
-    const { type, payload } = await req.json()
-
-    if (!type || !payload) return NextResponse.json({ error: 'type and payload are required' }, { status: 400 })
-
-    // 1. Create record in PostgreSQL ai_queue table
-    const { data: queueItem, error: queueError } = await authSupabase
+    const { data: tasks, error } = await authSupabase
       .from('ai_queue')
-      .insert({
-        user_id: user.id,
-        request_type: type,
-        payload: payload,
-        status: 'pending'
-      })
-      .select()
-      .single()
+      .select('id, action_type, payload, status, error, created_at, processed_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
 
-    if (queueError) throw queueError
+    if (error) {
+      console.error('[AI Queue GET] Error fetching tasks:', error)
+      return NextResponse.json({ error: 'Failed to fetch background tasks' }, { status: 500 })
+    }
 
-    // 2. Add to BullMQ
-    await addAiTask({
-      userId: user.id,
-      type: type,
-      payload: payload,
-      queueId: queueItem.id
-    })
+    return NextResponse.json({ success: true, data: tasks })
 
-    return NextResponse.json({ 
-      message: 'Job enqueued', 
-      queueId: queueItem.id,
-      status: 'pending' 
-    })
-
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (error) {
+    console.error('[AI Queue GET] Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

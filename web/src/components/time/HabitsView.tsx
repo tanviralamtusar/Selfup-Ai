@@ -197,15 +197,15 @@ export function HabitsView() {
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
           <div className="space-y-2 text-center md:text-left">
             <h2 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 flex items-center justify-center md:justify-start gap-3 system-text-glow">
-              <Zap className="text-blue-400 animate-pulse" size={24} /> Daily Quests
+              <Zap className="text-blue-400 animate-pulse" size={24} /> Daily Habits
             </h2>
-            <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em]">Synchronize your actions with system protocols for maximum evolution.</p>
+            <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em]">Build consistency and level up your life.</p>
           </div>
           <button
             onClick={() => setIsAddingHabit(prev => !prev)}
             className="flex items-center gap-3 px-8 py-3 rounded bg-blue-500/10 text-blue-400 text-xs font-black uppercase tracking-[0.3em] border border-blue-500/40 hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_rgba(59,130,246,0.1)] active:scale-95 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]"
           >
-            <Plus size={18} /> Initialize Protocol
+            <Plus size={18} /> New Habit
           </button>
         </div>
       </div>
@@ -228,7 +228,7 @@ export function HabitsView() {
                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
                
               <div className="flex items-center justify-between relative z-10">
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/80">Quest Formulation</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/80">New Habit</h3>
                 <button 
                   onClick={handleAiSuggest}
                   disabled={isSuggesting}
@@ -242,7 +242,7 @@ export function HabitsView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Protocol Identifier</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Habit Name</label>
                     <input
                       autoFocus
                       placeholder="e.g. CORE STRENGTHENING"
@@ -252,7 +252,7 @@ export function HabitsView() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Operational Parameters</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Description</label>
                     <input
                       placeholder="Define the objective..."
                       value={newHabit.description}
@@ -264,7 +264,7 @@ export function HabitsView() {
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Attribute Alignment</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Category</label>
                     <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded border border-blue-500/10">
                       {['fitness', 'skills', 'time', 'style', 'general'].map(p => (
                         <button
@@ -283,7 +283,7 @@ export function HabitsView() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Reset Cycle</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Repeat</label>
                       <select 
                         value={newHabit.reset_type}
                         onChange={e => setNewHabit(h => ({ ...h, reset_type: e.target.value }))}
@@ -295,7 +295,7 @@ export function HabitsView() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Sync Window</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Reminder</label>
                       <input
                         type="time"
                         value={newHabit.reminder_time}
@@ -308,7 +308,7 @@ export function HabitsView() {
               </div>
 
               <div className="space-y-3 relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Designated Execution Days</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Days</label>
                 <div className="flex justify-between gap-2">
                   {DAYS_OF_WEEK.map((day) => {
                     const isActive = newHabit.frequency_days.includes(day.id)
@@ -338,7 +338,7 @@ export function HabitsView() {
 
               <div className="flex justify-end gap-4 pt-8 border-t border-blue-500/10 relative z-10">
                 <button onClick={() => setIsAddingHabit(false)} className="px-6 py-3 rounded text-blue-500/60 text-[10px] font-black uppercase tracking-[0.3em] hover:text-blue-300 transition-colors">Abort</button>
-                <button onClick={handleAddHabit} className="px-10 py-3 bg-blue-600 text-white rounded text-[10px] font-black uppercase tracking-[0.3em] hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all active:scale-95 border border-blue-400">Establish Protocol</button>
+                <button onClick={handleAddHabit} className="px-10 py-3 bg-blue-600 text-white rounded text-[10px] font-black uppercase tracking-[0.3em] hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all active:scale-95 border border-blue-400">Create Habit</button>
               </div>
             </div>
           </motion.div>
@@ -356,8 +356,8 @@ export function HabitsView() {
           <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
           <Sparkles size={48} className="text-blue-500/20 mx-auto" />
           <div className="space-y-2">
-            <h3 className="text-blue-500/40 font-black uppercase tracking-[0.4em] text-sm">Protocol Bank Empty</h3>
-            <p className="text-blue-500/40 text-[9px] uppercase tracking-widest max-w-xs mx-auto">A wandering soul gathers no XP. Initialize your first daily quest to begin evolution.</p>
+            <h3 className="text-blue-500/40 font-black uppercase tracking-[0.4em] text-sm">No Habits Found</h3>
+            <p className="text-blue-500/40 text-[9px] uppercase tracking-widest max-w-xs mx-auto">Create your first daily habit to start growing.</p>
           </div>
         </div>
       ) : (
@@ -438,13 +438,14 @@ export function HabitsView() {
                 >
                   {habit.is_completed_this_cycle ? (
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 size={16} /> Sync Verified
+                      <CheckCircle2 size={16} /> Completed
                     </div>
                   ) : (
                     <>
-                      <Plus size={16} /> Mark Synchronized
+                      <Plus size={16} /> Complete
                     </>
-                  )}
+                  )
+                }
                 </button>
               </motion.div>
             ))}

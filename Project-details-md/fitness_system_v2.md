@@ -170,7 +170,7 @@ interface GeneratedPlan {
   plan_meta: {
     name: string                    // e.g. "Muscle Building Protocol — 4 Days/Week"
     goal: string
-    plan_type: 'ongoing' | 'fixed'
+    plan_type: 'ongoing' | 'fixed' | 'full' | 'diet_only'
     duration_days?: number          // for fixed plans
     difficulty: 'beginner' | 'intermediate' | 'advanced'
     days_per_week: number

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 
 import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
+import { BackgroundTasksWidget } from '@/components/layout/BackgroundTasksWidget'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: ROUTES.DASHBOARD },
@@ -95,7 +96,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Search className="absolute left-3 text-blue-500/40 group-focus-within:text-blue-400 transition-colors" size={14} />
             <input 
               type="text" 
-              placeholder="QUERY SELFUP..."
+              placeholder="Search..."
               className="bg-blue-500/5 border border-blue-500/10 rounded h-8 pl-9 pr-4 w-56 text-[10px] font-black uppercase tracking-[0.2em] focus:outline-none focus:border-blue-500/30 focus:bg-blue-500/10 transition-all text-blue-100 placeholder:text-blue-500/30 italic"
             />
           </div>
@@ -114,6 +115,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={18} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-slate-950" />
           </button>
+          
+          <BackgroundTasksWidget />
           
           <button 
             onClick={() => router.push(ROUTES.SETTINGS)}
@@ -215,7 +218,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 py-6 px-3 space-y-8 overflow-y-auto custom-scrollbar">
           {/* Section: Main */}
           <div>
-            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">PROTOCOL MODULES</p>
+            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">CORE MODULES</p>
             <div className="space-y-1">
               {navItems.slice(0, 4).map((item) => {
                 const isActive = getIsActive(item.href)
@@ -247,7 +250,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Section: Social */}
           <div>
-            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">NETWORK & LOGS</p>
+            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">SOCIAL & DATA</p>
             <div className="space-y-1">
               {navItems.slice(4).map((item) => {
                 const isActive = getIsActive(item.href)
@@ -282,7 +285,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="p-3 mt-auto border-t border-blue-500/10 bg-blue-500/5">
           <div className="bg-slate-900/60 rounded-lg p-3 border border-blue-500/10">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-black uppercase text-blue-500/40 tracking-widest italic">SYNCHRONIZATION</span>
+              <span className="text-[9px] font-black uppercase text-blue-500/40 tracking-widest italic">XP PROGRESS</span>
               <span className="text-[9px] font-black text-blue-400 tabular-nums">{progress.toFixed(0)}%</span>
             </div>
             <div className="h-1 bg-slate-950 rounded-full overflow-hidden shadow-inner">
@@ -297,7 +300,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             className="w-full flex items-center gap-3 px-3 py-2.5 mt-3 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 hover:text-rose-400 hover:bg-rose-500/10 transition-all italic"
           >
             <LogOut size={16} />
-            Terminate Session
+            Logout
           </button>
         </div>
       </aside>

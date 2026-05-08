@@ -11,8 +11,10 @@ import { Brain, Trash2, Menu, X, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Message {
+  id?: string
   role: 'user' | 'assistant'
   content: string
+  metadata?: any
 }
 
 interface Conversation {
@@ -88,7 +90,7 @@ export default function ChatPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setMessages(data.map((m: any) => ({ role: m.role, content: m.content })))
+        setMessages(data.map((m: any) => ({ id: m.id, role: m.role, content: m.content, metadata: m.metadata })))
       }
     } catch (err) {
       toast.error('Failed to load history')
@@ -121,7 +123,7 @@ export default function ChatPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.content }])
+      setMessages(prev => [...prev, { role: 'assistant', content: data.content, metadata: data.metadata }])
       
       if (!activeConversationId) {
         setActiveConversationId(data.conversationId)
@@ -250,8 +252,10 @@ export default function ChatPage() {
           {messages.map((msg, i) => (
             <ChatMessage 
               key={i} 
+              id={msg.id}
               role={msg.role} 
               content={msg.content} 
+              metadata={msg.metadata}
               name={profile?.ai_persona_name || 'SYSTEM'}
               style={profile?.ai_persona_style}
               isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}

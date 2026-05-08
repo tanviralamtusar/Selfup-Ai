@@ -24,17 +24,31 @@ export function ChatInput({ onSend, isDisabled, aiName = 'SYSTEM' }: ChatInputPr
   return (
     <form 
       onSubmit={handleSubmit}
-      className="relative flex items-center gap-3 bg-surface-container-low p-2 pl-5 rounded-[2rem] border border-outline-variant/10 shadow-xl focus-within:border-primary/30 transition-all"
+      className="relative flex items-end gap-3 bg-surface-container-low p-2 pl-5 rounded-3xl border border-outline-variant/10 shadow-xl focus-within:border-primary/30 transition-all"
     >
-      <input
+      <textarea
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => {
+          setInput(e.target.value)
+          e.target.style.height = 'auto'
+          e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSubmit(e as any)
+            const target = e.target as HTMLTextAreaElement
+            target.style.height = 'auto'
+          }
+        }}
         placeholder={`Ask ${aiName} anything...`}
         disabled={isDisabled}
-        className="flex-1 bg-transparent py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none"
+        rows={1}
+        className="flex-1 bg-transparent py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none resize-none overflow-y-auto"
+        style={{ minHeight: '44px', maxHeight: '150px' }}
       />
       
-      <div className="flex items-center gap-2 pr-2">
+      <div className="flex items-center gap-2 pr-2 pb-1.5">
         <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/10">
           <Sparkles size={12} className="text-secondary" />
           <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">1 Coin</span>

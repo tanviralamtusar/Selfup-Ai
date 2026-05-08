@@ -104,25 +104,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Enqueue initial plan generation
-    const { data: queueRow, error: queueError } = await supabase
-      .from('ai_queue')
-      .insert({
-        user_id: user.id,
-        request_type: 'initial_plan',
-        payload: { goals, persona, answers }
-      })
-      .select()
-      .single()
-
-    if (!queueError && queueRow) {
-      await addAiTask({
-        userId: user.id,
-        type: 'initial_plan',
-        payload: { goals, persona, answers },
-        queueId: queueRow.id
-      })
-    }
+    // 5. Trigger initial plan generation (Direct execution, queue removed)
+    await addAiTask({
+      userId: user.id,
+      type: 'initial_plan',
+      payload: { goals, persona, answers }
+    })
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

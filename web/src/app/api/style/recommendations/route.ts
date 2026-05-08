@@ -47,19 +47,16 @@ export async function POST(req: NextRequest) {
     updated_at: new Date().toISOString()
   }, { onConflict: 'user_id' })
 
-  // Queue AI generation
-  const { data: queueRow } = await db.from('ai_queue').insert({
-    user_id: user.id,
-    action_type: 'style_recommendation',
-    payload: { occasion, body_type, style_preferences, budget_range },
-    status: 'pending'
-  }).select().single()
-
-  if (queueRow) {
-    try {
-      await addAiTask({ userId: user.id, type: 'style_advice', queueId: queueRow.id, payload: { occasion, body_type, style_preferences, budget_range } })
-    } catch { /* worker may not be running */ }
+  // Execute AI generation immediately (Queue removed)
+  try {
+    await addAiTask({ 
+      userId: user.id, 
+      type: 'style_advice', 
+      payload: { occasion, body_type, style_preferences, budget_range } 
+    })
+  } catch (err) {
+    console.error('[Style API] Task failed:', err)
   }
 
-  return NextResponse.json({ queued: true, message: 'System is crafting your look. Check back in a moment!' })
+  return NextResponse.json({ success: true, message: 'System is crafting your look.' })
 }

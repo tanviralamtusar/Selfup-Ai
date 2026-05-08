@@ -103,10 +103,10 @@ export default function SettingsPage() {
   }
 
   const navItems = [
-    { id: 'profile', label: 'VESSEL PROFILE', icon: User, subtitle: 'Identity & Visibility' },
-    { id: 'ai', label: 'SELFUP COGNITION', icon: Brain, subtitle: 'Persona & Protocols' },
-    { id: 'privacy', label: 'VESSEL ENCRYPTION', icon: Shield, subtitle: 'Data & Secrecy' },
-    { id: 'notifications', label: 'NETWORK ALERTS', icon: Bell, subtitle: 'System Reminders' },
+    { id: 'profile', label: 'PROFILE', icon: User, subtitle: 'Identity & Visibility' },
+    { id: 'ai', label: 'AI COMPANION', icon: Brain, subtitle: 'Persona & Style' },
+    { id: 'privacy', label: 'PRIVACY', icon: Shield, subtitle: 'Data & Visibility' },
+    { id: 'notifications', label: 'NOTIFICATIONS', icon: Bell, subtitle: 'App Reminders' },
   ]
 
   return (
@@ -118,7 +118,7 @@ export default function SettingsPage() {
         </div>
         <div>
           <h1 className="text-4xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">Selfup Settings</h1>
-          <p className="text-blue-400/60 text-sm font-bold italic tracking-widest uppercase">Calibrate your system interface.</p>
+          <p className="text-blue-400/60 text-sm font-bold italic tracking-widest uppercase">Adjust your profile and AI settings.</p>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export default function SettingsPage() {
               className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 space-y-6 backdrop-blur-md relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
-              <SectionHeader icon={User} title="VESSEL IDENTITY" subtitle="How the network sees you" color="text-blue-400" />
+              <SectionHeader icon={User} title="PROFILE IDENTITY" subtitle="How others see you" color="text-blue-400" />
 
               {/* Avatar preview */}
               <div className="flex items-center gap-6 p-5 bg-blue-500/5 rounded-2xl border border-blue-500/10 relative z-10">
@@ -169,14 +169,14 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-black text-blue-100 italic uppercase tracking-widest">{displayName || profile?.username}</p>
-                  <p className="text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] italic">VESSEL @{profile?.username}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mt-1 italic">Vessel Rank {profile?.level} · {profile?.xp} XP</p>
+                  <p className="text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] italic">@{profile?.username}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mt-1 italic">Level {profile?.level} · {profile?.xp} XP</p>
                 </div>
               </div>
 
               <div className="space-y-4 relative z-10">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">IDENTIFIER</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">DISPLAY NAME</label>
                   <input
                     type="text"
                     value={displayName}
@@ -186,17 +186,17 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">BIO-PROTOCOL</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">BIO</label>
                   <textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
                     rows={3}
-                    placeholder="Calibrating existence parameters..."
+                    placeholder="Tell us about yourself..."
                     className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 resize-none transition-all placeholder:text-blue-500/10"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">TEMPORAL SYNCHRONIZATION (TIMEZONE)</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">TIMEZONE</label>
                   <select
                     value={timezone}
                     onChange={e => setTimezone(e.target.value)}
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                     <div>
                       <p className="text-sm font-black text-blue-100 italic uppercase tracking-wider">Network Visibility</p>
                       <p className="text-[10px] uppercase tracking-[0.2em] font-black text-blue-400/40 italic">
-                        {isPublic ? 'VESSEL DETECTABLE BY NETWORK' : 'VESSEL ENCRYPTED'}
+                        {isPublic ? 'VISIBLE TO OTHERS' : 'PRIVATE PROFILE'}
                       </p>
                     </div>
                   </div>
@@ -243,7 +243,7 @@ export default function SettingsPage() {
               >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> :
                  savedSection === 'profile' ? <Check size={16} /> : <Zap size={16} />}
-                {savedSection === 'profile' ? 'SYNCHRONIZED!' : 'UPDATE PROTOCOL'}
+                {savedSection === 'profile' ? 'SAVED!' : 'SAVE CHANGES'}
               </button>
             </motion.div>
           )}
@@ -253,10 +253,10 @@ export default function SettingsPage() {
               className="bg-slate-950/40 border border-blue-500/20 rounded-3xl p-8 space-y-6 backdrop-blur-md relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
-              <SectionHeader icon={Sparkles} title="SELFUP COGNITION" subtitle="Calibrate System personality" color="text-cyan-400" />
+              <SectionHeader icon={Sparkles} title="AI COMPANION" subtitle="Adjust your AI's personality" color="text-cyan-400" />
 
               <div className="relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">SELFUP DESIGNATION</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">AI NAME</label>
                 <input
                   type="text"
                   value={personaName}
@@ -267,7 +267,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-3 italic">COACHING PROTOCOL</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-3 italic">AI PERSONALITY</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(Object.entries(PERSONA_STYLES) as [PersonaStyle, any][]).map(([key, conf]) => (
                     <button
@@ -293,12 +293,12 @@ export default function SettingsPage() {
 
               {/* Preview */}
               <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 relative z-10">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/60 mb-2 italic">LOG PREVIEW</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/60 mb-2 italic">MESSAGE PREVIEW</p>
                 <p className="text-sm text-blue-100 font-bold italic tracking-wide">
-                  "{personaStyle === 'friendly' ? `Affirmative. I am ${personaName} — synchronization at 100%. Let's crush today's protocols together! 🌟` :
-                    personaStyle === 'strict' ? `${personaName} active. No excuses detected. State your objective, Vessel.` :
-                    personaStyle === 'motivational' ? `LIMIT BREAK! ${personaName} is INITIALIZED. Ascend the ranks! 🔥` :
-                    `${personaName} core online. Objective detected. Optimizing path...`}"
+                  "{personaStyle === 'friendly' ? `Hi! I'm ${personaName}. Let's work on your goals together! 🌟` :
+                    personaStyle === 'strict' ? `${personaName} active. Focus on your tasks. No excuses.` :
+                    personaStyle === 'motivational' ? `LET'S GO! ${personaName} is ready. Time to level up! 🔥` :
+                    `${personaName} online. Ready to help you optimize your day.`}"
                 </p>
               </div>
 
@@ -310,7 +310,7 @@ export default function SettingsPage() {
                 >
                   {isLoading ? <Loader2 size={16} className="animate-spin" /> :
                    savedSection === 'ai' ? <Check size={16} /> : <Sparkles size={16} />}
-                  {savedSection === 'ai' ? 'CORE UPDATED' : 'SYNCHRONIZE CORES'}
+                  {savedSection === 'ai' ? 'SAVED' : 'SAVE AI SETTINGS'}
                 </button>
 
                 <button
@@ -318,7 +318,7 @@ export default function SettingsPage() {
                   className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-slate-950 text-blue-400 font-black text-xs uppercase tracking-[0.3em] italic border border-blue-500/20 hover:bg-slate-900 transition-all active:scale-95"
                 >
                   <Brain size={16} className="text-cyan-400" />
-                  TEST LINK
+                  GO TO CHAT
                 </button>
               </div>
             </motion.div>
@@ -334,9 +334,9 @@ export default function SettingsPage() {
                   {activeSection === 'privacy' ? <Shield size={28} className="text-blue-500/20" /> : <Bell size={28} className="text-blue-500/20" />}
                 </div>
                 <h3 className="text-sm font-black text-blue-500/20 uppercase tracking-[0.3em] italic">
-                  {activeSection === 'privacy' ? 'VESSEL ENCRYPTION' : 'NETWORK ALERTS'}
+                  {activeSection === 'privacy' ? 'PRIVACY' : 'NOTIFICATIONS'}
                 </h3>
-                <p className="text-xs text-blue-500/10 mt-2 font-bold italic tracking-widest uppercase">Protocol coming in next iteration.</p>
+                <p className="text-xs text-blue-500/10 mt-2 font-bold italic tracking-widest uppercase">Coming soon.</p>
               </div>
             </motion.div>
           )}

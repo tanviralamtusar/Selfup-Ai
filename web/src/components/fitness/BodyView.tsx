@@ -75,13 +75,13 @@ export default function BodyView() {
           <div className="p-2 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
             <Activity size={20} />
           </div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Vessel Calibration</h2>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Body Stats</h2>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           <div className="grid grid-cols-2 gap-6">
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Mass (KG)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Weight (KG)</label>
               <input
                 type="number" step="0.1"
                 value={form.weight_kg}
@@ -91,7 +91,7 @@ export default function BodyView() {
               />
             </div>
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Adipose Index (%)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Body Fat (%)</label>
               <input
                 type="number" step="0.1"
                 value={form.body_fat_pct}
@@ -101,7 +101,7 @@ export default function BodyView() {
               />
             </div>
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Axial (CM)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Waist (CM)</label>
               <input
                 type="number" step="0.1"
                 value={form.waist_cm}
@@ -111,7 +111,7 @@ export default function BodyView() {
               />
             </div>
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Thoracic (CM)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2 group-focus-within/input:text-blue-400 transition-colors">Chest (CM)</label>
               <input
                 type="number" step="0.1"
                 value={form.chest_cm}
@@ -127,7 +127,7 @@ export default function BodyView() {
             className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-[0.3em] rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400 group active:scale-95"
           >
             {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} className="group-hover:rotate-90 transition-transform" />}
-            Initialize Calibration
+            Save Stats
           </button>
         </form>
       </section>
@@ -138,7 +138,7 @@ export default function BodyView() {
           <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
             <TrendingDown size={20} />
           </div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Calibration History</h2>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">History</h2>
         </div>
         
         {loading ? (
@@ -146,7 +146,7 @@ export default function BodyView() {
         ) : metrics.length === 0 ? (
           <div className="text-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em] py-16 text-center border border-dashed border-blue-500/20 rounded-xl bg-slate-950/20 relative overflow-hidden group">
             <div className="absolute inset-0 scanline pointer-events-none opacity-[0.02]" />
-            No structural traces detected.
+            No history found.
           </div>
         ) : (
           <div className="space-y-4">
@@ -167,7 +167,7 @@ export default function BodyView() {
                     {m.body_fat_pct && (
                       <div className="group/metric">
                         <span className="text-xl font-black text-rose-400 group-hover/metric:system-text-glow transition-all">{m.body_fat_pct}</span>
-                        <span className="text-[10px] text-rose-500/30 ml-2 font-black">% ADIPOSE</span>
+                        <span className="text-[10px] text-rose-500/30 ml-2 font-black">% BODY FAT</span>
                       </div>
                     )}
                   </div>
@@ -176,13 +176,13 @@ export default function BodyView() {
                 <div className="text-right flex items-center gap-6 relative z-10">
                   {m.waist_cm && (
                     <div className="text-left">
-                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Axial</span>
+                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Waist</span>
                       <span className="text-xs font-black text-blue-200">{m.waist_cm}</span>
                     </div>
                   )}
                   {m.chest_cm && (
                     <div className="text-left">
-                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Thoracic</span>
+                      <span className="block text-[8px] text-blue-500/30 uppercase font-black tracking-[0.2em] mb-1">Chest</span>
                       <span className="text-xs font-black text-blue-200">{m.chest_cm}</span>
                     </div>
                   )}

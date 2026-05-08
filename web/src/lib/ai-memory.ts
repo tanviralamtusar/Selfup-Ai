@@ -1,22 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
-import { PERSONA_PROMPTS } from './gemma'
+import { generateResponse, generateEmbedding } from './gemma'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-export async function fetchUserMemory(
-  userId: string,
-  _authToken?: string
-): Promise<Record<string, string>> {
-  try {
-    // Use service role key to bypass RLS for server-side memory reads.
-    // The anon key + auth header approach silently failed because
-    // auth.uid() was not properly set in that context.
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    })
+function getServiceClient() {
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  })
+}
 
+// ═══════════════════════════════════════════════════
+// LAYER 2 — Key-Value Fact Store
+// ═══════════════════════════════════════════════════
+
+export async function fetchUserMemory(userId: string): Promise<Record<string, string>> {
+  try {
+    const supabase = getServiceClient()
     const { data: memories, error } = await supabase
       .from('ai_memory')
       .select('*')
@@ -41,258 +41,257 @@ export async function fetchUserMemory(
   }
 }
 
+/**
+ * Formats the key-value memory facts into a structured prompt block.
+ */
 export async function formatMemoryContext(memory: Record<string, string>): Promise<string> {
   if (Object.keys(memory).length === 0) return ''
 
   const sections: string[] = []
+
+  // Group by known categories
+  const categories: Record<string, string[]> = {
+    'Fitness': ['fitness_goal', 'current_weight', 'height', 'age', 'injuries', 'preferred_gym_time', 'equipment', 'diet_restrictions', 'bmr', 'tdee', 'workout_frequency', 'fitness_level'],
+    'Skills & Learning': ['active_learning_focus', 'learning_style', 'skill_roadmaps_active', 'coding_language', 'experience_level', 'active_skills'],
+    'Lifestyle': ['sleep_schedule', 'work_hours', 'dietary_restrictions', 'budget_bdt', 'timezone', 'work_environment'],
+    'Goals': ['primary_goal', 'target_date', 'weekly_summary_day', 'weekly_summary_time'],
+    'Personality': ['ai_persona_name', 'ai_persona_style', 'ai_custom_persona', 'preferred_language', 'communication_style', 'motivation_type'],
+  }
+
   const categorizedKeys = new Set<string>()
 
-  // Fitness context
-  const fitnessKeys = ['fitness_goal', 'workout_frequency', 'fitness_level', 'recent_workouts']
-  if (memory.fitness_goal || memory.workout_frequency || memory.fitness_level) {
-    fitnessKeys.forEach(k => categorizedKeys.add(k))
-    sections.push(`
-REMEMBERED - Fitness Goals:
-- Goal: ${memory.fitness_goal || 'Not set'}
-- Frequency: ${memory.workout_frequency || 'Not specified'}
-- Level: ${memory.fitness_level || 'Unknown'}
-${memory.recent_workouts ? `- Recent Activity: ${memory.recent_workouts}` : ''}
-`)
+  for (const [categoryName, keys] of Object.entries(categories)) {
+    const entries = keys
+      .filter(k => memory[k])
+      .map(k => {
+        categorizedKeys.add(k)
+        return `- ${k.replace(/_/g, ' ')}: ${memory[k]}`
+      })
+
+    if (entries.length > 0) {
+      sections.push(`${categoryName}:\n${entries.join('\n')}`)
+    }
   }
 
-  // Skills context
-  const skillKeys = ['active_skills', 'learning_style', 'skill_milestones']
-  if (memory.active_skills || memory.learning_style) {
-    skillKeys.forEach(k => categorizedKeys.add(k))
-    sections.push(`
-REMEMBERED - Learning & Skills:
-- Skills Learning: ${memory.active_skills || 'None tracked'}
-- Style: ${memory.learning_style || 'Unknown'}
-${memory.skill_milestones ? `- Milestones: ${memory.skill_milestones}` : ''}
-`)
+  // Catch-all for uncategorized entries
+  const uncategorized = Object.entries(memory)
+    .filter(([key]) => !categorizedKeys.has(key))
+    .map(([key, val]) => `- ${key.replace(/_/g, ' ')}: ${val}`)
+
+  if (uncategorized.length > 0) {
+    sections.push(`Other:\n${uncategorized.join('\n')}`)
   }
 
-  // Time management
-  const timeKeys = ['sleep_schedule', 'work_hours', 'time_challenges', 'productivity_tools']
-  if (memory.sleep_schedule || memory.work_hours || memory.time_challenges) {
-    timeKeys.forEach(k => categorizedKeys.add(k))
-    sections.push(`
-REMEMBERED - Time Management:
-- Sleep Schedule: ${memory.sleep_schedule || 'Unknown'}
-- Work/Study Hours: ${memory.work_hours || 'Unknown'}
-- Main Challenge: ${memory.time_challenges || 'Unknown'}
-${memory.productivity_tools ? `- Preferred Tools: ${memory.productivity_tools}` : ''}
-`)
-  }
-
-  // Style
-  const styleKeys = ['style_preference', 'body_type', 'color_preference', 'style_goals']
-  if (memory.style_preference || memory.body_type || memory.color_preference) {
-    styleKeys.forEach(k => categorizedKeys.add(k))
-    sections.push(`
-REMEMBERED - Personal Style:
-- Aesthetic: ${memory.style_preference || 'Unknown'}
-- Body Type: ${memory.body_type || 'Unknown'}
-- Colors: ${memory.color_preference || 'Unknown'}
-${memory.style_goals ? `- Goals: ${memory.style_goals}` : ''}
-`)
-  }
-
-  // Personality & preferences
-  const personalityKeys = ['communication_style', 'motivation_type', 'user_challenges', 'achievements']
-  if (memory.communication_style || memory.motivation_type || memory.user_challenges) {
-    personalityKeys.forEach(k => categorizedKeys.add(k))
-    sections.push(`
-REMEMBERED - About the User:
-- Prefers: ${memory.communication_style || 'Unknown communication style'}
-- Motivated by: ${memory.motivation_type || 'Unknown'}
-- Main Challenge: ${memory.user_challenges || 'Unknown'}
-${memory.achievements ? `- Recent Wins: ${memory.achievements}` : ''}
-`)
-  }
-
-  // AI Persona preferences
-  const personaKeys = ['ai_interaction_style', 'preferred_advice_type']
-  if (memory.ai_interaction_style || memory.preferred_advice_type) {
-    personaKeys.forEach(k => categorizedKeys.add(k))
-    const personaKey = memory.ai_interaction_style || 'friendly'
-    const detailedPersona = PERSONA_PROMPTS[personaKey] || PERSONA_PROMPTS['friendly']
-
-    sections.push(`
-REMEMBERED - How to Help:
-- Interaction Style Preference: ${personaKey}
-- Advice Type: ${memory.preferred_advice_type || 'Balanced'}
-- IMPORTANT TONE INSTRUCTIONS: ${detailedPersona}
-`)
-  }
-
-  // Catch-all: include any memory keys NOT covered by the hardcoded categories above.
-  // This ensures memories like "food_preference", "dietary_preference", "work_environment"
-  // are never silently dropped.
-  const uncategorizedEntries = Object.entries(memory).filter(
-    ([key]) => !categorizedKeys.has(key)
-  )
-  if (uncategorizedEntries.length > 0) {
-    const lines = uncategorizedEntries.map(
-      ([key, val]) => `- ${key.replace(/_/g, ' ')}: ${val}`
-    )
-    sections.push(`
-REMEMBERED - General Memories:
-${lines.join('\n')}
-`)
-  }
-
-  return sections.join('\n')
+  return sections.join('\n\n')
 }
 
+// ═══════════════════════════════════════════════════
+// LAYER 3 — Vector Store (RAG)
+// ═══════════════════════════════════════════════════
+
+/**
+ * Retrieval signals — the AI runs vector search only when these are detected.
+ */
+const RETRIEVAL_SIGNALS = [
+  'you told me', 'i told you', 'remember when', 'last time',
+  'before', 'previously', 'earlier', 'we discussed', 'you said',
+  'what did i say about', 'what was my', 'recall', 'you mentioned',
+  'as i mentioned', 'that time', 'we talked about',
+]
+
+export function needsRetrieval(message: string): boolean {
+  const lower = message.toLowerCase()
+  return RETRIEVAL_SIGNALS.some(signal => lower.includes(signal))
+}
+
+/**
+ * Embed a message and store it in the vector store.
+ */
+export async function embedAndStoreMessage(
+  userId: string,
+  conversationId: string,
+  messageId: string,
+  content: string,
+  role: 'user' | 'assistant'
+): Promise<void> {
+  try {
+    // Skip very short messages
+    if (content.length < 20) return
+
+    const embedding = await generateEmbedding(content, 'RETRIEVAL_DOCUMENT')
+    if (!embedding || embedding.length === 0) {
+      console.warn('[Vector Store] Empty embedding, skipping store')
+      return
+    }
+
+    const supabase = getServiceClient()
+    const { error } = await supabase.from('ai_memory_vectors').insert({
+      user_id: userId,
+      conversation_id: conversationId,
+      message_id: messageId,
+      role,
+      content_chunk: content.substring(0, 2000), // cap chunk size
+      embedding: JSON.stringify(embedding),
+    })
+
+    if (error) {
+      console.error('[Vector Store] Insert error:', error)
+    } else {
+      console.log(`[Vector Store] Stored embedding for ${role} message`)
+    }
+  } catch (err) {
+    console.error('[Vector Store] embedAndStoreMessage error:', err)
+  }
+}
+
+/**
+ * Retrieve relevant past memories using cosine similarity search.
+ */
+export async function retrieveRelevantMemories(
+  userId: string,
+  currentMessage: string,
+  topK: number = 5
+): Promise<string[]> {
+  try {
+    const queryEmbedding = await generateEmbedding(currentMessage, 'RETRIEVAL_QUERY')
+    if (!queryEmbedding || queryEmbedding.length === 0) return []
+
+    const supabase = getServiceClient()
+
+    // Use the match_memory_vectors RPC function
+    const { data: results, error } = await supabase.rpc('match_memory_vectors', {
+      query_embedding: JSON.stringify(queryEmbedding),
+      match_user_id: userId,
+      match_threshold: 0.75,
+      match_count: topK,
+    })
+
+    if (error) {
+      console.error('[Vector Store] Retrieval error:', error)
+      return []
+    }
+
+    if (!results || results.length === 0) return []
+
+    console.log(`[Vector Store] Retrieved ${results.length} relevant memories`)
+    return results.map((r: any) => {
+      const date = new Date(r.created_at).toLocaleDateString()
+      return `[${r.role} — ${date}]: ${r.content_chunk}`
+    })
+  } catch (err) {
+    console.error('[Vector Store] retrieveRelevantMemories error:', err)
+    return []
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// MEMORY EXTRACTION — AI-Driven (v3)
+// ═══════════════════════════════════════════════════
+
+/**
+ * AI-driven memory extraction — runs after every AI response.
+ * Uses the model to identify new facts from the conversation.
+ */
 export async function extractAndSaveMemory(
   userId: string,
   userMessage: string,
-  aiResponse: string,
-  _authToken?: string
+  aiResponse: string
 ): Promise<void> {
   try {
-    // Use service role key for reliable server-side writes
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    })
+    const existingMemory = await fetchUserMemory(userId)
+    const existingFacts = Object.entries(existingMemory)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join('\n')
 
-    // Simple extraction patterns (in production, this could use NLP/ML)
-    const memories: Array<{ key: string; value: string }> = []
+    const extractionPrompt = `Extract any new user facts from this conversation exchange.
+Return ONLY a valid JSON array of {"key": "snake_case_key", "value": "value", "category": "fitness|skills|gamification|personality|lifestyle|goals"} objects.
+If no new facts, return [].
+Do not repeat facts already in the user profile below.
 
-    // Extract fitness goals
-    if (/workout|gym|fitness|exercise|training/i.test(userMessage)) {
-      const match = userMessage.match(/want to|goal is|trying to|planning to\s+([^.,]+)/i)
-      if (match) {
-        memories.push({
-          key: 'fitness_goal',
-          value: match[1].trim()
-        })
-      }
-      
-      const freqMatch = userMessage.match(/(\d+)\s+times?\s+(?:a|per)\s+(?:week|day)/i)
-      if (freqMatch) {
-        memories.push({
-          key: 'workout_frequency',
-          value: `${freqMatch[1]} times per week`
-        })
-      }
+Known categories and example keys:
+- fitness: fitness_goal, current_weight, height, injuries, equipment, preferred_gym_time
+- skills: active_learning_focus, learning_style, coding_language, experience_level
+- lifestyle: sleep_schedule, work_hours, dietary_restrictions, budget_bdt
+- goals: primary_goal, target_date
+- personality: communication_style, motivation_type
+
+User Profile (existing):
+${existingFacts || 'No existing facts.'}
+
+User message: ${userMessage}
+AI response: ${aiResponse.substring(0, 500)}`
+
+    const rawResult = await generateResponse(
+      extractionPrompt,
+      [],
+      'You are a fact extraction system. Only output valid JSON arrays. No markdown, no explanation.',
+      'gemma-4-31b-it',
+      'memory_extraction'
+    )
+
+    if (!rawResult) return
+
+    const cleanJson = rawResult.replace(/```json/g, '').replace(/```/g, '').trim()
+    let facts: Array<{ key: string; value: string; category?: string }> = []
+
+    try {
+      facts = JSON.parse(cleanJson)
+    } catch {
+      console.warn('[Memory Extraction] Failed to parse extraction result:', cleanJson.substring(0, 200))
+      return
     }
 
-    // Extract skill/learning goals
-    if (/learn|studying|skill|programming|coding|language/i.test(userMessage)) {
-      const skillMatch = userMessage.match(/(?:learn|studying|want to learn)\s+([^.,]+)/i)
-      if (skillMatch) {
-        memories.push({
-          key: 'active_skills',
-          value: skillMatch[1].trim()
-        })
-      }
-    }
+    if (!Array.isArray(facts) || facts.length === 0) return
 
-    // Extract time/schedule preferences
-    if (/sleep|wake|morning|night|schedule|work hours/i.test(userMessage)) {
-      const scheduleMatch = userMessage.match(/(?:wake at|sleep at|start at)\s+([^.,]+)/i)
-      if (scheduleMatch) {
-        memories.push({
-          key: 'sleep_schedule',
-          value: scheduleMatch[1].trim()
-        })
-      }
-    }
+    const supabase = getServiceClient()
+    for (const fact of facts) {
+      if (!fact.key || !fact.value) continue
 
-    // Extract style preferences
-    if (/style|fashion|outfit|dress|aesthetic|look/i.test(userMessage)) {
-      const styleMatch = userMessage.match(/(?:prefer|like|love|enjoy)\s+([^.,]+)/i)
-      if (styleMatch) {
-        memories.push({
-          key: 'style_preference',
-          value: styleMatch[1].trim()
-        })
-      }
-    }
-
-    // Extract motivation type from AI suggestions
-    if (/strict|motivational|encouraging|pushing|gentle|tough/i.test(aiResponse)) {
-      if (/strict|tough/i.test(aiResponse)) {
-        memories.push({ key: 'motivation_type', value: 'strict accountability' })
-      } else if (/motivational|encouraging/i.test(aiResponse)) {
-        memories.push({ key: 'motivation_type', value: 'supportive & motivational' })
-      }
-    }
-
-    // NEW: Extract Diet/Nutrition
-    if (/eat|diet|food|calories|protein|vegan|keto|carb/i.test(userMessage)) {
-      const dietMatch = userMessage.match(/(?:i am|on a|following|eat)\s+([^.,]+)/i)
-      if (dietMatch) {
-        memories.push({ key: 'dietary_preference', value: dietMatch[1].trim() })
-      }
-    }
-
-    // NEW: Extract Productivity Tools
-    if (/using|app|tool|calendar|notion|obsidian|todoist/i.test(userMessage)) {
-      const toolMatch = userMessage.match(/(?:use|using|my tool is)\s+([^.,]+)/i)
-      if (toolMatch) {
-        memories.push({ key: 'productivity_tools', value: toolMatch[1].trim() })
-      }
-    }
-
-    // NEW: Extract Workplace/Environment
-    if (/work|office|home|remote|desk|commute/i.test(userMessage)) {
-      if (/work from home|remote/i.test(userMessage)) {
-        memories.push({ key: 'work_environment', value: 'Remote / WFH' })
-      } else if (/office|commute/i.test(userMessage)) {
-        memories.push({ key: 'work_environment', value: 'Office / Commute' })
-      }
-    }
-
-    // Save all extracted memories
-    for (const mem of memories) {
       await supabase.from('ai_memory').upsert(
         {
           user_id: userId,
-          memory_key: mem.key,
-          memory_val: mem.value,
+          memory_key: fact.key,
+          memory_val: fact.value,
+          category: fact.category || null,
+          confidence: 0.8,
           source: 'chat',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id,memory_key' }
       )
     }
 
-    console.log(`[AI Memory] Extracted and saved ${memories.length} memory items for user ${userId}`)
+    console.log(`[Memory Extraction] Extracted and saved ${facts.length} facts for user ${userId}`)
   } catch (err) {
-    console.error('[AI Memory Extract Error]:', err)
-    // Don't throw - memory extraction is non-critical
+    console.error('[Memory Extraction Error]:', err)
+    // Non-critical — don't throw
   }
 }
 
-/**
- * Store a specific memory directly (called from onboarding, settings, etc.)
- */
+// ═══════════════════════════════════════════════════
+// Direct Memory Operations
+// ═══════════════════════════════════════════════════
+
 export async function saveMemory(
   userId: string,
   memoryKey: string,
   memoryValue: string,
-  _authToken?: string,
-  source: string = 'system'
+  source: string = 'system',
+  category?: string
 ): Promise<void> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    })
-
+    const supabase = getServiceClient()
     await supabase.from('ai_memory').upsert(
       {
         user_id: userId,
         memory_key: memoryKey,
         memory_val: memoryValue,
-        source: source,
-        updated_at: new Date().toISOString()
+        category: category || null,
+        source,
+        updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id,memory_key' }
     )
-
     console.log(`[AI Memory] Saved memory: ${memoryKey}`)
   } catch (err) {
     console.error('[AI Memory Save Error]:', err)
@@ -300,23 +299,10 @@ export async function saveMemory(
   }
 }
 
-/**
- * Clear all memory for a user (dangerous - use with caution)
- */
-export async function clearUserMemory(
-  userId: string,
-  _authToken?: string
-): Promise<void> {
+export async function clearUserMemory(userId: string): Promise<void> {
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    })
-
-    const { error } = await supabase
-      .from('ai_memory')
-      .delete()
-      .eq('user_id', userId)
-
+    const supabase = getServiceClient()
+    const { error } = await supabase.from('ai_memory').delete().eq('user_id', userId)
     if (error) throw error
     console.log(`[AI Memory] Cleared all memory for user ${userId}`)
   } catch (err) {
@@ -324,4 +310,3 @@ export async function clearUserMemory(
     throw err
   }
 }
-

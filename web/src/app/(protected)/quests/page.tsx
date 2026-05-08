@@ -111,7 +111,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className={cn("text-[9px] font-black uppercase tracking-[0.3em] italic", typeConf.color)}>
-              {typeConf.label} Protocol
+              {typeConf.label} Quest
             </span>
             {quest.time_remaining && isActive && (
               <span className="flex items-center gap-1 text-[9px] font-bold text-blue-400/40 uppercase tracking-widest italic">
@@ -129,7 +129,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
           {isActive && (
             <div className="mb-4 space-y-1.5">
               <div className="flex justify-between text-[10px] font-bold italic tracking-widest uppercase text-blue-400/60">
-                <span>Progress Trace</span>
+                <span>Progress</span>
                 <span className="text-blue-400">{quest.current_value} / {quest.target_value}</span>
               </div>
               <div className="h-1.5 w-full bg-blue-500/10 rounded-full overflow-hidden border border-blue-500/20">
@@ -185,7 +185,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
                 )}
               >
                 {loading ? <Loader2 size={12} className="animate-spin" /> : <Trophy size={14} />}
-                Extract Rewards
+                Claim Rewards
               </button>
               <button 
                 onClick={() => onAbandon(quest.id)}
@@ -206,7 +206,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
               )}
             >
               {loading ? <Loader2 size={12} className="animate-spin" /> : <Sword size={14} />}
-              Initialize Quest
+              Start Quest
             </button>
           )}
         </div>
@@ -356,8 +356,8 @@ export default function QuestsPage() {
             <Sword size={32} className="text-blue-400" />
           </motion.div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">System Quests</h1>
-            <p className="text-blue-400/60 text-[10px] font-black tracking-[0.2em] uppercase italic">Earn experience points and unlock legendary rewards.</p>
+            <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">Quests</h1>
+            <p className="text-blue-400/60 text-[10px] font-black tracking-[0.2em] uppercase italic">Complete tasks to earn XP and level up.</p>
           </div>
         </div>
 
@@ -368,10 +368,10 @@ export default function QuestsPage() {
             try {
               const res = await fetch('/api/quests/generate', { method: 'POST', headers: headers() })
               if (res.ok) {
-                toast.success('Missions generated!', { id: loadingToast })
+                toast.success('Quests generated!', { id: loadingToast })
                 fetchQuests()
               } else {
-                toast.error('Failed to generate protocols', { id: loadingToast })
+                toast.error('Failed to generate quests', { id: loadingToast })
               }
             } catch {
               toast.error('Sync error', { id: loadingToast })
@@ -380,7 +380,7 @@ export default function QuestsPage() {
           className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/50 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/30 transition-all shadow-lg shadow-blue-500/10"
         >
           <Sparkles size={14} className="group-hover:animate-spin" />
-          Protocol Initializer
+          Generate Quests
         </button>
 
         {/* Quick Stats */}
@@ -433,7 +433,7 @@ export default function QuestsPage() {
                     activeTypeTab === tab ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-blue-400/30 hover:text-blue-400'
                   )}
                 >
-                  {tab === 'daily' ? 'DAILY PROTOCOLS' : tab === 'weekly' ? 'WEEKLY TRIALS' : 'SPECIAL MISSIONS'}
+                  {tab === 'daily' ? 'DAILY QUESTS' : tab === 'weekly' ? 'WEEKLY QUESTS' : 'SPECIAL QUESTS'}
                 </button>
               ))}
             </div>

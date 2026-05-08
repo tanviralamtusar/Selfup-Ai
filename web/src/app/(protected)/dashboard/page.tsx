@@ -40,6 +40,7 @@ import { StreakHistory } from '@/components/gamification/StreakHistory'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
 import { TodoModal } from '@/components/dashboard/TodoModal'
+import { StatAllocationModal } from '@/components/gamification/StatAllocationModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -197,6 +198,7 @@ export default function DashboardPage() {
   const [activeDungeons, setActiveDungeons] = useState<ActiveDungeon[]>([])
   const [dungeonCountdown, setDungeonCountdown] = useState<string>('')
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [showStatAllocationModal, setShowStatAllocationModal] = useState(false)
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
   const [showStreakHistory, setShowStreakHistory] = useState(false)
 
@@ -313,10 +315,10 @@ export default function DashboardPage() {
       })
       if (res.ok) {
         fetchDailies()
-        toast.success(`Protocol ${editingDaily ? 'updated' : 'initialized'}!`)
+        toast.success(`Daily ${editingDaily ? 'updated' : 'created'}!`)
       } else {
         const err = await res.json()
-        toast.error(err.error || 'Failed to save protocol')
+        toast.error(err.error || 'Failed to save daily')
       }
     } catch (e: any) {
       toast.error('Network error. Could not connect to the system.')
@@ -331,11 +333,11 @@ export default function DashboardPage() {
       })
       if (res.ok) {
         fetchDailies()
-        toast.success('Protocol terminated')
+        toast.success('Daily deleted')
         setIsDailyModalOpen(false)
       } else {
         const err = await res.json()
-        toast.error(err.error || 'Failed to terminate protocol')
+        toast.error(err.error || 'Failed to delete daily')
       }
     } catch (e: any) {
       toast.error('Network error. Could not connect to the system.')
@@ -516,6 +518,36 @@ export default function DashboardPage() {
         toast.error('Not enough AiCoins')
       }
     } catch { toast.error('Failed to purchase freeze') }
+  }
+
+  const handleAllocateStat = async (attribute: AttributeKey): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ action: 'allocate_stat', attribute })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success(`${attribute.toUpperCase()} enhanced! ⚡`)
+        // Update local profile state
+        if (profile) {
+          setProfile({
+            ...profile,
+            stat_points: data.data.remainingPoints,
+            [`attr_${attribute}`]: data.data.newValue,
+            max_hp: attribute === 'vit' ? data.data.newValue * 15 + 100 : profile.max_hp
+          })
+        }
+        return true
+      } else {
+        toast.error(data.error || 'Failed to allocate point')
+        return false
+      }
+    } catch {
+      toast.error('Network error')
+      return false
+    }
   }
 
   return (
@@ -728,8 +760,8 @@ export default function DashboardPage() {
               <div className="space-y-3 relative z-10">
                 {habits.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-blue-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
-                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">+ Initialize Protocol</Link>
+                    <p className="text-[10px] text-blue-500/30 font-black uppercase tracking-[0.2em] italic">No active habits</p>
+                    <Link href={ROUTES.TIME} className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-2 block hover:underline italic">+ New Habit</Link>
                   </div>
                 ) : habits.slice(0, 4).map(habit => (
                   <div key={habit.id} className={cn("group bg-slate-900/40 hover:bg-slate-900/60 p-2.5 rounded-lg transition-all border relative overflow-hidden italic cursor-pointer", habit.is_completed_this_cycle ? 'border-blue-500/10 opacity-50' : 'border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]')} onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}>
@@ -765,7 +797,7 @@ export default function DashboardPage() {
               <div className="space-y-3 relative z-10">
                 {dailies.length === 0 ? (
                   <div className="p-6 rounded border border-dashed border-cyan-500/10 text-center bg-slate-900/20">
-                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active protocols</p>
+                    <p className="text-[10px] text-cyan-500/30 font-black uppercase tracking-[0.2em] italic">No active dailies</p>
                   </div>
                 ) : dailies.slice(0, 4).map(daily => (
                   <div key={daily.id} onClick={() => handleCompleteDaily(daily)} className={cn("flex items-center gap-3 p-3 rounded-lg border transition-all group italic relative overflow-hidden", daily.is_completed ? 'bg-slate-900/20 border-cyan-500/10 opacity-50 grayscale cursor-default' : 'bg-slate-900/40 border-cyan-500/20 hover:bg-slate-900/60 cursor-pointer')}>
@@ -826,7 +858,7 @@ export default function DashboardPage() {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-blue-500/30 z-10" />
           <div className="flex items-center gap-1.5 mb-4 sticky top-0 bg-slate-950/80 backdrop-blur-md pb-2 z-10 -mx-1 px-1">
             <div className="w-4 h-px bg-blue-500" />
-            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">SELFUP EVENT LOG</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-blue-500 italic">ACTIVITY LOG</p>
           </div>
           <ActivityFeed />
         </motion.div>
@@ -839,11 +871,11 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-2">
               <div className="w-5 h-px bg-blue-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 italic">STATUS ATTRIBUTES</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500 italic">ATTRIBUTES</p>
             </div>
             <h2 className="text-3xl font-black tracking-tighter text-blue-50 font-headline leading-none italic uppercase system-text-glow">Attributes of the Awakened</h2>
           </div>
-          <Link href={ROUTES.SKILLS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">DETAILED ANALYSIS <ArrowRight size={14} /></Link>
+          <Link href={ROUTES.ANALYSIS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">DETAILED ANALYSIS <ArrowRight size={14} /></Link>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
           {ATTRIBUTES.map((attr) => (
@@ -851,9 +883,9 @@ export default function DashboardPage() {
           ))}
           {statPoints > 0 && (
             <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse">
+              <button onClick={() => setShowStatAllocationModal(true)} className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse hover:bg-amber-500/10 transition-colors active:scale-95 cursor-pointer">
                 <span className="text-lg font-black text-amber-300">+{statPoints}</span>
-              </div>
+              </button>
               <p className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em]">Allocate</p>
             </div>
           )}
@@ -904,6 +936,7 @@ export default function DashboardPage() {
       <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} />
       <HabitModal isOpen={isHabitModalOpen} onClose={() => { setIsHabitModalOpen(false); setEditingHabit(null); }} habit={editingHabit} onSave={handleSaveHabit} onDelete={editingHabit ? handleDeleteHabit : undefined} />
       <TodoModal isOpen={isTodoModalOpen} onClose={() => { setIsTodoModalOpen(false); setEditingTodo(null); }} todo={editingTodo} onSave={handleSaveTask} onDelete={editingTodo ? handleDeleteTask : undefined} />
+      <StatAllocationModal isOpen={showStatAllocationModal} onClose={() => setShowStatAllocationModal(false)} statPoints={statPoints} attributes={attrs} onAllocate={handleAllocateStat} />
     </motion.div>
   )
 }

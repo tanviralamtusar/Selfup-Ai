@@ -151,14 +151,14 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                   </div>
                 ) : (
                   <div className="p-8 text-center bg-slate-950/40 rounded-xl border border-dashed border-blue-500/10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/20 italic">No internal protocol footage available</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/20 italic">No video available</p>
                   </div>
                 )}
               </div>
               
               {(exercise.technique_note || exercise.weight_note) && (
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/40 italic">Protocol Instructions</h4>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/40 italic">Instructions</h4>
                   <div className="text-[13px] text-blue-300/80 bg-blue-500/5 p-4 rounded-xl border border-blue-500/10 italic font-medium leading-relaxed space-y-2">
                     {exercise.technique_note && (
                       <p>

@@ -3,27 +3,42 @@ import { Droplet, Utensils, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
+import { ActiveDietPlanModal } from './ActiveDietPlanModal'
+import type { DietPlanRow } from '@/types/fitness'
 
 export default function NutritionView() {
   const [foods, setFoods] = useState<any[]>([])
   const [waterAmount, setWaterAmount] = useState(0)
+  const [dietPlan, setDietPlan] = useState<DietPlanRow | null>(null)
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const [form, setForm] = useState({ meal_type: 'snack', food_name: '', calories: '', protein_g: '', carbs_g: '', fat_g: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Hardcoded goals for now or fetched from nutrition_plans
-  const goals = { calories: 2500, protein_g: 180, carbs_g: 250, fat_g: 80, water_ml: 3000 }
+  // Hardcoded goals as fallback, overridden by active diet plan if it exists
+  const goals = { 
+    calories: dietPlan?.daily_calories ?? 2500, 
+    protein_g: dietPlan?.protein_target_g ?? 180, 
+    carbs_g: dietPlan?.carbs_target_g ?? 250, 
+    fat_g: dietPlan?.fat_target_g ?? 80, 
+    water_ml: 3000 
+  }
 
   const fetchData = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const headers = { 'Authorization': `Bearer ${session?.access_token}` }
-      const [foodRes, waterRes] = await Promise.all([
+      const [foodRes, waterRes, planRes] = await Promise.all([
         fetch('/api/fitness/nutrition', { headers }),
-        fetch('/api/fitness/water', { headers })
+        fetch('/api/fitness/water', { headers }),
+        fetch('/api/fitness/diet/plan?active_only=true', { headers })
       ])
-      const [foodData, waterData] = await Promise.all([foodRes.json(), waterRes.json()])
+      const [foodData, waterData, planData] = await Promise.all([
+        foodRes.json(), 
+        waterRes.json(),
+        planRes.json()
+      ])
       
       setFoods(Array.isArray(foodData) ? foodData : [])
       
@@ -31,6 +46,10 @@ export default function NutritionView() {
         ? waterData.reduce((acc, curr) => acc + curr.amount_ml, 0)
         : 0
       setWaterAmount(totalWater)
+      
+      if (planData.success && planData.data && planData.data.length > 0) {
+        setDietPlan(planData.data[0])
+      }
     } catch (err) {
       toast.error('Failed to load nutrition data')
     } finally {
@@ -148,9 +167,19 @@ export default function NutritionView() {
               </div>
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Daily Calories</h2>
             </div>
-            <div className="text-right">
-              <span className="text-3xl font-black text-blue-50 system-text-glow tracking-tighter">{Math.round(currentMacros.calories)}</span>
-              <span className="text-[10px] text-blue-500/30 uppercase font-black tracking-widest ml-2">/ {goals.calories} KCAL</span>
+            <div className="flex items-center gap-6">
+              {dietPlan && (
+                <button 
+                  onClick={() => setIsPlanModalOpen(true)}
+                  className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-[10px] text-blue-400 font-black uppercase tracking-widest rounded-lg transition-colors"
+                >
+                  View Plan
+                </button>
+              )}
+              <div className="text-right">
+                <span className="text-3xl font-black text-blue-50 system-text-glow tracking-tighter">{Math.round(currentMacros.calories)}</span>
+                <span className="text-[10px] text-blue-500/30 uppercase font-black tracking-widest ml-2">/ {goals.calories} KCAL</span>
+              </div>
             </div>
           </div>
           
@@ -279,6 +308,12 @@ export default function NutritionView() {
           </button>
         </form>
       </section>
+
+      <ActiveDietPlanModal 
+        isOpen={isPlanModalOpen} 
+        onClose={() => setIsPlanModalOpen(false)} 
+        plan={dietPlan} 
+      />
     </div>
   )
 }

@@ -3,8 +3,8 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SelfUp | The Kinetic Monolith",
-  description: "Generate habits dynamically using AI",
+  title: "SelfUp | Level Up Your Life",
+  description: "Manage your life using AI",
 };
 
 export default function RootLayout({

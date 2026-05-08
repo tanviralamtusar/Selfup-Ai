@@ -337,7 +337,7 @@ export function ScheduleView() {
               <ChevronLeft size={20} />
             </button>
             <div className="min-w-56 text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Temporal Alignment</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Schedule</p>
               <p className="text-xl font-black text-blue-50 tracking-widest system-text-glow">
                 {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
               </p>
@@ -368,7 +368,7 @@ export function ScheduleView() {
           ) : (
             <Sparkles size={18} className="group-hover:animate-pulse" />
           )}
-          <span>{isOptimizing ? 'Strategizing...' : 'System Optimization'}</span>
+          <span>{isOptimizing ? 'Planning...' : 'Auto Schedule'}</span>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </button>
       </div>
@@ -389,13 +389,13 @@ export function ScheduleView() {
               <div className="flex items-center justify-between gap-4 mb-2">
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
                   <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
-                  System Strategic Logic
+                  AI Planning Notes
                 </div>
                 <button 
                   onClick={handleRevertSchedule}
                   className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/40 hover:text-rose-500 transition-colors border-b border-transparent hover:border-rose-500/20"
                 >
-                  [ REVERT PROTOCOL ]
+                  [ REVERT SCHEDULE ]
                 </button>
               </div>
               <p className="text-sm text-blue-100 font-bold leading-relaxed tracking-wide italic">
@@ -421,8 +421,8 @@ export function ScheduleView() {
                   <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse" />
                   <Loader2 className="animate-spin text-blue-400 relative z-10" size={56} />
                 </div>
-                <h4 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 system-text-glow">Strategizing...</h4>
-                <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em] mt-2">Analyzing protocols, persona data, and temporal constraints.</p>
+                <h4 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 system-text-glow">Planning...</h4>
+                <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em] mt-2">Analyzing your tasks, habits, and goals.</p>
               </div>
             </motion.div>
           )}
@@ -482,7 +482,7 @@ export function ScheduleView() {
           <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-6 flex items-center gap-2">
-              <Zap size={16} /> Active Protocols
+              <Zap size={16} /> Active Habits
             </h3>
             <div className="space-y-3">
               {habits.map(habit => (
@@ -516,14 +516,14 @@ export function ScheduleView() {
             {/* Timeline Header */}
             <div className="bg-slate-950/80 backdrop-blur-md border-b border-blue-500/20 p-6 sticky top-0 z-20 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Temporal Grid</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Timeline</p>
                 <p className="text-sm font-black text-blue-50 uppercase tracking-widest system-text-glow">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
               </div>
               <div className="flex items-center gap-3 text-[10px] font-black text-blue-500/40 uppercase tracking-[0.3em]">
                 {isToday && (
                   <>
                     <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
-                    Live Trace
+                    Current Time
                   </>
                 )}
               </div>

@@ -6,6 +6,7 @@ import { Trophy, Clock, X, CheckCircle } from 'lucide-react';
 import { ExerciseCard } from './ExerciseCard';
 import type { WorkoutDayRow, WorkoutDayExerciseRow } from '@/types/fitness';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/authStore';
 
 interface SessionViewProps {
   sessionId: string;
@@ -20,6 +21,7 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
   const [activeExerciseIdx, setActiveExerciseIdx] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
+  const { session } = useAuthStore();
 
   // Timer
   useEffect(() => {
@@ -37,7 +39,10 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
     try {
       const res = await fetch(`/api/fitness/sessions/${sessionId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ action: 'log_set', exercise_id: exerciseId, set_number: setNum, weight_used: weight })
       });
       const json = await res.json();
@@ -70,7 +75,10 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
     try {
       const res = await fetch(`/api/fitness/sessions/${sessionId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ action: 'complete_session' })
       });
       const json = await res.json();

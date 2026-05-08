@@ -68,13 +68,13 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
         {plan.name}
       </h3>
       <p className="text-[13px] text-blue-400/60 line-clamp-2 mb-6 leading-relaxed font-medium italic">
-        {plan.description || 'System-generated physical vessel optimization protocol.'}
+        {plan.description || 'AI-generated fitness plan.'}
       </p>
 
       <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40">
         <div className="flex items-center gap-2">
           <Calendar size={16} className="text-blue-400/50" />
-          <span>{plan.days_per_week} PHASES / WEEK</span>
+          <span>{plan.days_per_week} DAYS / WEEK</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
@@ -91,17 +91,17 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
               className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400 hover:scale-105 transition-all"
             >
               <Play size={16} fill="currentColor" />
-              Resume Protocol
+              Continue Workout
             </Link>
           ) : (
             <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600/50 text-white/50 text-xs font-black uppercase tracking-[0.2em] border border-blue-400/30 cursor-not-allowed">
               <Play size={16} fill="currentColor" />
-              Next Phase Scheduled
+              Next Workout Scheduled
             </button>
           )
         ) : (
           <div className="flex items-center gap-2 text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] group-hover:text-blue-300 transition-colors italic">
-            Protocol Details <ChevronRight size={16} />
+            Plan Details <ChevronRight size={16} />
           </div>
         )}
       </div>

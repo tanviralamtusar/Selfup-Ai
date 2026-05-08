@@ -107,11 +107,11 @@ export default function FitnessPage() {
         <div className="relative group">
           <div className="relative">
             <h1 className="text-4xl font-black tracking-[0.3em] mb-2 uppercase">
-              Physical <span className="text-blue-500">Vessel</span>
+              Fitness <span className="text-blue-500">Center</span>
             </h1>
             <div className="text-blue-500/40 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
               <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
-              Strategic Body Optimization Module v4.2
+              AI Powered Workout & Nutrition
             </div>
           </div>
         </div>
@@ -128,12 +128,15 @@ export default function FitnessPage() {
             ) : (
               <Sparkles size={16} className="text-blue-400 group-hover:rotate-12 transition-transform" />
             )}
-            {isGenerating ? 'Synthesizing...' : 'AI Optimization'}
+            {isGenerating ? 'Loading...' : 'AI Plan'}
           </button>
           
-          <button className="flex items-center gap-3 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400 transition-all hover:scale-105 active:scale-95">
+          <button 
+            onClick={handleOpenAiModal}
+            className="flex items-center gap-3 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400 transition-all hover:scale-105 active:scale-95"
+          >
             <Plus size={16} />
-            Build Protocol
+            New Plan
           </button>
         </div>
       </div>
@@ -173,7 +176,7 @@ export default function FitnessPage() {
                   <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
                   <div className="flex items-center gap-3 mb-6">
                     <History size={18} className="text-blue-500" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Temporal Logs</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Workout History</h2>
                   </div>
                   
                   <div className="space-y-4">
@@ -182,16 +185,21 @@ export default function FitnessPage() {
                         <div key={log.id} className="p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative group/log overflow-hidden">
                           <div className="flex justify-between items-center mb-3">
                             <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">+{log.xp_earned} XP</span>
-                            <span className="text-[8px] font-black text-blue-500/30 uppercase tracking-widest">{new Date(log.completed_at).toLocaleDateString()}</span>
+                            <div className="flex items-center gap-2">
+                              {log.status === 'partial' && (
+                                <span className="text-[7px] font-black bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase tracking-tighter">In Progress</span>
+                              )}
+                              <span className="text-[8px] font-black text-blue-500/30 uppercase tracking-widest">{new Date(log.completed_at).toLocaleDateString()}</span>
+                            </div>
                           </div>
-                          <h4 className="text-[11px] font-black text-blue-50 mb-1 uppercase tracking-widest">Protocol Executed</h4>
+                          <h4 className="text-[11px] font-black text-blue-50 mb-1 uppercase tracking-widest">{log.day_name || 'Workout Complete'}</h4>
                           <p className="text-[10px] text-blue-500/60 line-clamp-1 italic italic leading-relaxed">"{log.notes || 'No log data recorded.'}"</p>
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover/log:bg-blue-500/40 transition-colors" />
                         </div>
                       ))
                     ) : (
                       <div className="py-12 text-center text-blue-500/20 italic text-[10px] font-black uppercase tracking-widest border border-dashed border-blue-500/10 rounded-xl">
-                        NO PROTOCOLS LOGGED
+                        NO WORKOUTS LOGGED
                       </div>
                     )}
                   </div>

@@ -213,9 +213,9 @@ export default function SkillsPage() {
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
               <Brain size={28} />
             </div>
-            <h1 className="text-4xl font-black font-headline italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">Selfup Skill Registry</h1>
+            <h1 className="text-4xl font-black font-headline italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">Skill Center</h1>
           </div>
-          <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Architect your path to mastery with Selfup guidance.</p>
+          <p className="text-blue-400/60 text-sm font-bold tracking-widest uppercase italic pl-15">Track your progress and learn new skills.</p>
         </div>
 
         <button
@@ -223,7 +223,7 @@ export default function SkillsPage() {
           className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-500/20 text-blue-400 rounded-2xl font-black uppercase text-xs tracking-[0.2em] italic border border-blue-500/50 shadow-lg shadow-blue-500/10 hover:bg-blue-500/30 transition-all btn-press"
         >
           <Plus size={18} />
-          Initialize Mastery
+          Add Skill
         </button>
       </div>
 
@@ -234,20 +234,20 @@ export default function SkillsPage() {
           {isLoading && skills.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed backdrop-blur-md">
               <Loader2 className="animate-spin text-blue-400 mb-4" />
-              <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Syncing with Selfup Database...</p>
+              <p className="text-sm font-black uppercase tracking-[0.2em] italic text-blue-400/40">Loading skills...</p>
             </div>
           ) : skills.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-slate-950/40 rounded-3xl border border-blue-500/20 border-dashed text-center px-6 backdrop-blur-md">
               <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-6 border border-blue-500/20">
                 <Sparkles size={32} className="text-blue-400/40" />
               </div>
-              <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">Empty Registry</h2>
-              <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't defined any masteries yet. Let Selfup help you choose a path.</p>
+              <h2 className="text-xl font-black mb-2 uppercase tracking-[0.2em] italic text-blue-100">No Skills Found</h2>
+              <p className="text-sm text-blue-400/40 max-w-xs mb-8">You haven't added any skills yet. Start by adding your first skill.</p>
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="px-8 py-3 bg-blue-500/10 hover:bg-blue-500/20 transition-colors rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/30 text-blue-400"
               >
-                Begin Your Journey
+                Add Your First Skill
               </button>
             </div>
           ) : (
@@ -289,17 +289,17 @@ export default function SkillsPage() {
                     </div>
                     <div>
                       <h2 className="text-2xl font-black font-headline text-blue-100 tracking-tight uppercase italic">{activeSkill.name}</h2>
-                      <p className="text-xs font-black uppercase text-blue-400 tracking-[0.3em] italic">Rank: {activeSkill.current_level}</p>
+                      <p className="text-xs font-black uppercase text-blue-400 tracking-[0.3em] italic">Level: {activeSkill.current_level}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">XP Accumulation</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">XP Earned</p>
                       <p className="text-xl font-black text-blue-400 italic">+{activeSkill.milestoneStats.completed * 100}</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Temporal Investment</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Time Spent</p>
                       <p className="text-xl font-black text-cyan-400 italic">{Number(activeSkill.total_hours || 0).toFixed(1)}h</p>
                     </div>
                   </div>
@@ -308,7 +308,7 @@ export default function SkillsPage() {
                     onClick={() => setIsLoggingSession(true)}
                     className="w-full mt-6 py-4 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl font-black uppercase text-xs tracking-[0.3em] italic border border-blue-500/30 transition-all btn-press shadow-[0_0_15px_rgba(59,130,246,0.1)]"
                   >
-                    Initiate Practice Session
+                    Log Session
                   </button>
                 </div>
 
@@ -330,7 +330,7 @@ export default function SkillsPage() {
                       activeTab === 'history' ? 'border-blue-400 text-blue-400 system-text-glow' : 'border-transparent text-blue-400/40 hover:text-blue-400'
                     )}
                   >
-                    Progress Trace
+                    History
                   </button>
                 </div>
 
@@ -340,7 +340,7 @@ export default function SkillsPage() {
                     isRefreshingRoadmap && !activeRoadmap ? (
                       <div className="py-20 flex flex-col items-center gap-4">
                         <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Accessing Archives...</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Loading...</p>
                       </div>
                     ) : (
                       <RoadmapTimeline
@@ -389,7 +389,7 @@ export default function SkillsPage() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="w-full max-w-md bg-surface-container-high rounded-[32px] p-8 border border-outline-variant/10 shadow-2xl relative z-10"
             >
-              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Craft New Mastery</h2>
+              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Add New Skill</h2>
 
               <div className="space-y-6">
                 <div className="space-y-2">
@@ -447,7 +447,7 @@ export default function SkillsPage() {
                   onClick={handleAddSkill}
                   className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
                 >
-                  Forge Path
+                  Create Skill
                 </button>
               </div>
             </motion.div>
@@ -512,7 +512,7 @@ export default function SkillsPage() {
                   onClick={handleLogSession}
                   className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
                 >
-                  Lock in XP
+                  Log Session
                 </button>
               </div>
             </motion.div>

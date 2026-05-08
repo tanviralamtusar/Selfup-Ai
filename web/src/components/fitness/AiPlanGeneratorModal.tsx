@@ -34,8 +34,8 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                 <Sparkles size={24} />
               </div>
               <div>
-                <h2 className="text-xl font-black uppercase tracking-[0.3em] text-blue-50 system-text-glow">Selfup Fitness</h2>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-blue-500/60 font-black">Protocol Initializer</p>
+                <h2 className="text-xl font-black uppercase tracking-[0.3em] text-blue-50 system-text-glow">Fitness Planner</h2>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-blue-500/60 font-black">Create Your Plan</p>
               </div>
             </div>
             <button 
@@ -52,16 +52,16 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
             {/* Goal Selection */}
             <div className="space-y-6">
               <label className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">
-                <Activity size={14} className="text-blue-400" /> Protocol Objective
+                <Activity size={14} className="text-blue-400" /> Choose Your Goal
               </label>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { id: 'muscle_gain', label: 'Hypertrophy' },
-                  { id: 'fat_loss', label: 'Lean Synthesis' },
-                  { id: 'endurance', label: 'Stamina Build' },
-                  { id: 'general_fitness', label: 'Vessel Maintenance' },
-                  { id: 'mobility', label: 'Flow States' },
-                  { id: 'strength', label: 'Absolute Power' },
+                  { id: 'muscle_gain', label: 'Muscle Gain' },
+                  { id: 'fat_loss', label: 'Fat Loss' },
+                  { id: 'endurance', label: 'Endurance' },
+                  { id: 'general_fitness', label: 'Fitness' },
+                  { id: 'mobility', label: 'Flexibility' },
+                  { id: 'strength', label: 'Strength' },
                 ].map(g => (
                   <button
                     key={g.id}
@@ -83,7 +83,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
             {/* Days per week */}
             <div className="space-y-6">
               <label className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">
-                <CalendarDays size={14} className="text-blue-400" /> Temporal Allocation
+                <CalendarDays size={14} className="text-blue-400" /> Days Per Week
               </label>
               <div className="flex gap-3">
                 {[2, 3, 4, 5, 6].map(d => (
@@ -97,7 +97,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                         : 'bg-slate-950/60 border-blue-500/10 text-blue-500/40 hover:border-blue-500/40 hover:bg-blue-900/10 hover:text-blue-200'
                     }`}
                   >
-                    {d} PHASES
+                    {d} DAYS
                     {days === d && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />}
                   </button>
                 ))}
@@ -115,12 +115,12 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
               {isGenerating ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  SYNTHESIZING PROTOCOL...
+                  Generating Plan...
                 </>
               ) : (
                 <>
                   <Sparkles size={18} className="group-hover:animate-pulse" />
-                   INITIALIZE SELFUP GENERATION
+                   Create My Fitness Plan
                 </>
               )}
             </button>

@@ -147,7 +147,7 @@ export function ActionWidget({ action, messageId, className, onConfirm, onCancel
       return (
         <StatusWidget
           icon={<Dumbbell size={20} />}
-          title="Fitness Protocol Generated!"
+          title="Fitness Plan Created!"
           description="Your custom fitness plan is being finalized. Head over to the Fitness Dashboard to review and activate it."
           linkHref="/fitness"
           linkText="Review Plan"
@@ -160,8 +160,8 @@ export function ActionWidget({ action, messageId, className, onConfirm, onCancel
       return (
         <StatusWidget
           icon={<ClipboardList size={20} />}
-          title="Fitness Interview Active"
-          description="Answer my questions above so I can design your perfect physical vessel upgrade."
+          title="Fitness Assessment Active"
+          description="Answer my questions above so I can design your perfect fitness plan."
           color="blue"
           className={className}
         />
@@ -352,7 +352,7 @@ function ConfirmationWidget({
                 config.confirmBtnClass
               )}
             >
-              <Check size={16} /> Confirm Protocol
+              <Check size={16} /> Confirm Plan
             </button>
             <button
               onClick={onCancel}
@@ -370,7 +370,7 @@ function ConfirmationWidget({
 function getFallbackDescription(action: Action): string {
   const p = action.payload
   if (action.type === 'fitness_plan_generate') {
-    return `### Protocol Summary
+    return `### Plan Summary
 - **Goal**: ${p.goal || 'Overall'}
 - **Level**: ${p.experience_level || 'Beginner'}
 - **Schedule**: ${p.days_per_week || 3} sessions per week
@@ -504,7 +504,7 @@ function getConfirmationConfig(action: Action) {
       }
     case 'fitness_plan_generate':
       return {
-        label: 'GENERATE FITNESS PROTOCOL',
+        label: 'CREATE FITNESS PLAN',
         icon: <Dumbbell size={20} />,
         bgClass: 'bg-gradient-to-r from-green-500/10 to-emerald-500/5',
         borderClass: 'border-green-500/20',

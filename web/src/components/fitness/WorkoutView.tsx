@@ -22,7 +22,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Dumbbell size={24} className="text-blue-400" />
-          <h2 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/60 italic">Current Protocol</h2>
+          <h2 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/60 italic">Current Plan</h2>
         </div>
 
         {loading ? (
@@ -52,7 +52,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
                         : 'border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10'
                     }`}
                   >
-                    <span className="block text-[10px] text-blue-400/40 uppercase font-black tracking-[0.2em] mb-2">Phase {day.day_number}</span>
+                    <span className="block text-[10px] text-blue-400/40 uppercase font-black tracking-[0.2em] mb-2">Day {day.day_number}</span>
                     <span className="block text-xs font-black text-blue-50 uppercase tracking-widest">{day.name}</span>
                     
                     {isToday ? (
@@ -61,7 +61,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
                       </div>
                     ) : (
                       <div className="mt-3 text-[9px] uppercase tracking-widest font-black text-blue-500/20 group-hover:text-blue-400 transition-colors">
-                        View Protocol
+                        View Details
                       </div>
                     )}
                     
@@ -78,13 +78,13 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
           <div className="flex flex-col items-center justify-center p-16 border border-dashed border-blue-500/20 rounded-xl bg-slate-950/20 relative overflow-hidden group">
             <div className="absolute inset-0 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05] transition-colors" />
             <Dumbbell size={48} className="text-blue-500/10 mb-6 group-hover:text-blue-500/20 transition-colors" />
-            <h3 className="text-sm font-black text-blue-500/40 mb-2 uppercase tracking-[0.3em]">No Active Protocol</h3>
-            <p className="text-[10px] text-blue-500/20 font-black uppercase tracking-[0.2em] mb-8">Initialize your transformation sequence.</p>
+            <h3 className="text-sm font-black text-blue-500/40 mb-2 uppercase tracking-[0.3em]">No Active Plan</h3>
+            <p className="text-[10px] text-blue-500/20 font-black uppercase tracking-[0.2em] mb-8">Create your first fitness plan.</p>
             <button 
               onClick={handleGeneratePlan}
               className="flex items-center gap-3 px-6 py-3 bg-blue-500/5 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-all shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]"
             >
-              System Synthesis <ArrowRight size={14} />
+              Create Plan <ArrowRight size={14} />
             </button>
           </div>
         )}
@@ -92,7 +92,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
 
       {!loading && plans.length > 1 && (
         <section>
-          <h2 className="text-xs font-black mb-6 text-blue-400/40 uppercase tracking-[0.3em] italic">Archived Protocols</h2>
+          <h2 className="text-xs font-black mb-6 text-blue-400/40 uppercase tracking-[0.3em] italic">Past Plans</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {plans.filter(p => !p.is_active).map(plan => (
               <WorkoutCard key={plan.id} plan={plan} />

@@ -146,7 +146,7 @@ export default function NutritionView() {
               <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 <Utensils size={20} />
               </div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Metabolic Fueling</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Daily Calories</h2>
             </div>
             <div className="text-right">
               <span className="text-3xl font-black text-blue-50 system-text-glow tracking-tighter">{Math.round(currentMacros.calories)}</span>
@@ -155,8 +155,8 @@ export default function NutritionView() {
           </div>
           
           <div className="space-y-6 relative z-10">
-            <MacroBar label="Protein (HP)" current={currentMacros.protein} target={goals.protein_g} color="bg-rose-500" />
-            <MacroBar label="Carbs (MP)" current={currentMacros.carbs} target={goals.carbs_g} color="bg-cyan-400" />
+            <MacroBar label="Protein" current={currentMacros.protein} target={goals.protein_g} color="bg-rose-500" />
+            <MacroBar label="Carbs" current={currentMacros.carbs} target={goals.carbs_g} color="bg-cyan-400" />
             <MacroBar label="Fat" current={currentMacros.fat} target={goals.fat_g} color="bg-amber-500" />
           </div>
         </section>
@@ -168,7 +168,7 @@ export default function NutritionView() {
               <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 <Droplet size={20} />
               </div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Aqueous Trace</h2>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Water Intake</h2>
             </div>
             <div className="text-right">
               <span className="text-3xl font-black text-blue-400 system-text-glow tracking-tighter">{waterAmount}</span>
@@ -197,39 +197,39 @@ export default function NutritionView() {
           <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
             <Plus size={20} />
           </div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Ingestion Protocol</h2>
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Log Food</h2>
         </div>
         
         <form onSubmit={handleLogFood} className="space-y-6 relative z-10">
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Subject / Nutrient Name</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Food Name</label>
               <input
                 required
                 type="text"
                 value={form.food_name}
                 onChange={e => setForm({...form, food_name: e.target.value})}
-                placeholder="E.G. SYNTHETIC PROTEIN"
+                placeholder="E.G. CHICKEN BREAST"
                 className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 transition-colors uppercase tracking-widest placeholder:text-blue-500/10"
               />
             </div>
             
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Phase Type</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Meal Type</label>
               <select
                 value={form.meal_type}
                 onChange={e => setForm({...form, meal_type: e.target.value})}
                 className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 uppercase tracking-widest"
               >
-                <option value="breakfast">Morning</option>
-                <option value="lunch">Mid-Day</option>
-                <option value="dinner">Evening</option>
-                <option value="snack">Supplemental</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Energy (KCAL)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Calories</label>
               <input
                 type="number"
                 value={form.calories}
@@ -239,7 +239,7 @@ export default function NutritionView() {
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Protein (HP)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Protein</label>
               <input
                 type="number"
                 value={form.protein_g}
@@ -249,7 +249,7 @@ export default function NutritionView() {
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/30 mb-2 group-focus-within/input:text-cyan-400 transition-colors">Carbs (MP)</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/30 mb-2 group-focus-within/input:text-cyan-400 transition-colors">Carbs</label>
               <input
                 type="number"
                 value={form.carbs_g}
@@ -259,7 +259,7 @@ export default function NutritionView() {
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/30 mb-2 group-focus-within/input:text-amber-400 transition-colors">Fat Content</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/30 mb-2 group-focus-within/input:text-amber-400 transition-colors">Fat</label>
               <input
                 type="number"
                 value={form.fat_g}
@@ -275,7 +275,7 @@ export default function NutritionView() {
             className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-[0.3em] rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400 group active:scale-95"
           >
             {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} className="group-hover:rotate-90 transition-transform" />}
-            Confirm Ingestion
+            Log Food
           </button>
         </form>
       </section>

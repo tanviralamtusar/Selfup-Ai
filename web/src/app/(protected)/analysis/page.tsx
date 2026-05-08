@@ -153,7 +153,7 @@ export default function AnalysisPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin" />
-          <p className="text-blue-400 font-black uppercase tracking-[0.3em] text-[10px] italic">Accessing Neural Patterns...</p>
+          <p className="text-blue-400 font-black uppercase tracking-[0.3em] text-[10px] italic">Loading Progress...</p>
         </div>
       </div>
     )
@@ -177,20 +177,20 @@ export default function AnalysisPage() {
             <div className="space-y-2">
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)] animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-400/80 italic">Cognitive Analysis Engine</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-400/80 italic">Activity Analysis</span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight text-blue-50 font-headline italic uppercase system-text-glow">System Analysis</h1>
-              <p className="text-sm text-blue-300/60 max-w-md font-medium">Neural performance tracking and behavioral patterns for User ID: {profile?.id?.slice(0, 8)}...</p>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight text-blue-50 font-headline italic uppercase system-text-glow">Progress Analysis</h1>
+              <p className="text-sm text-blue-300/60 max-w-md font-medium">Tracking your productivity and habit patterns.</p>
             </div>
             
             <div className="flex gap-4">
               <div className="bg-slate-900/80 border border-blue-500/20 px-6 py-4 rounded-2xl flex flex-col items-center justify-center min-w-[120px]">
                 <span className="text-[10px] font-black text-blue-500/40 uppercase tracking-widest mb-1">Sync Index</span>
-                <span className="text-2xl font-black text-blue-100 italic">94.2%</span>
+                <span className="text-2xl font-black text-blue-100 italic">94%</span>
               </div>
               <div className="bg-slate-900/80 border border-blue-500/20 px-6 py-4 rounded-2xl flex flex-col items-center justify-center min-w-[120px]">
                 <span className="text-[10px] font-black text-blue-500/40 uppercase tracking-widest mb-1">Stability</span>
-                <span className="text-2xl font-black text-emerald-400 italic">NOMINAL</span>
+                <span className="text-2xl font-black text-emerald-400 italic">GOOD</span>
               </div>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function AnalysisPage() {
               </div>
               <div>
                 <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">XP Growth Pattern</h3>
-                <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Last 7 Operational Cycles</p>
+                <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Last 7 Days</p>
               </div>
             </div>
             <div className="text-right">
@@ -272,7 +272,7 @@ export default function AnalysisPage() {
             </div>
             <div>
               <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">Core Pillars</h3>
-              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Attributes Distribution</p>
+              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Progress Distribution</p>
             </div>
           </div>
 
@@ -305,7 +305,7 @@ export default function AnalysisPage() {
             </div>
             <div>
               <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">Execution Type</h3>
-              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Task Volume Distribution</p>
+              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Activity Distribution</p>
             </div>
           </div>
 
@@ -355,7 +355,7 @@ export default function AnalysisPage() {
               <Brain size={18} className="text-purple-400" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">AI Core Insights</h3>
+              <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">AI Insights</h3>
               <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Behavioral Pattern Recognition</p>
             </div>
           </div>
@@ -364,40 +364,40 @@ export default function AnalysisPage() {
             <div className="p-4 rounded-xl bg-slate-900/60 border border-blue-500/10 space-y-3">
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-blue-400" />
-                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Efficiency Window</span>
+                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Best Time</span>
               </div>
               <p className="text-xs text-blue-100/80 leading-relaxed italic">
                 Your highest performance is currently localized between <span className="text-blue-400 font-black">09:00 - 11:30</span>. 
-                Focus-intensive tasks should be prioritized during this window for maximum sync.
+                Focus-intensive tasks should be prioritized during this window for maximum progress.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-900/60 border border-blue-500/10 space-y-3">
               <div className="flex items-center gap-2">
                 <Target size={14} className="text-cyan-400" />
-                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Pillar Imbalance</span>
+                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Skill Balance</span>
               </div>
               <p className="text-xs text-blue-100/80 leading-relaxed italic">
                 Detected a <span className="text-cyan-400 font-black">15% lag</span> in the "Skills" pillar compared to "Habits". 
-                Recommend initiating a learning session to stabilize neural equilibrium.
+                Recommend starting a learning session to balance your progress.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-900/60 border border-blue-500/10 space-y-3">
               <div className="flex items-center gap-2">
                 <Star size={14} className="text-amber-400" />
-                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Consistency Rating</span>
+                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Consistency</span>
               </div>
               <p className="text-xs text-blue-100/80 leading-relaxed italic">
                 Current streak consistency is at <span className="text-amber-400 font-black">8.4/10</span>. 
-                User stability has increased since the last session.
+                User stability has increased since the last day.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-900/60 border border-blue-500/10 space-y-3">
               <div className="flex items-center gap-2">
                 <Layout size={14} className="text-rose-400" />
-                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">Recommended Protocol</span>
+                <span className="text-[10px] font-black text-blue-50 uppercase tracking-widest">AI Recommendation</span>
               </div>
               <p className="text-xs text-blue-100/80 leading-relaxed italic">
-                Integration of a <span className="text-rose-400 font-black">"Micro-Sprint"</span> protocol could resolve minor productivity friction detected in the afternoon.
+                Trying a <span className="text-rose-400 font-black">"Micro-Sprint"</span> plan could resolve minor productivity issues detected in the afternoon.
               </p>
             </div>
           </div>
@@ -413,12 +413,12 @@ export default function AnalysisPage() {
               <Calendar size={18} className="text-blue-400" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">Operational Log</h3>
-              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Recent System Events</p>
+              <h3 className="text-xs font-black text-blue-50 uppercase tracking-widest italic">Activity Log</h3>
+              <p className="text-[9px] text-blue-500/60 font-bold uppercase tracking-tighter mt-0.5">Recent Activities</p>
             </div>
           </div>
           <button className="text-[9px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-1 hover:text-blue-300 transition-colors italic">
-            Full Archives <ChevronRight size={10} />
+            View All <ChevronRight size={10} />
           </button>
         </div>
 

@@ -187,9 +187,44 @@ export async function executeConfirmedAction(
         return await handleCreateTodo(userId, action.payload, supabase)
       case 'fitness_plan_generate':
         await handleFitnessPlanGenerate(userId, action.payload, supabase)
+        // Add a hidden confirmation message to the chat history so the AI knows it's done
+        if (messageId) {
+          const { data: originalMsg } = await supabase
+            .from('ai_messages')
+            .select('conversation_id')
+            .eq('id', messageId)
+            .single()
+          
+          if (originalMsg?.conversation_id) {
+            await supabase.from('ai_messages').insert({
+              conversation_id: originalMsg.conversation_id,
+              user_id: userId,
+              role: 'assistant',
+              content: `[SYSTEM NOTIFICATION: The user has CONFIRMED the action "fitness_plan_generate". The plan is now successfully generated and active in the database. DO NOT generate this plan again.]`,
+              metadata: { system_notification: true }
+            })
+          }
+        }
         return { success: true, message: 'Fitness plan generation started.' }
       case 'skill_roadmap_generate':
         await handleSkillRoadmapGenerate(userId, action.payload, supabase)
+        if (messageId) {
+          const { data: originalMsg } = await supabase
+            .from('ai_messages')
+            .select('conversation_id')
+            .eq('id', messageId)
+            .single()
+          
+          if (originalMsg?.conversation_id) {
+            await supabase.from('ai_messages').insert({
+              conversation_id: originalMsg.conversation_id,
+              user_id: userId,
+              role: 'assistant',
+              content: `[SYSTEM NOTIFICATION: The user has CONFIRMED the action "skill_roadmap_generate". The roadmap is now successfully generated and active in the database. DO NOT generate this roadmap again.]`,
+              metadata: { system_notification: true }
+            })
+          }
+        }
         return { success: true, message: 'Skill roadmap generation started.' }
       case 'tasks_clear_all':
         return await handleTasksClearAll(userId, action.payload, supabase)

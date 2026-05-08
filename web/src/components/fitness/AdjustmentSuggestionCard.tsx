@@ -55,7 +55,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
         <div>
           <h3 className="text-xl font-black text-white flex items-center gap-2 mb-2 uppercase tracking-wide">
             <Sparkles size={22} className={isPositive ? "text-primary-400" : "text-orange-400"} />
-            AI Protocol Adjustment
+            AI Plan Update
           </h3>
           <p className="text-base text-gray-300 font-medium italic">
             {isPositive 
@@ -70,7 +70,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
               </div>
               <div>
                 <span className="block text-base font-black text-white uppercase tracking-wider">
-                  {adjustment.suggestion?.change || "Optimize Protocol"}
+                  {adjustment.suggestion?.change || "Update Plan"}
                 </span>
                 <span className="block text-[11px] text-gray-400 uppercase font-black tracking-widest mt-1">
                   {adjustment.suggestion?.details || "Tap approve to apply this change."}

@@ -3,7 +3,7 @@ import { verifyAuth } from '@/lib/api-auth';
 import { createClient } from '@supabase/supabase-js';
 import { logSetComplete, completeSession } from '@/lib/fitness/sessionTracker';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error: authError } = await verifyAuth(request);
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -14,17 +14,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   const body = await request.json();
   const { action, exercise_id, set_number, weight_used } = body;
+  const resolvedParams = await params;
 
   try {
     if (action === 'log_set') {
       if (!exercise_id || set_number === undefined) {
         return NextResponse.json({ error: 'Missing exercise_id or set_number' }, { status: 400 });
       }
-      const result = await logSetComplete(user.id, params.id, exercise_id, set_number, weight_used ?? null, supabase);
+      const result = await logSetComplete(user.id, resolvedParams.id, exercise_id, set_number, weight_used ?? null, supabase);
       return NextResponse.json({ success: true, data: result });
     } 
     else if (action === 'complete_session') {
-      const result = await completeSession(user.id, params.id, supabase);
+      const result = await completeSession(user.id, resolvedParams.id, supabase);
       return NextResponse.json({ success: true, data: result });
     }
     

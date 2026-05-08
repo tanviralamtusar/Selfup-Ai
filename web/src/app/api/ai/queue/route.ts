@@ -42,3 +42,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message, status: 'failed' }, { status: 500 })
   }
 }
+
+/**
+ * GET: Fetch recent background tasks from ai_queue
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const { user, error: authError } = await verifyAuth(req)
+    if (authError || !user) {
+      return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
+    }
+
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    const authSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    })
+
+    const { data: tasks, error } = await authSupabase
+      .from('ai_queue')
+      .select('id, action_type, payload, status, error, created_at, processed_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (error) {
+      console.error('[AI Queue GET] Error fetching tasks:', error)
+      return NextResponse.json({ error: 'Failed to fetch background tasks' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, data: tasks })
+
+  } catch (error) {
+    console.error('[AI Queue GET] Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

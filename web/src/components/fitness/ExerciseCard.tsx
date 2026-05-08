@@ -6,6 +6,12 @@ import { Play, Check, ChevronDown, ChevronUp, Video, ExternalLink, Loader2 } fro
 import type { WorkoutDayExerciseRow } from '@/types/fitness';
 import { useYoutubeSearch } from '@/lib/hooks/useYoutubeSearch';
 
+function getYoutubeId(url: string) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
 interface ExerciseCardProps {
   exercise: WorkoutDayExerciseRow;
   completedSets: number;
@@ -82,11 +88,32 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                 </div>
 
                 {exercise.exercises?.video_url ? (
-                  <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary-500/30 transition-all shadow-lg">
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 group-hover:bg-black/40 transition-colors">
-                      <Video size={48} className="text-white/70 group-hover:scale-110 transition-transform" />
-                    </div>
-                  </div>
+                  (() => {
+                    const ytId = getYoutubeId(exercise.exercises.video_url);
+                    if (ytId) {
+                      return (
+                        <div className="aspect-video rounded-xl overflow-hidden relative shadow-lg border border-white/10">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${ytId}`}
+                            title="YouTube video player"
+                            className="absolute inset-0 w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        </div>
+                      );
+                    }
+                    return (
+                      <a href={exercise.exercises.video_url} target="_blank" rel="noopener noreferrer" className="block">
+                        <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary-500/30 transition-all shadow-lg">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 group-hover:bg-black/40 transition-colors">
+                            <ExternalLink size={48} className="text-white/70 group-hover:scale-110 transition-transform mb-4" />
+                            <span className="text-xs font-bold uppercase tracking-widest text-white/50">Open External Video</span>
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })()
                 ) : showSuggestions ? (
                   <div className="space-y-3">
                     {isLoadingVideos ? (

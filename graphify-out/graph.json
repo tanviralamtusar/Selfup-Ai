@@ -5460,8 +5460,8 @@
       "source_file": "web\\src\\app\\onboarding\\page.tsx",
       "source_location": "L146",
       "weight": 1.0,
-      "_src": "onboarding_page_handlecomplete",
-      "_tgt": "dashboard_page_setprofile",
+      "_src": "dashboard_page_setprofile",
+      "_tgt": "onboarding_page_handlecomplete",
       "source": "dashboard_page_setprofile",
       "target": "onboarding_page_handlecomplete"
     },

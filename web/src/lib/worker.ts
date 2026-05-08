@@ -13,6 +13,12 @@ import { BadgeService } from './badge.service'
 import { getUserModelConfig, AICOIN_COSTS } from './model-config'
 import { embedAndStoreMessage, extractAndSaveMemory } from './ai-memory'
 import type { FitnessInterviewData } from '@/types/fitness'
+import type { SkillInterviewData, GeneratedTestQuestion } from '@/types/skills'
+import { generateSkillRoadmap, saveRoadmapToDb } from './skills/roadmapGenerator'
+import { generateTest } from './skills/testGenerator'
+import { evaluateTest } from './skills/testEvaluator'
+import { checkAvailability as checkSkillAvailability } from './skills/calendarCheck'
+import { injectSkillDailies } from './skills/dailyInjector'
 
 const AI_QUEUE_NAME = 'ai-tasks'
 
@@ -299,6 +305,63 @@ export async function executeAiTask(data: AiJobData) {
       }
 
       // ─── V3 Job Types ────────────────────────────
+
+      case 'skill_roadmap': {
+        const interviewData = payload.interviewData as SkillInterviewData;
+        const skillId = payload.skillId;
+        
+        let conflicts: string[] = [];
+        if (interviewData.preferred_time && interviewData.preferred_study_days.length > 0) {
+          const { conflicts: c } = await checkSkillAvailability(
+            userId, 
+            interviewData.preferred_study_days[0],
+            interviewData.preferred_time,
+            Math.round((interviewData.time_commitment_hours_per_week * 60) / interviewData.preferred_study_days.length),
+            supabase
+          );
+          conflicts = c.map(x => `${x.title} at ${x.time}`);
+        }
+
+        const roadmapData = await generateSkillRoadmap(userId, interviewData, supabase);
+        
+        const { roadmapId } = await saveRoadmapToDb(
+            userId, 
+            roadmapData, 
+            skillId, 
+            AICOIN_COSTS.skills_protocol, 
+            supabase
+        );
+
+        await injectSkillDailies(
+            userId, 
+            roadmapId, 
+            roadmapData, 
+            interviewData.preferred_study_days, 
+            interviewData.preferred_time, 
+            supabase
+        );
+
+        const gamification = new GamificationService(supabase);
+        await gamification.addCoins(userId, -AICOIN_COSTS.skills_protocol, 'Skill Roadmap Generation');
+
+        result = `Success: Generated skill roadmap ${roadmapData.title}.`;
+        break;
+      }
+
+      case 'skill_test_generate': {
+        const testId = payload.testId;
+        await generateTest(userId, testId, supabase);
+        result = `Success: Generated questions for test ${testId}.`;
+        break;
+      }
+
+      case 'skill_test_evaluate': {
+        const { testId, attemptId, questions, userAnswers } = payload;
+        await evaluateTest(userId, testId, attemptId, questions, userAnswers, supabase);
+        result = `Success: Evaluated test attempt ${attemptId}.`;
+        break;
+      }
+
       case 'weekly_summary_generate': {
         const summaryPrompt = `Generate a weekly performance summary for a self-improvement app user.
 Period: ${payload.period_start} to ${payload.period_end}.

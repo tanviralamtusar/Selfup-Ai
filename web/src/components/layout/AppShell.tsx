@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 
 import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
+import { BackgroundTasksWidget } from '@/components/layout/BackgroundTasksWidget'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: ROUTES.DASHBOARD },
@@ -114,6 +115,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={18} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-slate-950" />
           </button>
+          
+          <BackgroundTasksWidget />
           
           <button 
             onClick={() => router.push(ROUTES.SETTINGS)}

@@ -39,7 +39,26 @@ export async function executeAiTask(data: AiJobData) {
 
   console.log(`[AI Task] Supabase client initialized with service role for user ${userId}`)
 
+  let queueId: string | null = null
+
   try {
+    // 1. Track task in ai_queue
+    const { data: queueRow, error: queueError } = await supabase
+      .from('ai_queue')
+      .insert({
+        user_id: userId,
+        action_type: type,
+        payload: payload || {},
+        status: 'processing'
+      })
+      .select('id')
+      .single()
+
+    if (queueError) {
+      console.warn('[AI Task] Failed to insert tracking row into ai_queue', queueError)
+    } else {
+      queueId = queueRow.id
+    }
 
     // Get user's model config
     const modelConfig = await getUserModelConfig(userId)
@@ -335,9 +354,29 @@ Strictly valid JSON. No markdown.`
         result = (await generateResponse(`Assistant request: ${type} with data: ${JSON.stringify(payload)}`, [], undefined, modelConfig.background_model)) || 'No response';
     }
 
+    if (queueId) {
+      await supabase
+        .from('ai_queue')
+        .update({ 
+          status: 'done', 
+          processed_at: new Date().toISOString() 
+        })
+        .eq('id', queueId)
+    }
+
     return result
   } catch (err: any) {
     console.error(`[AI Task Error] Task failed:`, err)
+    if (queueId) {
+      await supabase
+        .from('ai_queue')
+        .update({ 
+          status: 'failed', 
+          error: err.message || 'Unknown error', 
+          processed_at: new Date().toISOString() 
+        })
+        .eq('id', queueId)
+    }
     throw err
   }
 }

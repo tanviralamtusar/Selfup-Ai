@@ -42,7 +42,11 @@ export async function GET(req: NextRequest) {
         .order('created_at', { ascending: true })
 
       if (error) throw error
-      return NextResponse.json(messages)
+
+      // Filter out system notification messages so they don't clutter the user's UI
+      const uiMessages = messages.filter((m: any) => !m.metadata?.system_notification)
+
+      return NextResponse.json(uiMessages)
     } else {
       const { data: conversations, error } = await authSupabase
         .from('ai_conversations')

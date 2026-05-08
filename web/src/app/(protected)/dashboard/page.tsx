@@ -40,6 +40,7 @@ import { StreakHistory } from '@/components/gamification/StreakHistory'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
 import { TodoModal } from '@/components/dashboard/TodoModal'
+import { StatAllocationModal } from '@/components/gamification/StatAllocationModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -197,6 +198,7 @@ export default function DashboardPage() {
   const [activeDungeons, setActiveDungeons] = useState<ActiveDungeon[]>([])
   const [dungeonCountdown, setDungeonCountdown] = useState<string>('')
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [showStatAllocationModal, setShowStatAllocationModal] = useState(false)
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
   const [showStreakHistory, setShowStreakHistory] = useState(false)
 
@@ -516,6 +518,36 @@ export default function DashboardPage() {
         toast.error('Not enough AiCoins')
       }
     } catch { toast.error('Failed to purchase freeze') }
+  }
+
+  const handleAllocateStat = async (attribute: AttributeKey): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ action: 'allocate_stat', attribute })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success(`${attribute.toUpperCase()} enhanced! ⚡`)
+        // Update local profile state
+        if (profile) {
+          setProfile({
+            ...profile,
+            stat_points: data.data.remainingPoints,
+            [`attr_${attribute}`]: data.data.newValue,
+            max_hp: attribute === 'vit' ? data.data.newValue * 15 + 100 : profile.max_hp
+          })
+        }
+        return true
+      } else {
+        toast.error(data.error || 'Failed to allocate point')
+        return false
+      }
+    } catch {
+      toast.error('Network error')
+      return false
+    }
   }
 
   return (
@@ -843,7 +875,7 @@ export default function DashboardPage() {
             </div>
             <h2 className="text-3xl font-black tracking-tighter text-blue-50 font-headline leading-none italic uppercase system-text-glow">Attributes of the Awakened</h2>
           </div>
-          <Link href={ROUTES.SKILLS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">DETAILED ANALYSIS <ArrowRight size={14} /></Link>
+          <Link href={ROUTES.ANALYSIS} className="px-6 py-2.5 hover:bg-blue-500 hover:text-white transition-all text-blue-400 bg-blue-500/10 rounded border border-blue-500/20 text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-3 italic">DETAILED ANALYSIS <ArrowRight size={14} /></Link>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
           {ATTRIBUTES.map((attr) => (
@@ -851,9 +883,9 @@ export default function DashboardPage() {
           ))}
           {statPoints > 0 && (
             <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse">
+              <button onClick={() => setShowStatAllocationModal(true)} className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 animate-pulse hover:bg-amber-500/10 transition-colors active:scale-95 cursor-pointer">
                 <span className="text-lg font-black text-amber-300">+{statPoints}</span>
-              </div>
+              </button>
               <p className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em]">Allocate</p>
             </div>
           )}
@@ -904,6 +936,7 @@ export default function DashboardPage() {
       <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} />
       <HabitModal isOpen={isHabitModalOpen} onClose={() => { setIsHabitModalOpen(false); setEditingHabit(null); }} habit={editingHabit} onSave={handleSaveHabit} onDelete={editingHabit ? handleDeleteHabit : undefined} />
       <TodoModal isOpen={isTodoModalOpen} onClose={() => { setIsTodoModalOpen(false); setEditingTodo(null); }} todo={editingTodo} onSave={handleSaveTask} onDelete={editingTodo ? handleDeleteTask : undefined} />
+      <StatAllocationModal isOpen={showStatAllocationModal} onClose={() => setShowStatAllocationModal(false)} statPoints={statPoints} attributes={attrs} onAllocate={handleAllocateStat} />
     </motion.div>
   )
 }

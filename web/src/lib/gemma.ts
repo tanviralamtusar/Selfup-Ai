@@ -247,7 +247,8 @@ Use when: Evaluating a test answer from the skills module.
 </action>
 Use when: The user discusses guild activities. NEVER directly execute — only suggest.
 
-IMPORTANT: Only use <action> tags when you are actually performing the action. Do not use them for hypothetical suggestions.`
+IMPORTANT: Only use <action> tags when you are actually performing the action. Do not use them for hypothetical suggestions.
+IMPORTANT: If you see a [SYSTEM NOTIFICATION: ...] message in the chat history stating an action was CONFIRMED, it means the background system has already executed it successfully. Do NOT re-issue the same action. Acknowledge the completion and move on.`
 
 // ─── Persona System ─────────────────────────────
 

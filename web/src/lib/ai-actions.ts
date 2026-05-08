@@ -200,7 +200,7 @@ export async function executeConfirmedAction(
               conversation_id: originalMsg.conversation_id,
               user_id: userId,
               role: 'assistant',
-              content: `[SYSTEM: Fitness plan generation started for ${action.payload.goal || 'overall'} goal.]`,
+              content: `[SYSTEM NOTIFICATION: The user has CONFIRMED the action "fitness_plan_generate". The plan is now successfully generated and active in the database. DO NOT generate this plan again.]`,
               metadata: { system_notification: true }
             })
           }
@@ -220,7 +220,7 @@ export async function executeConfirmedAction(
               conversation_id: originalMsg.conversation_id,
               user_id: userId,
               role: 'assistant',
-              content: `[SYSTEM: Skill roadmap generation started for ${action.payload.skill_name}.]`,
+              content: `[SYSTEM NOTIFICATION: The user has CONFIRMED the action "skill_roadmap_generate". The roadmap is now successfully generated and active in the database. DO NOT generate this roadmap again.]`,
               metadata: { system_notification: true }
             })
           }

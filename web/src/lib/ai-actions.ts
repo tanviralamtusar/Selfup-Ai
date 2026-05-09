@@ -391,19 +391,69 @@ async function handleSkillRoadmapGenerate(
   payload: any,
   supabase: any
 ): Promise<void> {
+  // 1. Create or find the skill in the database
+  const skillName = payload.skill_name || 'Unknown Skill'
+  const skillCategory = payload.skill_category || 'other'
+
+  // Check if user already has this skill
+  const { data: existingSkill } = await supabase
+    .from('skills')
+    .select('id')
+    .eq('user_id', userId)
+    .ilike('name', skillName)
+    .single()
+
+  let skillId: string
+
+  if (existingSkill?.id) {
+    skillId = existingSkill.id
+  } else {
+    // Create new skill entry
+    const { data: newSkill, error: skillError } = await supabase
+      .from('skills')
+      .insert({
+        user_id: userId,
+        name: skillName,
+        category: skillCategory,
+        tracking_mode: 'roadmap',
+        is_active: true,
+      })
+      .select('id')
+      .single()
+
+    if (skillError) throw skillError
+    skillId = newSkill.id
+  }
+
+  // 2. Map AI action payload → SkillInterviewData for the v2 roadmap generator
+  const studyDays = payload.study_days || ['mon', 'wed', 'fri']
+  const dailyMinutes = payload.daily_study_minutes || 30
+  const weeklyHours = (dailyMinutes * studyDays.length) / 60
+
+  const interviewData = {
+    skill_name: skillName,
+    current_level: payload.experience_level || 'beginner',
+    goal: payload.goal || `Learn ${skillName}`,
+    preferred_learning_style: payload.learning_style || 'mixed',
+    time_commitment_hours_per_week: weeklyHours,
+    preferred_study_days: studyDays,
+    preferred_time: payload.preferred_time || '18:00',
+    project_based: payload.project_based || false,
+    needs_certification: payload.needs_certification || false,
+    budget_bdt: 0,
+  }
+
+  // 3. Trigger the v2 skill_roadmap job (not the old 'roadmap' job)
   await addAiTask({
     userId,
-    type: 'roadmap',
+    type: 'skill_roadmap',
     payload: {
-      skillName: payload.skill_name,
-      category: payload.skill_category || 'other',
-      targetLevel: payload.experience_level || 'beginner',
-      // Pass other payload fields if needed by the worker
-      ...payload
+      skillId,
+      interviewData,
     },
   })
   
-  console.log(`[AI Actions] Executed skill_roadmap_generate directly for user ${userId}`)
+  console.log(`[AI Actions] Triggered v2 skill_roadmap for user ${userId}, skill: ${skillName} (${skillId})`)
 }
 
 async function handleScheduleDay(

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Plus, Search, Sparkles, X, Loader2, Trophy, Clock, History, LayoutGrid, List } from 'lucide-react'
+import { Brain, Plus, Sparkles, X, Loader2, Trophy, Clock, History, BookOpen } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { SkillCard } from '@/components/skills/SkillCard'
 import { RoadmapTimeline } from '@/components/skills/RoadmapTimeline'
 import { SkillSessionsHistory } from '@/components/skills/SkillSessionsHistory'
+import { TestView } from '@/components/skills/TestView'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,14 @@ interface Skill {
   category: string
   current_level: string
   total_hours: number
+  activeRoadmap?: {
+    id: string
+    title: string
+    status: string
+    plan_type: string
+    difficulty: string
+    daily_study_minutes: number
+  } | null
   milestoneStats: {
     completed: number
     total: number
@@ -24,22 +33,25 @@ interface Skill {
 }
 
 export default function SkillsPage() {
-  const { session, profile, setProfile } = useAuthStore()
+  const { session } = useAuthStore()
   const [skills, setSkills] = useState<Skill[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null)
-  const [activeRoadmap, setActiveRoadmap] = useState<any>(null)
+  const [activeRoadmapData, setActiveRoadmapData] = useState<any>(null)
+  const [roadmapProgress, setRoadmapProgress] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'roadmap' | 'history'>('roadmap')
   const [sessions, setSessions] = useState<any[]>([])
   const [isLoadingSessions, setIsLoadingSessions] = useState(false)
   const [isRefreshingRoadmap, setIsRefreshingRoadmap] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isLoggingSession, setIsLoggingSession] = useState(false)
-  const [roadmapStatus, setRoadmapStatus] = useState<'not_started' | 'pending' | 'processing' | 'completed' | 'failed'>('not_started')
-  const [roadmapError, setRoadmapError] = useState<string | null>(null)
+  const [roadmapStatus, setRoadmapStatus] = useState<string>('not_started')
+
+  // Test state
+  const [activeTestId, setActiveTestId] = useState<string | null>(null)
 
   // Add Skill Form
-  const [newSkill, setNewSkill] = useState({ name: '', category: 'General', generateRoadmap: true })
+  const [newSkill, setNewSkill] = useState({ name: '', category: 'General' })
 
   // Log Session Form
   const [sessionData, setSessionData] = useState({ duration: 30, notes: '' })
@@ -55,9 +67,9 @@ export default function SkillsPage() {
       fetchRoadmap(activeSkillId)
       fetchSessions(activeSkillId)
     } else {
-      setActiveRoadmap(null)
+      setActiveRoadmapData(null)
+      setRoadmapProgress(null)
       setRoadmapStatus('not_started')
-      setRoadmapError(null)
       setSessions([])
       setActiveTab('roadmap')
     }
@@ -68,7 +80,7 @@ export default function SkillsPage() {
     let interval: NodeJS.Timeout
     if (activeSkillId && (roadmapStatus === 'pending' || roadmapStatus === 'processing')) {
       interval = setInterval(() => {
-        fetchRoadmap(activeSkillId, true) // silent fetch
+        fetchRoadmap(activeSkillId, true)
       }, 3000)
     }
     return () => clearInterval(interval)
@@ -80,7 +92,8 @@ export default function SkillsPage() {
         headers: { 'Authorization': `Bearer ${session?.access_token}` }
       })
       const data = await res.json()
-      if (res.ok) setSkills(data)
+      if (res.ok && data.success) setSkills(data.data || [])
+      else if (res.ok && Array.isArray(data)) setSkills(data)
     } catch (err) {
       toast.error('Failed to load skills')
     } finally {
@@ -96,13 +109,9 @@ export default function SkillsPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setActiveRoadmap(data.roadmap)
-        setRoadmapStatus(data.status)
-        setRoadmapError(data.error)
-
-        if (data.status === 'completed' && !silent) {
-          // fetchSkills() // Refresh progress stats if roadmap just completed
-        }
+        setActiveRoadmapData(data.data)
+        setRoadmapProgress(data.progress || null)
+        setRoadmapStatus(data.status || (data.data ? 'active' : 'not_started'))
       }
     } catch (err) {
       if (!silent) toast.error('Failed to load roadmap')
@@ -118,7 +127,7 @@ export default function SkillsPage() {
         headers: { 'Authorization': `Bearer ${session?.access_token}` }
       })
       const data = await res.json()
-      if (res.ok) setSessions(data)
+      if (res.ok) setSessions(Array.isArray(data) ? data : data.data || [])
     } catch (err) {
       toast.error('Failed to load session history')
     } finally {
@@ -136,12 +145,12 @@ export default function SkillsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(newSkill)
+        body: JSON.stringify({ name: newSkill.name, category: newSkill.category })
       })
       if (res.ok) {
-        toast.success('Skill added! System is crafting your roadmap.')
+        toast.success('Skill added! Open the AI Chat to start the Scholar interview.')
         setIsAddModalOpen(false)
-        setNewSkill({ name: '', category: 'General', generateRoadmap: true })
+        setNewSkill({ name: '', category: 'General' })
         fetchSkills()
       }
     } catch (err) {
@@ -151,24 +160,46 @@ export default function SkillsPage() {
     }
   }
 
-  const handleToggleMilestone = async (milestoneId: string, isCompleted: boolean) => {
+  const handleCompleteMilestone = async (milestoneId: string) => {
+    if (!activeSkillId) return
     try {
-      const res = await fetch(`/api/milestones/${milestoneId}`, {
+      const res = await fetch(`/api/skills/${activeSkillId}/milestones`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify({ isCompleted })
+        body: JSON.stringify({ milestoneId })
       })
       if (res.ok) {
-        toast.success(isCompleted ? '+100 XP Earned!' : 'Progress updated')
-        // Refresh local state
+        const data = await res.json()
+        toast.success(`Milestone completed! +${data.data?.xpEarned || 50} XP`)
         fetchSkills()
-        if (activeSkillId) fetchRoadmap(activeSkillId)
+        fetchRoadmap(activeSkillId)
       }
     } catch (err) {
-      toast.error('Failed to update milestone')
+      toast.error('Failed to complete milestone')
+    }
+  }
+
+  const handleCompleteTopic = async (topicId: string) => {
+    if (!activeSkillId) return
+    try {
+      const res = await fetch(`/api/skills/${activeSkillId}/topics`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ topicId })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(`Topic done! +${data.data?.xpEarned || 10} XP`)
+        fetchRoadmap(activeSkillId)
+      }
+    } catch (err) {
+      toast.error('Failed to complete topic')
     }
   }
 
@@ -189,7 +220,7 @@ export default function SkillsPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        toast.success(`Session logged! +${data.xpEarned} XP Earned.`)
+        toast.success(`Session logged! +${data.xpEarned} XP`)
         setIsLoggingSession(false)
         setSessionData({ duration: 30, notes: '' })
         fetchSkills()
@@ -256,7 +287,8 @@ export default function SkillsPage() {
                 <SkillCard
                   key={skill.id}
                   skill={skill}
-                  onClick={() => setActiveSkillId(skill.id)}
+                  isActive={activeSkillId === skill.id}
+                  onClick={() => setActiveSkillId(activeSkillId === skill.id ? null : skill.id)}
                 />
               ))}
             </div>
@@ -295,8 +327,8 @@ export default function SkillsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">XP Earned</p>
-                      <p className="text-xl font-black text-blue-400 italic">+{activeSkill.milestoneStats.completed * 100}</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Milestones</p>
+                      <p className="text-xl font-black text-blue-400 italic">{activeSkill.milestoneStats.completed}/{activeSkill.milestoneStats.total}</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-950/60 border border-blue-500/20">
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Time Spent</p>
@@ -313,40 +345,48 @@ export default function SkillsPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex items-center border-b border-outline-variant/10 bg-surface-container-low sticky top-0 z-10">
+                <div className="flex items-center border-b border-blue-500/10 bg-slate-950/50 sticky top-0 z-10">
                   <button
                     onClick={() => setActiveTab('roadmap')}
                     className={cn(
-                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all flex items-center justify-center gap-2",
                       activeTab === 'roadmap' ? 'border-blue-400 text-blue-400 system-text-glow' : 'border-transparent text-blue-400/40 hover:text-blue-400'
                     )}
                   >
+                    <BookOpen size={14} />
                     Roadmap
                   </button>
                   <button
                     onClick={() => setActiveTab('history')}
                     className={cn(
-                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all",
+                      "flex-1 py-4 text-[10px] font-black uppercase tracking-[0.3em] italic border-b-2 transition-all flex items-center justify-center gap-2",
                       activeTab === 'history' ? 'border-blue-400 text-blue-400 system-text-glow' : 'border-transparent text-blue-400/40 hover:text-blue-400'
                     )}
                   >
+                    <History size={14} />
                     History
                   </button>
                 </div>
 
-                {/* Tab Content View */}
+                {/* Tab Content */}
                 <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/10">
                   {activeTab === 'roadmap' ? (
-                    isRefreshingRoadmap && !activeRoadmap ? (
+                    isRefreshingRoadmap && !activeRoadmapData ? (
                       <div className="py-20 flex flex-col items-center gap-4">
-                        <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Loading...</p>
+                        <div className="w-10 h-10 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40">Loading...</p>
                       </div>
                     ) : (
                       <RoadmapTimeline
+                        skillId={activeSkillId}
                         skillName={activeSkill.name}
-                        milestones={activeRoadmap?.skill_milestones || []}
-                        onToggleMilestone={handleToggleMilestone} roadmapStatus={'not_started'} roadmapError={null} />
+                        roadmap={activeRoadmapData}
+                        progress={roadmapProgress}
+                        roadmapStatus={roadmapStatus}
+                        onCompleteMilestone={handleCompleteMilestone}
+                        onCompleteTopic={handleCompleteTopic}
+                        onStartTest={(testId) => setActiveTestId(testId)}
+                      />
                     )
                   ) : (
                     <SkillSessionsHistory sessions={sessions} isLoading={isLoadingSessions} />
@@ -357,14 +397,14 @@ export default function SkillsPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-surface-container-low/50 border border-outline-variant/10 border-dashed rounded-3xl p-10 text-center space-y-4"
+                className="bg-slate-950/40 border border-blue-500/10 border-dashed rounded-3xl p-10 text-center space-y-4 backdrop-blur-md"
               >
-                <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mx-auto opacity-40">
-                  <History size={32} className="text-on-surface-variant" />
+                <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto border border-blue-500/20">
+                  <History size={32} className="text-blue-400/30" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-on-surface-variant">Focus Required</h3>
-                  <p className="text-xs text-on-surface-variant/40 max-w-[200px] mx-auto">Select a mastery from your repository to view the active roadmap.</p>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-blue-400/60">Select a Skill</h3>
+                  <p className="text-xs text-blue-400/30 max-w-[200px] mx-auto">Click on a skill card to view its roadmap and progress.</p>
                 </div>
               </motion.div>
             )}
@@ -381,32 +421,32 @@ export default function SkillsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-md bg-surface-container-high rounded-[32px] p-8 border border-outline-variant/10 shadow-2xl relative z-10"
+              className="w-full max-w-md bg-slate-950 rounded-[32px] p-8 border border-blue-500/20 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative z-10"
             >
-              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Add New Skill</h2>
+              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6 text-blue-100 uppercase italic">Add New Skill</h2>
 
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Skill Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40 ml-1">Skill Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Quantum Physics, Piano, Chess..."
-                    className="w-full h-14 px-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium"
+                    className="w-full h-14 px-5 rounded-2xl bg-slate-900 border border-blue-500/20 text-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-medium placeholder:text-blue-400/20"
                     value={newSkill.name}
                     onChange={e => setNewSkill({ ...newSkill, name: e.target.value })}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Category</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40 ml-1">Category</label>
                   <select
-                    className="w-full h-14 px-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium appearance-none"
+                    className="w-full h-14 px-5 rounded-2xl bg-slate-900 border border-blue-500/20 text-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-medium appearance-none"
                     value={newSkill.category}
                     onChange={e => setNewSkill({ ...newSkill, category: e.target.value })}
                   >
@@ -419,33 +459,27 @@ export default function SkillsPage() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10">
-                  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                <div className="flex items-center gap-4 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
                     <Sparkles size={20} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-primary">AI Roadmap Architect</p>
-                    <p className="text-[10px] text-primary/60">Selfup will build a custom milestone path.</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-400">AI Roadmap</p>
+                    <p className="text-[10px] text-blue-400/60">Use the Chat to interview and generate a roadmap.</p>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={newSkill.generateRoadmap}
-                    onChange={e => setNewSkill({ ...newSkill, generateRoadmap: e.target.checked })}
-                    className="w-6 h-6 rounded-lg bg-primary/20 border-primary/40 text-primary focus:ring-primary/40 transition-all cursor-pointer"
-                  />
                 </div>
               </div>
 
               <div className="flex gap-4 mt-10">
                 <button
                   onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-blue-400/40 hover:bg-blue-500/10 transition-colors border border-blue-500/10"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddSkill}
-                  className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
+                  className="flex-1 h-14 bg-blue-500 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-500/20 btn-press"
                 >
                   Create Skill
                 </button>
@@ -461,21 +495,21 @@ export default function SkillsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsLoggingSession(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="w-full max-w-md bg-surface-container-high rounded-[32px] p-8 border border-outline-variant/10 shadow-2xl relative z-10"
+              className="w-full max-w-md bg-slate-950 rounded-[32px] p-8 border border-blue-500/20 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative z-10"
             >
-              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6">Log Practice Session</h2>
+              <h2 className="text-2xl font-black font-headline tracking-tighter mb-6 text-blue-100 uppercase italic">Log Practice Session</h2>
 
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Duration (Minutes)</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40 ml-1">Duration (Minutes)</label>
                   <div className="flex items-center gap-4">
-                    <span className="text-2xl font-black italic text-primary w-20">{sessionData.duration}m</span>
+                    <span className="text-2xl font-black italic text-blue-400 w-20">{sessionData.duration}m</span>
                     <input
                       type="range"
                       min="5"
@@ -483,18 +517,18 @@ export default function SkillsPage() {
                       step="5"
                       value={sessionData.duration}
                       onChange={e => setSessionData({ ...sessionData, duration: Number(e.target.value) })}
-                      className="flex-1 h-2 bg-surface-container-lowest rounded-full appearance-none cursor-pointer accent-primary"
+                      className="flex-1 h-2 bg-slate-900 rounded-full appearance-none cursor-pointer accent-blue-500"
                     />
                   </div>
-                  <p className="text-[10px] text-secondary font-black uppercase tracking-widest ml-1">Expected: +{sessionData.duration} XP</p>
+                  <p className="text-[10px] text-cyan-400 font-black uppercase tracking-widest ml-1">Expected: +{sessionData.duration} XP</p>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Session Notes</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40 ml-1">Session Notes</label>
                   <textarea
                     placeholder="What did you learn today?"
                     rows={3}
-                    className="w-full p-5 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all font-medium resize-none"
+                    className="w-full p-5 rounded-2xl bg-slate-900 border border-blue-500/20 text-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-medium resize-none placeholder:text-blue-400/20"
                     value={sessionData.notes}
                     onChange={e => setSessionData({ ...sessionData, notes: e.target.value })}
                   />
@@ -504,13 +538,13 @@ export default function SkillsPage() {
               <div className="flex gap-4 mt-10">
                 <button
                   onClick={() => setIsLoggingSession(false)}
-                  className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  className="flex-1 h-14 rounded-2xl font-black uppercase text-xs tracking-widest text-blue-400/40 hover:bg-blue-500/10 transition-colors border border-blue-500/10"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleLogSession}
-                  className="flex-1 h-14 bg-primary text-on-primary rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20 btn-press"
+                  className="flex-1 h-14 bg-blue-500 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-500/20 btn-press"
                 >
                   Log Session
                 </button>
@@ -518,8 +552,12 @@ export default function SkillsPage() {
             </motion.div>
           </div>
         )}
+
+        {/* Test Modal */}
+        {activeTestId && (
+          <TestView testId={activeTestId} onClose={() => setActiveTestId(null)} />
+        )}
       </AnimatePresence>
     </div>
   )
 }
-

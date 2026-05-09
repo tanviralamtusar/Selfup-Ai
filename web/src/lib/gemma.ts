@@ -29,18 +29,36 @@ export async function generateResponse(
     },
   ]
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents,
-    config: {
-      temperature: params.temperature,
-      topP: params.topP,
-      maxOutputTokens: params.maxOutputTokens,
-      ...(systemInstruction ? { systemInstruction } : {}),
-    },
-  })
+  const maxRetries = 3
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents,
+        config: {
+          temperature: params.temperature,
+          topP: params.topP,
+          maxOutputTokens: params.maxOutputTokens,
+          ...(systemInstruction ? { systemInstruction } : {}),
+        },
+      })
 
-  return response.text
+      return response.text
+    } catch (err: any) {
+      const status = err?.status || err?.httpStatusCode || 0
+      const isRetryable = status === 429 || status === 500 || status === 503
+
+      if (isRetryable && attempt < maxRetries) {
+        const waitMs = Math.pow(2, attempt) * 1000 // 2s, 4s
+        console.warn(`[Gemma] Attempt ${attempt} failed (${status}), retrying in ${waitMs}ms...`)
+        await new Promise(resolve => setTimeout(resolve, waitMs))
+        continue
+      }
+
+      console.error(`[Gemma] generateResponse failed after ${attempt} attempt(s):`, err?.message || err)
+      throw err
+    }
+  }
 }
 
 /**
@@ -162,24 +180,48 @@ Use when: Starting a fitness assessment conversation.
 </action>
 Use when: The user has provided enough info and you're ready to generate a fitness plan.
 
-#### skill_roadmap_generate:
+#### skill_roadmap_generate (Scholar Protocol):
 <action type="skill_roadmap_generate">
 {
   "skill_name": "String",
   "skill_category": "coding | language | music | creative | other",
-  "goal": "String",
+  "goal": "String — what they want to achieve",
   "plan_type": "fixed | open_ended | goal_based",
-  "duration_days": "Number",
+  "duration_days": "Number (for fixed plans only)",
   "experience_level": "beginner | intermediate | advanced",
-  "daily_study_minutes": "Number",
-  "study_days": ["mon", "wed"],
+  "daily_study_minutes": "Number (10-480)",
+  "study_days": ["mon", "wed", "fri"],
+  "preferred_time": "HH:mm (e.g. '18:00')",
   "learning_style": "videos | reading | projects | mixed",
-  "includes_tests": "Boolean",
-  "description": "String (A preview of the roadmap milestones and key resources. Use Markdown.)",
+  "includes_tests": "Boolean — whether to add AI-graded tests after milestones",
+  "project_based": "Boolean — whether to focus on building projects while learning",
+  "needs_certification": "Boolean — whether user needs a certificate",
+  "description": "String (A detailed Markdown preview of what the roadmap will include: phases, milestones, topics, XP rewards, and study schedule)",
   "requires_confirmation": true
 }
 </action>
-Use when: The user has provided enough info and you're ready to generate a skill roadmap.
+SCHOLAR PROTOCOL — INTERVIEW RULES:
+When the user wants to learn a skill, you MUST gather enough information before emitting this action.
+Ask questions ONE AT A TIME in a natural conversational tone. Minimum 10 questions.
+Required information to collect:
+1. What exactly they want to learn (be specific)
+2. Why (career / hobby / exam / project / personal growth)
+3. Current level (complete beginner / know basics / intermediate / advanced)
+4. Plan type preference (quick crash course / standard balanced / deep comprehensive)
+5. How much time per day they can study (30 min / 1 hr / 2 hrs / more)
+6. Which days they can study
+7. Preferred study time of day (morning / afternoon / evening / flexible)
+8. Target date or deadline (if any)
+9. Learning style preference (videos / reading / projects / mixed)
+10. Whether they want AI-graded tests after each milestone
+
+For CODING skills, also ask: What they want to build, their dev environment, related experience, project-based vs concept-first.
+For LANGUAGE skills, also ask: Target proficiency, native language, focus area (speaking/writing/reading/listening).
+For MUSIC skills, also ask: Instrument, equipment availability, can they read notation, goal (fun/perform/teach).
+
+After collecting answers, respond: "Assessment complete. Synthesising your learning protocol..."
+Then emit the skill_roadmap_generate action with ALL collected data and a detailed Markdown description/preview.
+Do NOT generate this action until you have asked at least 10 questions and have enough data.
 
 #### schedule_day:
 <action type="schedule_day">

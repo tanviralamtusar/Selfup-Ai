@@ -69,6 +69,7 @@ export const AICOIN_COSTS: Record<string, number> = {
   skill_roadmap_open: 15,
   skill_roadmap_tests: 5, // add-on
   fitness_protocol: 25,
+  skills_protocol: 15,
   ad_hoc_test: 2,
   weekly_summary: 0,
   test_evaluation: 0,

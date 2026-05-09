@@ -69,9 +69,11 @@ export const skillRoadmapGenerateSchema = z.object({
   experience_level: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
   daily_study_minutes: z.number().min(10).max(480).default(30),
   study_days: z.array(z.string()).optional(),
-  preferred_time: z.string().optional(),
+  preferred_time: z.string().optional(), // HH:mm
   includes_tests: z.boolean().default(false),
   learning_style: z.enum(['videos', 'reading', 'projects', 'mixed']).default('mixed'),
+  project_based: z.boolean().default(false),
+  needs_certification: z.boolean().default(false),
   target_date: z.string().optional(),
   description: z.string().optional(),
   requires_confirmation: z.boolean().default(true),

@@ -20,6 +20,10 @@ export type AiJobType =
   | 'proactive_alert_check'
   | 'plan_adaptation_check'
   | 'test_generate'
+  // Skills v2 job types
+  | 'skill_roadmap'
+  | 'skill_test_generate'
+  | 'skill_test_evaluate'
 
 export interface AiJobData {
   userId: string

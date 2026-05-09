@@ -128,6 +128,9 @@ export async function executeActions(
         case 'weekly_summary_generate':
           await handleWeeklySummaryGenerate(userId, action.payload, supabase)
           break
+        case 'evaluate_test_answer':
+          await handleEvaluateTestAnswer(userId, action.payload, supabase)
+          break
         case 'suggest_guild_action':
           // Guild actions are never executed — they render as suggestion cards
           console.log(`[AI Actions] Guild suggestion rendered for user ${userId}`)
@@ -487,4 +490,18 @@ async function handleWeeklySummaryGenerate(
   })
   
   console.log(`[AI Actions] Executed weekly_summary_generate directly for user ${userId}`)
+}
+
+async function handleEvaluateTestAnswer(
+  userId: string,
+  payload: any,
+  supabase: any
+): Promise<void> {
+  await addAiTask({
+    userId,
+    type: 'evaluate_test_answer',
+    payload
+  })
+  
+  console.log(`[AI Actions] Executed evaluate_test_answer for user ${userId}`)
 }

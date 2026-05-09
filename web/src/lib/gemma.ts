@@ -29,18 +29,36 @@ export async function generateResponse(
     },
   ]
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents,
-    config: {
-      temperature: params.temperature,
-      topP: params.topP,
-      maxOutputTokens: params.maxOutputTokens,
-      ...(systemInstruction ? { systemInstruction } : {}),
-    },
-  })
+  const maxRetries = 3
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents,
+        config: {
+          temperature: params.temperature,
+          topP: params.topP,
+          maxOutputTokens: params.maxOutputTokens,
+          ...(systemInstruction ? { systemInstruction } : {}),
+        },
+      })
 
-  return response.text
+      return response.text
+    } catch (err: any) {
+      const status = err?.status || err?.httpStatusCode || 0
+      const isRetryable = status === 429 || status === 500 || status === 503
+
+      if (isRetryable && attempt < maxRetries) {
+        const waitMs = Math.pow(2, attempt) * 1000 // 2s, 4s
+        console.warn(`[Gemma] Attempt ${attempt} failed (${status}), retrying in ${waitMs}ms...`)
+        await new Promise(resolve => setTimeout(resolve, waitMs))
+        continue
+      }
+
+      console.error(`[Gemma] generateResponse failed after ${attempt} attempt(s):`, err?.message || err)
+      throw err
+    }
+  }
 }
 
 /**
@@ -171,7 +189,7 @@ Use when: The user has provided enough info and you're ready to generate a fitne
   "plan_type": "fixed | open_ended | goal_based",
   "duration_days": "Number (for fixed plans only)",
   "experience_level": "beginner | intermediate | advanced",
-  "daily_study_minutes": "Number (10–480)",
+  "daily_study_minutes": "Number (10-480)",
   "study_days": ["mon", "wed", "fri"],
   "preferred_time": "HH:mm (e.g. '18:00')",
   "learning_style": "videos | reading | projects | mixed",

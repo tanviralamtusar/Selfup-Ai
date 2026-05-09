@@ -24,6 +24,8 @@ export type AiJobType =
   | 'skill_roadmap'
   | 'skill_test_generate'
   | 'skill_test_evaluate'
+  | 'evaluate_test_answer'
+  | 'proactive_alert_check'
 
 export interface AiJobData {
   userId: string

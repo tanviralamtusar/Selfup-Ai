@@ -120,8 +120,10 @@ export default function ChatPage() {
         body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel })
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const responseJson = await res.json()
+      if (!res.ok) throw new Error(responseJson.error || responseJson.message)
+
+      const data = responseJson.data
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.content, metadata: data.metadata }])
       

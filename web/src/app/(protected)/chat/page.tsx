@@ -41,6 +41,7 @@ export default function ChatPage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(AI_MODELS[0].id)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch initial conversations
   useEffect(() => {
@@ -110,6 +111,9 @@ export default function ChatPage() {
     setMessages(prev => [...prev, newUserMessage])
     setIsLoading(true)
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -117,7 +121,8 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel })
+        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel }),
+        signal: controller.signal
       })
 
       const responseJson = await res.json()
@@ -135,9 +140,20 @@ export default function ChatPage() {
       if (profile) setProfile({ ...profile, ai_coins: data.coinsRemaining })
 
     } catch (err: any) {
-      toast.error(err.message)
+      if (err.name === 'AbortError') {
+        toast.info('Response stopped')
+      } else {
+        toast.error(err.message)
+      }
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
     }
   }
 
@@ -268,6 +284,7 @@ export default function ChatPage() {
           <div className="max-w-4xl mx-auto">
             <ChatInput 
               onSend={handleSendMessage} 
+              onStop={handleStop}
               isDisabled={isLoading} 
               aiName={profile?.ai_persona_name || 'SYSTEM'} 
               models={AI_MODELS}

@@ -12,6 +12,7 @@ export interface AIModel {
 
 interface ChatInputProps {
   onSend: (content: string) => void
+  onStop?: () => void
   isDisabled?: boolean
   aiName?: string
   models?: AIModel[]
@@ -21,6 +22,7 @@ interface ChatInputProps {
 
 export function ChatInput({ 
   onSend, 
+  onStop,
   isDisabled, 
   aiName = 'System',
   models = [{ id: 'Pro', name: 'Pro' }],
@@ -128,12 +130,13 @@ export function ChatInput({
             </div>
             
             <button
-              type="submit"
-              disabled={isDisabled || !input.trim()}
+              type={isDisabled && onStop ? "button" : "submit"}
+              onClick={isDisabled && onStop ? onStop : undefined}
+              disabled={!isDisabled && !input.trim()}
               className={cn(
                 "w-10 h-10 flex items-center justify-center rounded-full transition-all",
                 isDisabled 
-                  ? "bg-[#2c2d30] text-gray-400" 
+                  ? "bg-[#2c2d30] text-gray-400 hover:text-white" 
                   : input.trim() 
                     ? "bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/10" 
                     : "bg-[#2c2d30] text-gray-500"

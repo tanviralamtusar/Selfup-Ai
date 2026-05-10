@@ -225,17 +225,6 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="hidden md:block bg-surface-container-highest/50 border border-outline-variant/10 rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant outline-none focus:border-primary/50 transition-colors cursor-pointer"
-             >
-                {AI_MODELS.map(m => (
-                  <option key={m.id} value={m.id} className="bg-surface-container-highest text-on-surface">
-                    {m.name}
-                  </option>
-                ))}
-             </select>
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
                 <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>
@@ -281,6 +270,9 @@ export default function ChatPage() {
               onSend={handleSendMessage} 
               isDisabled={isLoading} 
               aiName={profile?.ai_persona_name || 'SYSTEM'} 
+              models={AI_MODELS}
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
             />
           </div>
         </div>

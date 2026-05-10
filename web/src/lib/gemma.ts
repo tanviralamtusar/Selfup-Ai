@@ -45,8 +45,15 @@ export async function generateResponse(
 
       return response.text
     } catch (err: any) {
-      const status = err?.status || err?.httpStatusCode || 0
-      const isRetryable = status === 429 || status === 500 || status === 503
+      const statusCode = err?.status || err?.error?.code || err?.httpStatusCode || 0
+      const statusText = err?.error?.status || err?.statusText || ''
+      const isRetryable = 
+        statusCode === 429 || 
+        statusCode === 500 || 
+        statusCode === 503 ||
+        statusText === 'INTERNAL' ||
+        statusText === 'RESOURCE_EXHAUSTED' ||
+        statusText === 'UNAVAILABLE'
 
       if (isRetryable && attempt < maxRetries) {
         const waitMs = Math.pow(2, attempt) * 1000 // 2s, 4s

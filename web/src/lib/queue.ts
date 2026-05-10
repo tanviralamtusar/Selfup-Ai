@@ -65,5 +65,9 @@ if (aiQueue) {
  */
 export async function addAiTask(data: AiJobData) {
   console.log(`[Queue Bypass] Executing ${data.type} directly...`)
-  return await executeAiTask(data)
+  try {
+    return await executeAiTask(data)
+  } catch (err) {
+    console.error(`[Queue Bypass] Task ${data.type} failed:`, err)
+  }
 }

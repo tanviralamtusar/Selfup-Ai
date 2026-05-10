@@ -418,7 +418,6 @@ async function handleSkillRoadmapGenerate(
         user_id: userId,
         name: skillName,
         category: skillCategory,
-        tracking_mode: 'roadmap',
         is_active: true,
       })
       .select('id')

@@ -10,15 +10,23 @@ import { createClient } from '@supabase/supabase-js'
 
 const CHECK_INTERVAL = 1000 * 60 * 60; // Run every hour
 
+const globalForScheduler = global as unknown as { schedulerInitialized: boolean }
+
 export async function initScheduler() {
+  if (globalForScheduler.schedulerInitialized) {
+    console.log('[Pathfinder Scheduler] Already initialized, skipping.');
+    return;
+  }
+  globalForScheduler.schedulerInitialized = true;
+
   console.log('[Pathfinder Scheduler] Initializing Proactive AI checks...');
 
-  // Run immediately on boot
-  await runPeriodicChecks();
+  // Run immediately on boot, but do not block
+  runPeriodicChecks().catch(console.error);
 
   // Then run every hour
-  setInterval(async () => {
-    await runPeriodicChecks();
+  setInterval(() => {
+    runPeriodicChecks().catch(console.error);
   }, CHECK_INTERVAL);
 }
 

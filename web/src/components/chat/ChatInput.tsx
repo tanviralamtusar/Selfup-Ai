@@ -113,7 +113,9 @@ export function ChatInput({
                 onChange={handleModelChange}
               >
                 {models.map(m => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
+                  <option key={m.id} value={m.id} className="bg-[#1e1f20] text-gray-200">
+                    {m.name}
+                  </option>
                 ))}
               </select>
               <button 

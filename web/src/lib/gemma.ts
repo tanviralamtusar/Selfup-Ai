@@ -193,7 +193,7 @@ Use when: The user has provided enough info and you're ready to generate a fitne
   "skill_name": "String",
   "skill_category": "coding | language | music | creative | other",
   "goal": "String — what they want to achieve",
-  "plan_type": "fixed | open_ended | goal_based",
+  "plan_type": "crash_course | standard | deep_dive",
   "duration_days": "Number (for fixed plans only)",
   "experience_level": "beginner | intermediate | advanced",
   "daily_study_minutes": "Number (10-480)",

@@ -1,18 +1,48 @@
 'use client'
 
 import { useState } from 'react'
-import { Send, Sparkles } from 'lucide-react'
+import { Send, Plus, Settings2, ChevronDown, Square, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface ChatInputProps {
-  onSend: (content: string) => void
-  isDisabled?: boolean
-  aiName?: string
+export interface AIModel {
+  id: string
+  name: string
 }
 
-export function ChatInput({ onSend, isDisabled, aiName = 'SYSTEM' }: ChatInputProps) {
+interface ChatInputProps {
+  onSend: (content: string) => void
+  onStop?: () => void
+  isDisabled?: boolean
+  aiName?: string
+  models?: AIModel[]
+  selectedModel?: string
+  onModelChange?: (modelId: string) => void
+}
+
+export function ChatInput({ 
+  onSend, 
+  onStop,
+  isDisabled, 
+  aiName = 'System',
+  models = [{ id: 'Pro', name: 'Pro' }],
+  selectedModel: externalSelectedModel,
+  onModelChange
+}: ChatInputProps) {
   const [input, setInput] = useState('')
+  const [internalModel, setInternalModel] = useState('Pro')
+
+  const currentModelId = externalSelectedModel || internalModel
+  const currentModelName = models.find(m => m.id === currentModelId)?.name || currentModelId
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value
+    if (onModelChange) {
+      onModelChange(val)
+    } else {
+      setInternalModel(val)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,51 +52,106 @@ export function ChatInput({ onSend, isDisabled, aiName = 'SYSTEM' }: ChatInputPr
   }
 
   return (
-    <form 
-      onSubmit={handleSubmit}
-      className="relative flex items-end gap-3 bg-surface-container-low p-2 pl-5 rounded-3xl border border-outline-variant/10 shadow-xl focus-within:border-primary/30 transition-all"
-    >
-      <textarea
-        value={input}
-        onChange={(e) => {
-          setInput(e.target.value)
-          e.target.style.height = 'auto'
-          e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSubmit(e as any)
-            const target = e.target as HTMLTextAreaElement
-            target.style.height = 'auto'
-          }
-        }}
-        placeholder={`Ask ${aiName} anything...`}
-        disabled={isDisabled}
-        rows={1}
-        className="flex-1 bg-transparent py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none resize-none overflow-y-auto"
-        style={{ minHeight: '44px', maxHeight: '150px' }}
-      />
-      
-      <div className="flex items-center gap-2 pr-2 pb-1.5">
-        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-highest/50 border border-outline-variant/10">
-          <Sparkles size={12} className="text-secondary" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">1 Coin</span>
+    <div className="w-full flex flex-col items-center gap-2">
+      <form 
+        onSubmit={handleSubmit}
+        className="w-full bg-[#1e1f20] border border-white/5 rounded-[28px] p-4 pb-3 flex flex-col shadow-2xl focus-within:border-white/10 transition-colors relative group"
+      >
+        {/* Top section: Input */}
+        <div className="flex items-start justify-between gap-4">
+          <textarea
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit(e as any)
+                const target = e.target as HTMLTextAreaElement
+                target.style.height = 'auto'
+              }
+            }}
+            placeholder={`Ask ${aiName}`}
+            disabled={isDisabled}
+            rows={1}
+            className="flex-1 bg-transparent py-1 text-[15px] text-gray-200 placeholder:text-gray-400 outline-none resize-none overflow-y-auto"
+            style={{ minHeight: '40px', maxHeight: '200px' }}
+          />
         </div>
         
-        <button
-          type="submit"
-          disabled={isDisabled || !input.trim()}
-          className={cn(
-            "w-11 h-11 flex items-center justify-center rounded-full transition-all btn-press",
-            input.trim() 
-              ? "bg-primary text-on-primary shadow-lg shadow-primary/20" 
-              : "bg-surface-container-highest text-on-surface-variant/40"
-          )}
-        >
-          <Send size={18} />
-        </button>
+        {/* Bottom section: Tools and Submit */}
+        <div className="flex items-center justify-between mt-1 pt-1">
+          {/* Left tools */}
+          <div className="flex items-center gap-1">
+            <button 
+              type="button" 
+              className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors"
+            >
+              <Plus size={20} />
+            </button>
+            <button 
+              type="button" 
+              className="h-10 px-3 rounded-full hover:bg-white/5 flex items-center gap-2 text-gray-400 transition-colors text-[13px] font-medium"
+            >
+              <Settings2 size={16} />
+              Tools
+            </button>
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
+              <Sparkles size={12} className="text-cyan-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">1 Coin</span>
+            </div>
+            
+            <div className="relative">
+              <select 
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                value={currentModelId}
+                onChange={handleModelChange}
+              >
+                {models.map(m => (
+                  <option key={m.id} value={m.id} className="bg-[#1e1f20] text-gray-200">
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <button 
+                type="button" 
+                className="h-10 px-3 rounded-full hover:bg-white/5 flex items-center gap-1.5 text-gray-300 transition-colors text-[13px] font-medium pointer-events-none"
+              >
+                {currentModelName}
+                <ChevronDown size={14} className="text-gray-500" />
+              </button>
+            </div>
+            
+            <button
+              type={isDisabled && onStop ? "button" : "submit"}
+              onClick={isDisabled && onStop ? onStop : undefined}
+              disabled={!isDisabled && !input.trim()}
+              className={cn(
+                "w-10 h-10 flex items-center justify-center rounded-full transition-all",
+                isDisabled 
+                  ? "bg-[#2c2d30] text-gray-400 hover:text-white" 
+                  : input.trim() 
+                    ? "bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/10" 
+                    : "bg-[#2c2d30] text-gray-500"
+              )}
+            >
+              {isDisabled ? <Square size={14} className="fill-current" /> : <Send size={16} className="ml-0.5" />}
+            </button>
+          </div>
+        </div>
+      </form>
+      
+      {/* Footer Text */}
+      <div className="text-[11px] text-gray-500 font-medium">
+        {aiName} is AI and can make mistakes.
       </div>
-    </form>
+    </div>
   )
 }

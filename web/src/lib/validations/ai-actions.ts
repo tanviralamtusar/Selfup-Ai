@@ -64,7 +64,7 @@ export const skillRoadmapGenerateSchema = z.object({
   skill_name: z.string().min(1),
   skill_category: z.enum(['coding', 'language', 'music', 'creative', 'other']).default('other'),
   goal: z.string().optional(),
-  plan_type: z.enum(['fixed', 'open_ended', 'goal_based']).default('open_ended'),
+  plan_type: z.enum(['crash_course', 'standard', 'deep_dive', 'fixed', 'open_ended', 'goal_based']).default('standard'),
   duration_days: z.number().optional(),
   experience_level: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
   daily_study_minutes: z.number().min(10).max(480).default(30),

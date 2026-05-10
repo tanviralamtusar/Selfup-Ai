@@ -41,6 +41,7 @@ export default function ChatPage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(AI_MODELS[0].id)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch initial conversations
   useEffect(() => {
@@ -110,6 +111,9 @@ export default function ChatPage() {
     setMessages(prev => [...prev, newUserMessage])
     setIsLoading(true)
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -117,7 +121,8 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel })
+        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel }),
+        signal: controller.signal
       })
 
       const responseJson = await res.json()
@@ -135,9 +140,28 @@ export default function ChatPage() {
       if (profile) setProfile({ ...profile, ai_coins: data.coinsRemaining })
 
     } catch (err: any) {
-      toast.error(err.message)
+      if (err.name === 'AbortError') {
+        toast.info('Response stopped')
+      } else {
+        toast.error(err.message)
+      }
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+  }
+
+  const handleRetry = () => {
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg && lastMsg.role === 'user') {
+      setMessages(prev => prev.slice(0, -1))
+      handleSendMessage(lastMsg.content)
     }
   }
 
@@ -225,17 +249,6 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="hidden md:block bg-surface-container-highest/50 border border-outline-variant/10 rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant outline-none focus:border-primary/50 transition-colors cursor-pointer"
-             >
-                {AI_MODELS.map(m => (
-                  <option key={m.id} value={m.id} className="bg-surface-container-highest text-on-surface">
-                    {m.name}
-                  </option>
-                ))}
-             </select>
              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
                 <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>
@@ -251,18 +264,24 @@ export default function ChatPage() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-6 py-8 space-y-2 scrollbar-thin scrollbar-thumb-primary/20"
         >
-          {messages.map((msg, i) => (
-            <ChatMessage 
-              key={i} 
-              id={msg.id}
-              role={msg.role} 
-              content={msg.content} 
-              metadata={msg.metadata}
-              name={profile?.ai_persona_name || 'SYSTEM'}
-              style={profile?.ai_persona_style}
-              isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}
-            />
-          ))}
+          {messages.map((msg, i) => {
+            const isLastMessage = i === messages.length - 1
+            const isFailed = isLastMessage && !isLoading && msg.role === 'user'
+
+            return (
+              <ChatMessage 
+                key={i} 
+                id={msg.id}
+                role={msg.role} 
+                content={msg.content} 
+                metadata={msg.metadata}
+                name={profile?.ai_persona_name || 'SYSTEM'}
+                style={profile?.ai_persona_style}
+                isLast={isLastMessage && isLoading && msg.role === 'assistant'}
+                onRetry={isFailed ? handleRetry : undefined}
+              />
+            )
+          })}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <ChatMessage 
               role="assistant" 
@@ -279,8 +298,12 @@ export default function ChatPage() {
           <div className="max-w-4xl mx-auto">
             <ChatInput 
               onSend={handleSendMessage} 
+              onStop={handleStop}
               isDisabled={isLoading} 
               aiName={profile?.ai_persona_name || 'SYSTEM'} 
+              models={AI_MODELS}
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
             />
           </div>
         </div>

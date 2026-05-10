@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { Brain, User } from 'lucide-react'
+import { Brain, User, RotateCw } from 'lucide-react'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { ActionWidget } from './ActionWidget'
 
@@ -14,9 +14,10 @@ interface ChatMessageProps {
   isLast?: boolean
   name?: string
   style?: 'friendly' | 'strict' | 'motivational' | 'neutral'
+  onRetry?: () => void
 }
 
-export function ChatMessage({ id, role, content, metadata, isLast, name = 'SYSTEM', style = 'friendly' }: ChatMessageProps) {
+export function ChatMessage({ id, role, content, metadata, isLast, name = 'SYSTEM', style = 'friendly', onRetry }: ChatMessageProps) {
   const isAssistant = role === 'assistant'
 
   return (
@@ -88,6 +89,16 @@ export function ChatMessage({ id, role, content, metadata, isLast, name = 'SYSTE
         {metadata?.actions?.map((action: any, idx: number) => (
           <ActionWidget key={idx} action={action} messageId={id} className={content ? "mt-2" : "mt-0"} />
         ))}
+
+        {onRetry && !isAssistant && (
+          <button 
+            onClick={onRetry}
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1.5 rounded-lg border border-red-400/20 self-end mt-1"
+          >
+            <RotateCw size={12} />
+            Generation Failed — Retry
+          </button>
+        )}
       </div>
 
       {!isAssistant && (

@@ -45,12 +45,19 @@ export async function generateResponse(
 
       return response.text
     } catch (err: any) {
-      const status = err?.status || err?.httpStatusCode || 0
-      const isRetryable = status === 429 || status === 500 || status === 503
+      const statusCode = err?.status || err?.error?.code || err?.httpStatusCode || 0
+      const statusText = err?.error?.status || err?.statusText || ''
+      const isRetryable = 
+        statusCode === 429 || 
+        statusCode === 500 || 
+        statusCode === 503 ||
+        statusText === 'INTERNAL' ||
+        statusText === 'RESOURCE_EXHAUSTED' ||
+        statusText === 'UNAVAILABLE'
 
       if (isRetryable && attempt < maxRetries) {
         const waitMs = Math.pow(2, attempt) * 1000 // 2s, 4s
-        console.warn(`[Gemma] Attempt ${attempt} failed (${status}), retrying in ${waitMs}ms...`)
+        console.warn(`[Gemma] Attempt ${attempt} failed (${statusCode}), retrying in ${waitMs}ms...`)
         await new Promise(resolve => setTimeout(resolve, waitMs))
         continue
       }
@@ -186,7 +193,7 @@ Use when: The user has provided enough info and you're ready to generate a fitne
   "skill_name": "String",
   "skill_category": "coding | language | music | creative | other",
   "goal": "String — what they want to achieve",
-  "plan_type": "fixed | open_ended | goal_based",
+  "plan_type": "crash_course | standard | deep_dive",
   "duration_days": "Number (for fixed plans only)",
   "experience_level": "beginner | intermediate | advanced",
   "daily_study_minutes": "Number (10-480)",

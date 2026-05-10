@@ -157,6 +157,14 @@ export default function ChatPage() {
     }
   }
 
+  const handleRetry = () => {
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg && lastMsg.role === 'user') {
+      setMessages(prev => prev.slice(0, -1))
+      handleSendMessage(lastMsg.content)
+    }
+  }
+
   const startNewChat = () => {
     const personaName = profile?.ai_persona_name || 'SYSTEM'
     
@@ -256,18 +264,24 @@ export default function ChatPage() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-6 py-8 space-y-2 scrollbar-thin scrollbar-thumb-primary/20"
         >
-          {messages.map((msg, i) => (
-            <ChatMessage 
-              key={i} 
-              id={msg.id}
-              role={msg.role} 
-              content={msg.content} 
-              metadata={msg.metadata}
-              name={profile?.ai_persona_name || 'SYSTEM'}
-              style={profile?.ai_persona_style}
-              isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}
-            />
-          ))}
+          {messages.map((msg, i) => {
+            const isLastMessage = i === messages.length - 1
+            const isFailed = isLastMessage && !isLoading && msg.role === 'user'
+
+            return (
+              <ChatMessage 
+                key={i} 
+                id={msg.id}
+                role={msg.role} 
+                content={msg.content} 
+                metadata={msg.metadata}
+                name={profile?.ai_persona_name || 'SYSTEM'}
+                style={profile?.ai_persona_style}
+                isLast={isLastMessage && isLoading && msg.role === 'assistant'}
+                onRetry={isFailed ? handleRetry : undefined}
+              />
+            )
+          })}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <ChatMessage 
               role="assistant" 

@@ -57,7 +57,7 @@ export async function generateResponse(
 
       if (isRetryable && attempt < maxRetries) {
         const waitMs = Math.pow(2, attempt) * 1000 // 2s, 4s
-        console.warn(`[Gemma] Attempt ${attempt} failed (${status}), retrying in ${waitMs}ms...`)
+        console.warn(`[Gemma] Attempt ${attempt} failed (${statusCode}), retrying in ${waitMs}ms...`)
         await new Promise(resolve => setTimeout(resolve, waitMs))
         continue
       }

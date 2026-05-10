@@ -12,6 +12,15 @@ import { cn } from '@/lib/utils'
 
 type PersonaStyle = 'friendly' | 'strict' | 'motivational' | 'neutral'
 
+const AI_MODELS = [
+  { id: 'gemma-4-31b-it', name: 'Gemma 4 31B' },
+  { id: 'gemma-4-26b-a4b-it', name: 'Gemma 4 26B (A4B)' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+  { id: 'gemini-3.1-flash-lite-preview', name: 'Gemini 3.1 Flash Lite' },
+  { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
+]
+
 const PERSONA_STYLES: Record<PersonaStyle, { label: string; description: string; emoji: string }> = {
   friendly:     { label: 'SUPPORTIVE',   description: 'Warm, encouraging, celebrates wins', emoji: '🌟' },
   strict:       { label: 'ELITE',       description: 'Direct, no excuses, elite standards', emoji: '⚔️' },
@@ -49,6 +58,8 @@ export default function SettingsPage() {
   // AI persona state
   const [personaName, setPersonaName] = useState(profile?.ai_persona_name || 'SYSTEM')
   const [personaStyle, setPersonaStyle] = useState<PersonaStyle>((profile?.ai_persona_style as PersonaStyle) || 'friendly')
+  const [chatModel, setChatModel] = useState(profile?.ai_chat_model || 'gemma-4-31b-it')
+  const [backgroundModel, setBackgroundModel] = useState(profile?.ai_background_model || 'gemini-2.5-flash-lite')
 
   const [savedSection, setSavedSection] = useState<string | null>(null)
 
@@ -64,6 +75,8 @@ export default function SettingsPage() {
       setIsPublic(profile.is_public || false)
       setPersonaName(profile.ai_persona_name || 'SYSTEM')
       setPersonaStyle((profile.ai_persona_style as PersonaStyle) || 'friendly')
+      setChatModel(profile.ai_chat_model || 'gemma-4-31b-it')
+      setBackgroundModel(profile.ai_background_model || 'gemini-2.5-flash-lite')
       setTimezone(profile.timezone || 'UTC')
     }
   }, [profile])
@@ -91,7 +104,12 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings/profile', {
         method: 'PATCH',
         headers: headers(),
-        body: JSON.stringify({ ai_persona_name: personaName, ai_persona_style: personaStyle })
+        body: JSON.stringify({ 
+          ai_persona_name: personaName, 
+          ai_persona_style: personaStyle,
+          ai_chat_model: chatModel,
+          ai_background_model: backgroundModel
+        })
       })
       if (res.ok) {
         toast.success(`AI companion updated! Say hello to ${personaName}.`)
@@ -264,6 +282,34 @@ export default function SettingsPage() {
                   placeholder="System"
                   className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">DEFAULT CHAT MODEL</label>
+                  <select
+                    value={chatModel}
+                    onChange={e => setChatModel(e.target.value)}
+                    className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 appearance-none cursor-pointer transition-all"
+                  >
+                    {AI_MODELS.map(m => (
+                      <option key={m.id} value={m.id} className="bg-slate-950 text-blue-100">{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400/40 block mb-2 italic">BACKGROUND TASKS MODEL</label>
+                  <select
+                    value={backgroundModel}
+                    onChange={e => setBackgroundModel(e.target.value)}
+                    className="w-full h-12 px-4 rounded-2xl bg-slate-950 border border-blue-500/20 text-blue-100 text-sm font-bold italic focus:outline-none focus:ring-1 focus:ring-blue-400/40 appearance-none cursor-pointer transition-all"
+                  >
+                    {AI_MODELS.map(m => (
+                      <option key={m.id} value={m.id} className="bg-slate-950 text-blue-100">{m.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-400/30 mt-2 italic px-1">Used for scheduling, evaluations, and memory.</p>
+                </div>
               </div>
 
               <div className="relative z-10">

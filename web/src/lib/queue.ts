@@ -20,6 +20,12 @@ export type AiJobType =
   | 'proactive_alert_check'
   | 'plan_adaptation_check'
   | 'test_generate'
+  // Skills v2 job types
+  | 'skill_roadmap'
+  | 'skill_test_generate'
+  | 'skill_test_evaluate'
+  | 'evaluate_test_answer'
+  | 'proactive_alert_check'
 
 export interface AiJobData {
   userId: string
@@ -59,5 +65,9 @@ if (aiQueue) {
  */
 export async function addAiTask(data: AiJobData) {
   console.log(`[Queue Bypass] Executing ${data.type} directly...`)
-  return await executeAiTask(data)
+  try {
+    return await executeAiTask(data)
+  } catch (err) {
+    console.error(`[Queue Bypass] Task ${data.type} failed:`, err)
+  }
 }

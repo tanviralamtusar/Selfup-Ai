@@ -321,6 +321,16 @@ function ConfirmationWidget({
                 {action.payload.experience_level}
               </span>
             )}
+            {action.payload.learning_style && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
+                {action.payload.learning_style}
+              </span>
+            )}
+            {action.payload.includes_tests && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-bold uppercase tracking-tight">
+                + TESTS
+              </span>
+            )}
           </div>
 
           {/* Expandable Plan Detail */}
@@ -383,13 +393,27 @@ ${p.includes_diet ? `- **Includes Nutrition**: Yes (${p.food_preference || 'Bala
   }
 
   if (action.type === 'skill_roadmap_generate') {
+    const planTypeLabel: Record<string, string> = {
+      fixed: '📅 Fixed Duration',
+      open_ended: '🔄 Open-Ended',
+      goal_based: '🎯 Goal-Based',
+    }
+    const studyDays = p.study_days?.length ? p.study_days.map((d: string) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ') : 'Flexible'
     return `### Roadmap Summary
 - **Skill**: ${p.skill_name}
-- **Category**: ${p.skill_category}
+- **Category**: ${(p.skill_category || 'Other').charAt(0).toUpperCase() + (p.skill_category || 'other').slice(1)}
 - **Goal**: ${p.goal || 'General Mastery'}
+- **Plan Type**: ${planTypeLabel[p.plan_type] || p.plan_type || 'Open-Ended'}
+- **Level**: ${(p.experience_level || 'Beginner').charAt(0).toUpperCase() + (p.experience_level || 'beginner').slice(1)}
 - **Study Time**: ${p.daily_study_minutes || 30} min/day
+- **Study Days**: ${studyDays}
+- **Time**: ${p.preferred_time || 'Flexible'}
+- **Learning Style**: ${(p.learning_style || 'Mixed').charAt(0).toUpperCase() + (p.learning_style || 'mixed').slice(1)}
+${p.includes_tests ? '- **Tests**: ✅ AI-graded milestone assessments' : '- **Tests**: ❌ No tests'}
+${p.project_based ? '- **Projects**: ✅ Project-based learning' : ''}
+${p.needs_certification ? '- **Certification**: ✅ Certification focused' : ''}
 
-*Click Confirm to generate your personalized learning path.*`
+*Click Confirm to generate your personalised learning roadmap.*`
   }
 
   if (action.type === 'tasks_clear_all') {

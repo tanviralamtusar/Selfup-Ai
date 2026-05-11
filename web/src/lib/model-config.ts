@@ -58,6 +58,11 @@ export const TASK_PARAMS: Record<TaskType, GenerationParams> = {
     topP: 0.80,
     maxOutputTokens: 512,
   },
+  task_generation: {
+    temperature: 0.5,
+    topP: 0.90,
+    maxOutputTokens: 4096,
+  },
 }
 
 // ─── AiCoin Costs ────────────────────────────────

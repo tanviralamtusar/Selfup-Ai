@@ -79,7 +79,7 @@ export async function fetchWeeklyStats(
     .gte('created_at', start)
     .lte('created_at', end)
   
-  const hours_studied = skillSessions?.reduce((acc, curr) => acc + curr.duration_mins, 0) / 60 || 0
+  const hours_studied = (skillSessions?.reduce((acc, curr) => acc + curr.duration_mins, 0) || 0) / 60
 
   // 5. Gamification
   const { data: coinsData } = await supabase

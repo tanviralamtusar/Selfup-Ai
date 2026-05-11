@@ -19,6 +19,7 @@ export type TaskType =
   | 'test_evaluation'
   | 'weekly_summary'
   | 'memory_extraction'
+  | 'task_generation';
 
 export interface GenerationParams {
   temperature: number

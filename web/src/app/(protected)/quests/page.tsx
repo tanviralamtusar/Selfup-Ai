@@ -40,16 +40,16 @@ interface Quest {
 
 const PILLAR_CONFIG: Record<string, { icon: React.FC<any>; color: string; bg: string }> = {
   fitness: { icon: Dumbbell, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-  skills:  { icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  time:    { icon: Timer,    color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  skills:  { icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
+  time:    { icon: Timer,    color: 'text-[#5db8a0]', bg: 'bg-[#5db8a0]/10' },
   style:   { icon: Palette,  color: 'text-sky-400', bg: 'bg-sky-500/10' },
-  general: { icon: Globe,    color: 'text-slate-400', bg: 'bg-slate-500/10' },
+  general: { icon: Globe,    color: 'text-muted-foreground', bg: 'bg-muted' },
 }
 
 const TYPE_CONFIG: Record<QuestType, { label: string; color: string; bgCard: string; borderGlow: string }> = {
-  daily:   { label: 'DAILY',   color: 'text-blue-400', bgCard: 'bg-slate-950/40', borderGlow: 'hover:border-blue-500/40' },
-  weekly:  { label: 'WEEKLY',  color: 'text-cyan-400',    bgCard: 'bg-slate-950/40', borderGlow: 'hover:border-cyan-500/40' },
-  special: { label: 'SPECIAL', color: 'text-amber-400',  bgCard: 'bg-slate-950/60', borderGlow: 'hover:border-amber-500/50' },
+  daily:   { label: 'DAILY',   color: 'text-primary', bgCard: 'bg-card', borderGlow: 'hover:border-border' },
+  weekly:  { label: 'WEEKLY',  color: 'text-[#5db8a0]',    bgCard: 'bg-card', borderGlow: 'hover:border-border' },
+  special: { label: 'SPECIAL', color: 'text-amber-400',  bgCard: 'bg-card', borderGlow: 'hover:border-amber-500/50' },
 }
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { label: string; color: string; bg: string }> = {
@@ -85,9 +85,9 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "relative rounded-3xl border border-blue-500/20 p-6 transition-all group overflow-hidden bg-slate-950/40 backdrop-blur-md",
-        "before:absolute before:inset-0 before:bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px)] before:bg-[size:100%_4px] before:pointer-events-none",
-        quest.difficulty === 'legendary' && !isCompleted && 'border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.15)]',
+        "relative rounded-xl border border-border p-6 transition-all group overflow-hidden bg-card ",
+        "before:absolute before:inset-0 before: before:bg-[size:100%_4px] before:pointer-events-none",
+        quest.difficulty === 'legendary' && !isCompleted && 'border-amber-500/50',
         (isCompleted || isExpired) && 'opacity-60'
       )}
     >
@@ -99,10 +99,10 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
       <div className="flex items-start gap-4 relative z-10">
         {/* Left Side: Icon & Pillar */}
         <div className="flex flex-col items-center gap-2">
-          <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.1)] border border-blue-500/20", pillar.bg)}>
+          <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0  border border-border", pillar.bg)}>
             <PillarIcon size={24} className={pillar.color} />
           </div>
-          <div className={cn("px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] italic border border-current", diffConf.color, diffConf.bg)}>
+          <div className={cn("px-2 py-0.5 rounded-full text-[8px]    border border-current", diffConf.color, diffConf.bg)}>
             {diffConf.label}
           </div>
         </div>
@@ -110,35 +110,35 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
         {/* Middle: Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className={cn("text-[9px] font-black uppercase tracking-[0.3em] italic", typeConf.color)}>
+            <span className={cn("text-[9px]   ", typeConf.color)}>
               {typeConf.label} Quest
             </span>
             {quest.time_remaining && isActive && (
-              <span className="flex items-center gap-1 text-[9px] font-bold text-blue-400/40 uppercase tracking-widest italic">
+              <span className="flex items-center gap-1 text-[9px] font-medium text-primary/40 ">
                 <Clock size={10} /> {quest.time_remaining}
               </span>
             )}
           </div>
           
-          <h3 className="text-base font-black text-blue-100 mb-1 leading-tight uppercase italic tracking-wider">{quest.title}</h3>
-          <p className="text-xs text-blue-100/60 leading-relaxed mb-4 line-clamp-2 group-hover:line-clamp-none transition-all">
+          <h3 className="text-base  text-foreground mb-1 leading-tight ">{quest.title}</h3>
+          <p className="text-xs text-foreground/60 leading-relaxed mb-4 line-clamp-2 group-hover:line-clamp-none transition-all">
             {quest.description}
           </p>
 
           {/* Progress Section */}
           {isActive && (
             <div className="mb-4 space-y-1.5">
-              <div className="flex justify-between text-[10px] font-bold italic tracking-widest uppercase text-blue-400/60">
+              <div className="flex justify-between text-[10px] font-medium  text-primary/60">
                 <span>Progress</span>
-                <span className="text-blue-400">{quest.current_value} / {quest.target_value}</span>
+                <span className="text-primary">{quest.current_value} / {quest.target_value}</span>
               </div>
-              <div className="h-1.5 w-full bg-blue-500/10 rounded-full overflow-hidden border border-blue-500/20">
+              <div className="h-1.5 w-full bg-primary/10 rounded-full overflow-hidden border border-border">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   className={cn(
                     "h-full rounded-full transition-all duration-1000",
-                    progress >= 100 ? 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-blue-500'
+                    progress >= 100 ? 'bg-[#5db8a0] ' : 'bg-primary'
                   )}
                 />
               </div>
@@ -147,14 +147,14 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
 
           {/* Rewards */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <Zap size={12} className="text-blue-400" fill="currentColor" />
-              <span className="text-xs font-black text-blue-400">+{quest.xp_reward} <span className="text-[10px] opacity-60">XP</span></span>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/10 border border-border">
+              <Zap size={12} className="text-primary" fill="currentColor" />
+              <span className="text-xs  text-primary">+{quest.xp_reward} <span className="text-[10px] opacity-60">XP</span></span>
             </div>
             {quest.coin_reward > 0 && (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <Star size={12} className="text-amber-400" />
-                <span className="text-xs font-black text-amber-400">+{quest.coin_reward} <span className="text-[10px] opacity-60">AiC</span></span>
+                <span className="text-xs  text-amber-400">+{quest.coin_reward} <span className="text-[10px] opacity-60">AiC</span></span>
               </div>
             )}
           </div>
@@ -165,12 +165,12 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
           {isCompleted ? (
             <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-tertiary-fixed-dim/10 text-tertiary-fixed-dim border border-tertiary-fixed-dim/20">
               <CheckCircle2 size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Completed</span>
+              <span className="text-[10px] ">Completed</span>
             </div>
           ) : isExpired ? (
             <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20">
               <XCircle size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Failed</span>
+              <span className="text-[10px] ">Failed</span>
             </div>
           ) : isActive ? (
             <>
@@ -178,10 +178,10 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
                 onClick={() => onComplete(quest.id)}
                 disabled={loading || !canComplete}
                 className={cn(
-                  "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all italic",
+                  "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px]   transition-all ",
                   canComplete 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95 border border-blue-400'
-                    : 'bg-slate-900 text-blue-500/20 cursor-not-allowed border border-blue-500/10'
+                    ? 'bg-primary text-white shadow-sm hover:scale-105 active:scale-95 border border-primary/30'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed border border-border'
                 )}
               >
                 {loading ? <Loader2 size={12} className="animate-spin" /> : <Trophy size={14} />}
@@ -189,7 +189,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
               </button>
               <button 
                 onClick={() => onAbandon(quest.id)}
-                className="text-[9px] font-bold text-on-surface-variant/30 hover:text-error/60 transition-colors uppercase tracking-widest flex items-center gap-1"
+                className="text-[9px] font-medium text-muted-foreground hover:text-error/60 transition-colors flex items-center gap-1"
               >
                 <XCircle size={10} /> Abandon
               </button>
@@ -199,10 +199,10 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
               onClick={() => onAccept(quest.id)}
               disabled={loading}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl italic",
+                "flex items-center gap-2 px-6 py-3 rounded-xl text-[10px]   transition-all shadow-xl ",
                 quest.difficulty === 'legendary'
                   ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-400 border border-amber-400'
-                  : 'bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-500 border border-blue-400'
+                  : 'bg-primary text-white shadow-black/20 hover:bg-primary border border-primary/30'
               )}
             >
               {loading ? <Loader2 size={12} className="animate-spin" /> : <Sword size={14} />}
@@ -351,13 +351,13 @@ export default function QuestsPage() {
           <motion.div 
             initial={{ rotate: -20, scale: 0.8 }}
             animate={{ rotate: 0, scale: 1 }}
-            className="w-16 h-16 rounded-3xl bg-blue-500/20 flex items-center justify-center border-2 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+            className="w-16 h-16 rounded-xl bg-primary/15 flex items-center justify-center border-2 border-border "
           >
-            <Sword size={32} className="text-blue-400" />
+            <Sword size={32} className="text-primary" />
           </motion.div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-[0.3em] text-blue-400 system-text-glow">Quests</h1>
-            <p className="text-blue-400/60 text-[10px] font-black tracking-[0.2em] uppercase italic">Complete tasks to earn XP and level up.</p>
+            <h1 className="text-4xl md:text-5xl    text-primary">Quests</h1>
+            <p className="text-primary/60 text-[10px]   ">Complete tasks to earn XP and level up.</p>
           </div>
         </div>
 
@@ -377,7 +377,7 @@ export default function QuestsPage() {
               toast.error('Sync error', { id: loadingToast })
             }
           }}
-          className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/50 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/30 transition-all shadow-lg shadow-blue-500/10"
+          className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/15 text-primary border border-border text-[10px]   hover:bg-primary/20 transition-all shadow-sm"
         >
           <Sparkles size={14} className="group-hover:animate-spin" />
           Generate Quests
@@ -385,26 +385,26 @@ export default function QuestsPage() {
 
         {/* Quick Stats */}
         <div className="flex gap-3">
-          <div className="px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-blue-500/20 flex flex-col items-center min-w-[80px] shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-            <span className="text-xl font-black text-blue-400">{stats.active}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-blue-400/40">Active</span>
+          <div className="px-4 py-2.5 rounded-xl bg-card border border-border flex flex-col items-center min-w-[80px] ">
+            <span className="text-xl  text-primary">{stats.active}</span>
+            <span className="text-[9px]  text-primary/40">Active</span>
           </div>
-          <div className="px-4 py-2.5 rounded-2xl bg-slate-950/40 border border-blue-500/20 flex flex-col items-center min-w-[80px] shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-            <span className="text-xl font-black text-cyan-400">{stats.completed}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400/40">Sync</span>
+          <div className="px-4 py-2.5 rounded-xl bg-card border border-border flex flex-col items-center min-w-[80px] ">
+            <span className="text-xl  text-[#5db8a0]">{stats.completed}</span>
+            <span className="text-[9px]  text-[#5db8a0]/40">Sync</span>
           </div>
         </div>
       </div>
 
       {/* Navigation & Controls */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between border-b border-outline-variant/10 pb-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between border-b border-border pb-6">
         {/* Main Mode Toggle */}
-        <div className="flex gap-2 p-1.5 bg-slate-950/40 border border-blue-500/20 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.05)]">
+        <div className="flex gap-2 p-1.5 bg-card border border-border rounded-xl ">
           <button
             onClick={() => setActiveMajorTab('quests')}
             className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] italic transition-all flex items-center gap-2",
-              activeMajorTab === 'quests' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'text-blue-400/40 hover:text-blue-400'
+              "px-6 py-3 rounded-xl text-[10px]    transition-all flex items-center gap-2",
+              activeMajorTab === 'quests' ? 'bg-primary/15 text-primary border border-border ' : 'text-primary/40 hover:text-primary'
             )}
           >
             <Sword size={16} /> Quests
@@ -412,8 +412,8 @@ export default function QuestsPage() {
           <button
             onClick={() => setActiveMajorTab('badges')}
             className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] italic transition-all flex items-center gap-2",
-              activeMajorTab === 'badges' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'text-amber-400/40 hover:text-amber-400'
+              "px-6 py-3 rounded-xl text-[10px]    transition-all flex items-center gap-2",
+              activeMajorTab === 'badges' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50' : 'text-amber-400/40 hover:text-amber-400'
             )}
           >
             <Medal size={16} /> Badges
@@ -423,14 +423,14 @@ export default function QuestsPage() {
         {activeMajorTab === 'quests' && (
           <div className="flex flex-wrap gap-3 items-center">
             {/* Type Filters */}
-            <div className="flex gap-1 p-1 bg-slate-950/40 border border-blue-500/10 rounded-xl">
+            <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
               {(['daily', 'weekly', 'special'] as QuestType[]).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTypeTab(tab)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] italic transition-all",
-                    activeTypeTab === tab ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-blue-400/30 hover:text-blue-400'
+                    "px-4 py-2 rounded-lg text-[9px]    transition-all",
+                    activeTypeTab === tab ? 'bg-primary/15 text-primary border border-border' : 'text-primary/30 hover:text-primary'
                   )}
                 >
                   {tab === 'daily' ? 'DAILY QUESTS' : tab === 'weekly' ? 'WEEKLY QUESTS' : 'SPECIAL QUESTS'}
@@ -439,14 +439,14 @@ export default function QuestsPage() {
             </div>
 
             {/* Status Filter */}
-            <div className="flex gap-1 p-1 bg-slate-950/40 border border-blue-500/10 rounded-xl">
+            <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
               {(['all', 'active', 'completed', 'expired'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setStatusFilter(f)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] italic transition-all",
-                    statusFilter === f ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-blue-400/30 hover:text-blue-400'
+                    "px-4 py-2 rounded-lg text-[9px]    transition-all",
+                    statusFilter === f ? 'bg-primary/15 text-primary border border-border' : 'text-primary/30 hover:text-primary'
                   )}
                 >
                   {f}
@@ -463,7 +463,7 @@ export default function QuestsPage() {
           {isLoading ? (
             <div className="py-32 flex flex-col items-center justify-center gap-4">
               <Loader2 className="animate-spin text-primary" size={40} />
-              <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/40">Loading Quests...</p>
+              <p className="text-xs  text-muted-foreground">Loading Quests...</p>
             </div>
           ) : filteredQuests.length === 0 ? (
             <motion.div 
@@ -471,16 +471,16 @@ export default function QuestsPage() {
               animate={{ opacity: 1 }}
               className="py-32 flex flex-col items-center justify-center text-center gap-4"
             >
-              <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/10">
-                <Trophy size={32} className="text-on-surface-variant/20" />
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center border border-border">
+                <Trophy size={32} className="text-muted-foreground" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-on-surface mb-1">No quests found</h3>
-                <p className="text-xs text-on-surface-variant/40 max-w-[250px] mx-auto">Try changing your filters or check back later for new challenges.</p>
+                <h3 className="text-lg  text-foreground mb-1">No quests found</h3>
+                <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">Try changing your filters or check back later for new challenges.</p>
               </div>
               <button 
                 onClick={() => { setStatusFilter('all'); setActiveTypeTab('daily'); }}
-                className="mt-4 text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
+                className="mt-4 text-[10px]  text-primary hover:underline"
               >
                 Reset Filters
               </button>
@@ -517,10 +517,10 @@ export default function QuestsPage() {
 
       {/* Helper Info */}
       {activeMajorTab === 'quests' && !isLoading && (
-        <div className="flex items-center justify-center gap-6 pt-12 text-on-surface-variant/20">
+        <div className="flex items-center justify-center gap-6 pt-12 text-muted-foreground">
           <div className="flex items-center gap-2">
             <Info size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Quests auto-track as you complete tasks</span>
+            <span className="text-[10px] font-medium">Quests auto-track as you complete tasks</span>
           </div>
         </div>
       )}

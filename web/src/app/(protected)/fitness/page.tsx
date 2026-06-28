@@ -101,16 +101,16 @@ export default function FitnessPage() {
   const activePlan = plans.find(p => p.is_active);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 pb-20 italic">
+    <div className="min-h-screen bg-black text-white p-6 pb-20 ">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div className="relative group">
           <div className="relative">
-            <h1 className="text-4xl font-black tracking-[0.3em] mb-2 uppercase">
-              Fitness <span className="text-blue-500">Center</span>
+            <h1 className="text-4xl   mb-2">
+              Fitness <span className="text-primary">Center</span>
             </h1>
-            <div className="text-blue-500/40 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+            <div className="text-muted-foreground text-[10px]   flex items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
               AI Powered Workout & Nutrition
             </div>
           </div>
@@ -120,20 +120,20 @@ export default function FitnessPage() {
           <button 
             onClick={handleOpenAiModal}
             disabled={isGenerating}
-            className="relative group flex items-center gap-3 px-6 py-3 bg-slate-950 border border-blue-500/30 rounded-xl text-blue-100 font-black text-[10px] uppercase tracking-[0.2em] transition-all overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:border-blue-500/60"
+            className="relative group flex items-center gap-3 px-6 py-3 bg-background border border-border rounded-xl text-foreground  text-[10px]  transition-all overflow-hidden  hover:border-border"
           >
-            <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors" />
+            <div className="absolute inset-0 bg-muted group-hover:bg-primary/10 transition-colors" />
             {isGenerating ? (
-              <Loader2 size={16} className="animate-spin text-blue-400" />
+              <Loader2 size={16} className="animate-spin text-primary" />
             ) : (
-              <Sparkles size={16} className="text-blue-400 group-hover:rotate-12 transition-transform" />
+              <Sparkles size={16} className="text-primary group-hover:rotate-12 transition-transform" />
             )}
             {isGenerating ? 'Loading...' : 'AI Plan'}
           </button>
           
           <button 
             onClick={handleOpenAiModal}
-            className="flex items-center gap-3 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400 transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-xl  text-[10px]   border border-primary/30 transition-all hover:scale-105 active:scale-95"
           >
             <Plus size={16} />
             New Plan
@@ -142,14 +142,14 @@ export default function FitnessPage() {
       </div>
 
       {/* ── Tabs Menu ── */}
-      <div className="flex bg-slate-950/40 border border-blue-500/10 rounded-xl p-1 mb-10 overflow-x-auto scrollbar-hide backdrop-blur-sm">
+      <div className="flex bg-card border border-border rounded-xl p-1 mb-10 overflow-x-auto scrollbar-hide">
         {(['workout', 'nutrition', 'body'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "flex-1 md:flex-none min-w-[140px] py-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative rounded-lg",
-              activeTab === tab ? 'text-blue-50 bg-blue-600/20 shadow-[inset_0_0_15px_rgba(59,130,246,0.2)] border border-blue-500/30' : 'text-blue-500/40 hover:text-blue-300 hover:bg-blue-500/5'
+              "flex-1 md:flex-none min-w-[140px] py-3 text-[10px]   transition-all relative rounded-lg",
+              activeTab === tab ? 'text-foreground bg-primary/20  border border-border' : 'text-muted-foreground hover:text-primary/80 hover:bg-muted'
             )}
           >
             {tab}
@@ -172,33 +172,33 @@ export default function FitnessPage() {
               </div>
 
               <div className="space-y-10">
-                <section className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+                <section className="bg-card border border-border rounded-xl p-6 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-2 h-16 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
                   <div className="flex items-center gap-3 mb-6">
-                    <History size={18} className="text-blue-500" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Workout History</h2>
+                    <History size={18} className="text-primary" />
+                    <h2 className="text-[10px]   text-muted-foreground">Workout History</h2>
                   </div>
                   
                   <div className="space-y-4">
                     {logs.length > 0 ? (
                       logs.slice(0, 5).map((log) => (
-                        <div key={log.id} className="p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative group/log overflow-hidden">
+                        <div key={log.id} className="p-4 bg-card border border-border rounded-lg hover:border-border transition-all hover:bg-muted relative group/log overflow-hidden">
                           <div className="flex justify-between items-center mb-3">
-                            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">+{log.xp_earned} XP</span>
+                            <span className="text-[9px]  text-primary bg-primary/10 px-2 py-0.5 rounded border border-border">+{log.xp_earned} XP</span>
                             <div className="flex items-center gap-2">
                               {log.status === 'partial' && (
-                                <span className="text-[7px] font-black bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase tracking-tighter">In Progress</span>
+                                <span className="text-[7px]  bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 tracking-tighter">In Progress</span>
                               )}
-                              <span className="text-[8px] font-black text-blue-500/30 uppercase tracking-widest">{new Date(log.completed_at).toLocaleDateString()}</span>
+                              <span className="text-[8px]  text-muted-foreground">{new Date(log.completed_at).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          <h4 className="text-[11px] font-black text-blue-50 mb-1 uppercase tracking-widest">{log.day_name || 'Workout Complete'}</h4>
-                          <p className="text-[10px] text-blue-500/60 line-clamp-1 italic italic leading-relaxed">"{log.notes || 'No log data recorded.'}"</p>
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover/log:bg-blue-500/40 transition-colors" />
+                          <h4 className="text-[11px]  text-foreground mb-1">{log.day_name || 'Workout Complete'}</h4>
+                          <p className="text-[10px] text-muted-foreground line-clamp-1   leading-relaxed">"{log.notes || 'No log data recorded.'}"</p>
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/0 group-hover/log:bg-primary/40 transition-colors" />
                         </div>
                       ))
                     ) : (
-                      <div className="py-12 text-center text-blue-500/20 italic text-[10px] font-black uppercase tracking-widest border border-dashed border-blue-500/10 rounded-xl">
+                      <div className="py-12 text-center text-muted-foreground  text-[10px]  border border-dashed border-border rounded-xl">
                         NO WORKOUTS LOGGED
                       </div>
                     )}

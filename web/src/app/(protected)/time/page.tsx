@@ -40,7 +40,7 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; glow: st
   critical: { label: 'Critical', color: 'text-red-400 bg-red-500/10 border-red-500/20', glow: 'shadow-red-500/20' },
   high:     { label: 'High',     color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', glow: 'shadow-orange-500/20' },
   medium:   { label: 'Medium',   color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20', glow: 'shadow-yellow-500/20' },
-  low:      { label: 'Low',      color: 'text-on-surface-variant/60 bg-surface-container-highest/30 border-outline-variant/10', glow: '' },
+  low:      { label: 'Low',      color: 'text-muted-foreground bg-mutedest/30 border-border', glow: '' },
 }
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -48,7 +48,7 @@ const PILLAR_COLORS: Record<string, string> = {
   skills:  'text-primary',
   time:    'text-secondary',
   style:   'text-pink-400',
-  general: 'text-on-surface-variant/60',
+  general: 'text-muted-foreground',
 }
 
 function CircularTimer({
@@ -92,13 +92,13 @@ function CircularTimer({
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-5xl font-black font-headline tracking-tighter tabular-nums text-on-surface">
+        <span className="text-5xl  font-headline tracking-tighter tabular-nums text-foreground">
           {mins}:{secs}
         </span>
         <span className={cn(
-          "text-[10px] font-black uppercase tracking-[0.3em] mt-1",
+          "text-[10px]   mt-1",
           state === 'break' ? 'text-tertiary-fixed-dim' :
-          state === 'active' ? 'text-primary' : 'text-on-surface-variant/40'
+          state === 'active' ? 'text-primary' : 'text-muted-foreground'
         )}>
           {state === 'break' ? 'Rest Phase' : state === 'active' ? 'Focus Mode' : state === 'paused' ? 'Paused' : 'Ready'}
         </span>
@@ -286,23 +286,23 @@ export default function TimePage() {
     <div className="space-y-8 pb-20">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 shadow-[0_0_20px_rgba(168,140,251,0.1)]">
+        <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20">
           <Timer size={28} />
         </div>
         <div>
-          <h1 className="text-4xl font-black font-headline tracking-tighter text-on-surface">Selfup Time Command</h1>
-          <p className="text-on-surface-variant/60 text-sm">Deep work. Zero distractions. Maximum XP.</p>
+          <h1 className="text-4xl  font-headline tracking-tighter text-foreground">Selfup Time Command</h1>
+          <p className="text-muted-foreground text-sm">Deep work. Zero distractions. Maximum XP.</p>
         </div>
       </div>
 
-      <div className="flex border-b border-outline-variant/10 mb-6 overflow-x-auto">
+      <div className="flex border-b border-border mb-6 overflow-x-auto">
         {(['board', 'focus', 'habits', 'schedule'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "flex-1 md:flex-none min-w-[120px] py-4 text-[11px] font-black uppercase tracking-widest transition-all relative",
-              activeTab === tab ? 'text-primary' : 'text-on-surface-variant/50 hover:text-on-surface-variant'
+              "flex-1 md:flex-none min-w-[120px] py-4 text-[11px]  transition-all relative",
+              activeTab === tab ? 'text-primary' : 'text-muted-foreground hover:text-muted-foreground'
             )}
           >
             {tab}
@@ -318,7 +318,7 @@ export default function TimePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* ── Left: Pomodoro Timer ── */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-8 space-y-8 relative overflow-hidden">
+          <div className="bg-muted border border-border rounded-xl p-8 space-y-8 relative overflow-hidden">
             {/* Background glow */}
             <div className={cn(
               "absolute inset-0 transition-all duration-1000 pointer-events-none",
@@ -339,10 +339,10 @@ export default function TimePage() {
                     key={m}
                     onClick={() => { setWorkMinutes(m); setSecondsLeft(m * 60); setTotalSeconds(m * 60) }}
                     className={cn(
-                      "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all",
+                      "px-4 py-2 rounded-xl text-xs  border transition-all",
                       workMinutes === m
                         ? 'bg-primary text-on-primary border-primary shadow-lg shadow-primary/20'
-                        : 'border-outline-variant/10 text-on-surface-variant hover:border-primary/30'
+                        : 'border-border text-muted-foreground hover:border-primary/30'
                     )}
                   >{m}m</button>
                 ))}
@@ -352,11 +352,11 @@ export default function TimePage() {
             {/* Link Task Dropdown */}
             {timerState === 'idle' && activeTodos.length > 0 && (
               <div className="relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 block mb-2 ml-1">Link Task (optional)</label>
+                <label className="text-[10px]   text-muted-foreground block mb-2 ml-1">Link Task (optional)</label>
                 <select
                   value={linkedTaskId || ''}
                   onChange={e => setLinkedTaskId(e.target.value || null)}
-                  className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm font-medium appearance-none"
+                  className="w-full h-12 px-4 rounded-xl bg-mutedest border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm font-medium appearance-none"
                 >
                   <option value="">No task linked</option>
                   {activeTodos.map(t => (
@@ -370,7 +370,7 @@ export default function TimePage() {
             <div className="flex items-center justify-center gap-4 relative z-10">
               <button
                 onClick={handleReset}
-                className="w-12 h-12 rounded-full border border-outline-variant/10 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all"
+                className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-mutedest transition-all"
               >
                 <RotateCcw size={18} />
               </button>
@@ -378,9 +378,9 @@ export default function TimePage() {
               <button
                 onClick={timerState === 'active' ? handlePause : handleStart}
                 className={cn(
-                  "w-20 h-20 rounded-full flex items-center justify-center font-black transition-all shadow-2xl",
+                  "w-20 h-20 rounded-full flex items-center justify-center  transition-all shadow-2xl",
                   timerState === 'break'
-                    ? 'bg-tertiary-fixed-dim text-on-surface cursor-not-allowed opacity-50'
+                    ? 'bg-tertiary-fixed-dim text-foreground cursor-not-allowed opacity-50'
                     : 'bg-primary text-on-primary hover:scale-105 active:scale-95 shadow-primary/30'
                 )}
                 disabled={timerState === 'break'}
@@ -388,43 +388,43 @@ export default function TimePage() {
                 {timerState === 'active' ? <Pause size={28} /> : <Play size={28} fill="currentColor" />}
               </button>
 
-              <div className="w-12 h-12 rounded-full border border-outline-variant/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center">
                 {timerState === 'break' ? (
                   <Coffee size={18} className="text-tertiary-fixed-dim" />
                 ) : (
-                  <Flame size={18} className="text-on-surface-variant/30" />
+                  <Flame size={18} className="text-muted-foreground" />
                 )}
               </div>
             </div>
 
             {/* Today's stats */}
-            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-outline-variant/10 relative z-10">
+            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-border relative z-10">
               <div className="text-center">
-                <p className="text-2xl font-black font-headline text-primary">{completedToday}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Sessions Today</p>
+                <p className="text-2xl  font-headline text-primary">{completedToday}</p>
+                <p className="text-[10px]  text-muted-foreground">Sessions Today</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black font-headline text-secondary">{totalFocusMinutes}m</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">Focused Today</p>
+                <p className="text-2xl  font-headline text-secondary">{totalFocusMinutes}m</p>
+                <p className="text-[10px]  text-muted-foreground">Focused Today</p>
               </div>
             </div>
           </div>
 
           {/* Session History */}
           {pomodoroHistory.length > 0 && (
-            <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-6 space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40">Today's Log</h3>
+            <div className="bg-muted border border-border rounded-xl p-6 space-y-4">
+              <h3 className="text-[10px]   text-muted-foreground">Today's Log</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {pomodoroHistory.slice(0, 8).map(s => (
                   <div key={s.id} className="flex items-center gap-3 py-2">
                     <div className={cn(
                       "w-2 h-2 rounded-full flex-shrink-0",
-                      s.status === 'completed' ? 'bg-tertiary-fixed-dim' : 'bg-on-surface-variant/20'
+                      s.status === 'completed' ? 'bg-tertiary-fixed-dim' : 'bg-muted-foreground'
                     )} />
-                    <span className="text-xs font-medium text-on-surface flex-1 truncate">
+                    <span className="text-xs font-medium text-foreground flex-1 truncate">
                       {s.task?.title || 'Free session'}
                     </span>
-                    <span className="text-[10px] font-black text-on-surface-variant/40">{s.duration_minutes}m</span>
+                    <span className="text-[10px]  text-muted-foreground">{s.duration_minutes}m</span>
                     {s.status === 'completed' && (
                       <CheckCircle2 size={14} className="text-tertiary-fixed-dim flex-shrink-0" />
                     )}
@@ -437,16 +437,16 @@ export default function TimePage() {
 
         {/* ── Right: Task Manager ── */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl overflow-hidden">
+          <div className="bg-muted border border-border rounded-xl overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-outline-variant/10 flex items-center justify-between">
+            <div className="p-6 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <ListTodo size={20} className="text-secondary" />
-                <h2 className="text-sm font-black uppercase tracking-widest">Task Board</h2>
+                <h2 className="text-sm ">Task Board</h2>
               </div>
               <button
                 onClick={() => setIsAddingTask(prev => !prev)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs  hover:bg-primary/20 transition-all"
               >
                 <Plus size={14} />
                 Add Task
@@ -460,9 +460,9 @@ export default function TimePage() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-b border-outline-variant/10"
+                  className="overflow-hidden border-b border-border"
                 >
-                  <div className="p-6 space-y-4 bg-surface-container-medium/50">
+                  <div className="p-6 space-y-4 bg-muted-medium/50">
                     <input
                       autoFocus
                       type="text"
@@ -470,7 +470,7 @@ export default function TimePage() {
                       value={newTask.title}
                       onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && handleAddTask()}
-                      className="w-full h-12 px-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium text-sm"
+                      className="w-full h-12 px-4 rounded-xl bg-mutedest border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium text-sm"
                     />
                     <div className="flex gap-3 flex-wrap">
                       {(['low','medium','high','critical'] as Priority[]).map(p => (
@@ -478,16 +478,16 @@ export default function TimePage() {
                           key={p}
                           onClick={() => setNewTask(t => ({ ...t, priority: p }))}
                           className={cn(
-                            "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all",
-                            newTask.priority === p ? PRIORITY_CONFIG[p].color : 'border-outline-variant/10 text-on-surface-variant/40'
+                            "px-3 py-1.5 rounded-xl text-[10px]  border transition-all",
+                            newTask.priority === p ? PRIORITY_CONFIG[p].color : 'border-border text-muted-foreground'
                           )}
                         >{PRIORITY_CONFIG[p].label}</button>
                       ))}
 
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={handleAddTask} className="flex-1 h-10 bg-primary text-on-primary rounded-xl text-xs font-black uppercase tracking-widest">Add Task</button>
-                      <button onClick={() => setIsAddingTask(false)} className="px-4 h-10 rounded-xl border border-outline-variant/10 text-on-surface-variant text-xs font-black uppercase">Cancel</button>
+                      <button onClick={handleAddTask} className="flex-1 h-10 bg-primary text-on-primary rounded-xl text-xs ">Add Task</button>
+                      <button onClick={() => setIsAddingTask(false)} className="px-4 h-10 rounded-xl border border-border text-muted-foreground text-xs ">Cancel</button>
                     </div>
                   </div>
                 </motion.div>
@@ -495,21 +495,21 @@ export default function TimePage() {
             </AnimatePresence>
 
             {/* Tabs */}
-            <div className="flex border-b border-outline-variant/10">
+            <div className="flex border-b border-border">
               {[{ key: 'active', label: 'Active', count: activeTodos.length }, { key: 'completed', label: 'Done', count: completedTodos.length }].map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setShowCompleted(tab.key === 'completed')}
                   className={cn(
-                    "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative",
-                    (tab.key === 'completed') === showCompleted ? 'text-primary' : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+                    "flex-1 py-4 text-[10px]  transition-all relative",
+                    (tab.key === 'completed') === showCompleted ? 'text-primary' : 'text-muted-foreground hover:text-muted-foreground'
                   )}
                 >
                   {tab.label}
                   {tab.count > 0 && (
                     <span className={cn(
                       "ml-2 px-1.5 py-0.5 rounded-full text-[9px]",
-                      (tab.key === 'completed') === showCompleted ? 'bg-primary/20 text-primary' : 'bg-surface-container-highest text-on-surface-variant/40'
+                      (tab.key === 'completed') === showCompleted ? 'bg-primary/20 text-primary' : 'bg-mutedest text-muted-foreground'
                     )}>{tab.count}</span>
                   )}
                   {(tab.key === 'completed') === showCompleted && (
@@ -520,15 +520,15 @@ export default function TimePage() {
             </div>
 
             {/* Task List */}
-            <div className="divide-y divide-outline-variant/5 max-h-[480px] overflow-y-auto">
+            <div className="divide-y divide-border max-h-[480px] overflow-y-auto">
               {isLoading ? (
                 <div className="py-12 flex items-center justify-center">
                   <Loader2 className="animate-spin text-primary" />
                 </div>
               ) : displayedTodos.length === 0 ? (
                 <div className="py-16 text-center">
-                  <Circle size={32} className="text-on-surface-variant/20 mx-auto mb-3" />
-                  <p className="text-xs font-black uppercase tracking-widest text-on-surface-variant/30">
+                  <Circle size={32} className="text-muted-foreground mx-auto mb-3" />
+                  <p className="text-xs  text-muted-foreground">
                     {showCompleted ? 'No completed tasks yet' : 'All clear — add a task above'}
                   </p>
                 </div>
@@ -541,7 +541,7 @@ export default function TimePage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
                       className={cn(
-                        "flex items-center gap-4 p-5 hover:bg-surface-container-medium/30 transition-all group",
+                        "flex items-center gap-4 p-5 hover:bg-muted-medium/30 transition-all group",
                         task.is_completed && 'opacity-40'
                       )}
                     >
@@ -552,8 +552,8 @@ export default function TimePage() {
                         className={cn(
                           "w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
                           task.is_completed
-                            ? 'bg-tertiary-fixed-dim border-tertiary-fixed-dim text-on-surface'
-                            : 'border-outline-variant hover:border-primary'
+                            ? 'bg-tertiary-fixed-dim border-tertiary-fixed-dim text-foreground'
+                            : 'border-border hover:border-primary'
                         )}
                       >
                         {task.is_completed && <CheckCircle2 size={16} />}
@@ -561,11 +561,11 @@ export default function TimePage() {
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-bold text-on-surface truncate", task.is_completed && 'line-through')}>
+                        <p className={cn("text-sm font-medium text-foreground truncate", task.is_completed && 'line-through')}>
                           {task.title}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={cn("text-[10px] font-black uppercase tracking-widest", PILLAR_COLORS[task.category] || 'text-on-surface-variant/40')}>
+                          <span className={cn("text-[10px] ", PILLAR_COLORS[task.category] || 'text-muted-foreground')}>
                             {task.category}
                           </span>
                           <span className="text-[10px] text-amber-400/60 font-mono">+{task.xp_reward} XP</span>
@@ -573,7 +573,7 @@ export default function TimePage() {
                       </div>
 
                       {/* Priority badge */}
-                      <span className={cn("px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border flex-shrink-0 hidden sm:block", PRIORITY_CONFIG[task.priority]?.color)}>
+                      <span className={cn("px-2 py-1 rounded-lg text-[9px]  border flex-shrink-0 hidden sm:block", PRIORITY_CONFIG[task.priority]?.color)}>
                         {PRIORITY_CONFIG[task.priority]?.label}
                       </span>
 
@@ -583,7 +583,7 @@ export default function TimePage() {
                           onClick={() => { setLinkedTaskId(task.id); toast.success(`Linked: "${task.title}"`) }}
                           className={cn(
                             "p-2 rounded-lg text-[10px] opacity-0 group-hover:opacity-100 transition-all",
-                            linkedTaskId === task.id ? 'bg-primary/20 text-primary' : 'hover:bg-surface-container-highest text-on-surface-variant/40'
+                            linkedTaskId === task.id ? 'bg-primary/20 text-primary' : 'hover:bg-mutedest text-muted-foreground'
                           )}
                           title="Link to Pomodoro"
                         >

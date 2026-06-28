@@ -41,7 +41,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
     <motion.div 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`border rounded-2xl p-5 relative overflow-hidden ${
+      className={`border rounded-xl p-5 relative overflow-hidden ${
         isPositive 
           ? 'bg-primary-900/20 border-primary-500/30' 
           : 'bg-orange-900/20 border-orange-500/30'
@@ -53,11 +53,11 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-black text-white flex items-center gap-2 mb-2 uppercase tracking-wide">
+          <h3 className="text-xl  text-white flex items-center gap-2 mb-2 tracking-wide">
             <Sparkles size={22} className={isPositive ? "text-primary-400" : "text-orange-400"} />
             AI Plan Update
           </h3>
-          <p className="text-base text-gray-300 font-medium italic">
+          <p className="text-base text-gray-300 font-medium ">
             {isPositive 
               ? "You've been crushing it! The AI suggests increasing the difficulty to maximize growth." 
               : "Looks like you missed a few sessions. The AI suggests a slight adjustment to help you stay consistent."}
@@ -69,10 +69,10 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
                 <ArrowRight size={20} className="text-white" />
               </div>
               <div>
-                <span className="block text-base font-black text-white uppercase tracking-wider">
+                <span className="block text-base  text-white">
                   {adjustment.suggestion?.change || "Update Plan"}
                 </span>
-                <span className="block text-[11px] text-gray-400 uppercase font-black tracking-widest mt-1">
+                <span className="block text-[11px] text-gray-400  mt-1">
                   {adjustment.suggestion?.details || "Tap approve to apply this change."}
                 </span>
               </div>
@@ -84,17 +84,17 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
           <button 
             onClick={() => handleAction('ignore')}
             disabled={isProcessing}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-muted transition-colors disabled:opacity-50"
           >
             Ignore
           </button>
           <button 
             onClick={() => handleAction('approve')}
             disabled={isProcessing}
-            className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 ${
+            className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
               isPositive 
-                ? 'bg-primary-600 text-white hover:bg-primary-500 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]' 
-                : 'bg-orange-600 text-white hover:bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]'
+                ? 'bg-primary-600 text-white hover:bg-primary-500' 
+                : 'bg-orange-600 text-white hover:bg-orange-500'
             }`}
           >
             {isProcessing ? 'Applying...' : <><Check size={18} /> Apply Change</>}

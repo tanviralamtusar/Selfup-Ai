@@ -88,13 +88,13 @@ export function ChatInput({
           <div className="flex items-center gap-1">
             <button 
               type="button" 
-              className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors"
+              className="w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center text-gray-400 transition-colors"
             >
               <Plus size={20} />
             </button>
             <button 
               type="button" 
-              className="h-10 px-3 rounded-full hover:bg-white/5 flex items-center gap-2 text-gray-400 transition-colors text-[13px] font-medium"
+              className="h-10 px-3 rounded-full hover:bg-muted flex items-center gap-2 text-gray-400 transition-colors text-[13px] font-medium"
             >
               <Settings2 size={16} />
               Tools
@@ -104,8 +104,8 @@ export function ChatInput({
           {/* Right actions */}
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
-              <Sparkles size={12} className="text-cyan-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">1 Coin</span>
+              <Sparkles size={12} className="text-[#5db8a0]" />
+              <span className="text-[10px]  text-gray-400">1 Coin</span>
             </div>
             
             <div className="relative">
@@ -122,7 +122,7 @@ export function ChatInput({
               </select>
               <button 
                 type="button" 
-                className="h-10 px-3 rounded-full hover:bg-white/5 flex items-center gap-1.5 text-gray-300 transition-colors text-[13px] font-medium pointer-events-none"
+                className="h-10 px-3 rounded-full hover:bg-muted flex items-center gap-1.5 text-gray-300 transition-colors text-[13px] font-medium pointer-events-none"
               >
                 {currentModelName}
                 <ChevronDown size={14} className="text-gray-500" />

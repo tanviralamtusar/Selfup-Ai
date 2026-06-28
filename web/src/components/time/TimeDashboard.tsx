@@ -39,7 +39,7 @@ const PRIORITY_CONFIG = {
   critical: { label: 'Critical', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/30', xp: 35 },
   high: { label: 'High', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/30', xp: 20 },
   medium: { label: 'Medium', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', xp: 10 },
-  low: { label: 'Low', color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30', xp: 5 },
+  low: { label: 'Low', color: 'text-primary', bg: 'bg-primary/15', border: 'border-border', xp: 5 },
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -47,8 +47,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 const RESET_TYPE_CONFIG = {
-  daily: { label: 'Daily', color: 'text-cyan-400', bg: 'bg-cyan-500/15' },
-  weekly: { label: 'Weekly', color: 'text-violet-400', bg: 'bg-violet-500/15' },
+  daily: { label: 'Daily', color: 'text-[#5db8a0]', bg: 'bg-[#5db8a0]/15' },
+  weekly: { label: 'Weekly', color: 'text-primary', bg: 'bg-border' },
   monthly: { label: 'Monthly', color: 'text-amber-400', bg: 'bg-amber-500/15' },
 }
 
@@ -74,7 +74,7 @@ function MidnightCountdown() {
   }, [])
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-white/40">
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <Timer size={12} />
       <span>Resets in {timeLeft}</span>
     </div>
@@ -99,7 +99,7 @@ function QuickAdd({ placeholder, onAdd }: { placeholder: string; onAdd: (text: s
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-dashed border-white/10 text-white/30 hover:text-white/60 hover:border-white/20 transition-all text-sm"
+        className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border transition-all text-sm"
         aria-label={`Add new ${placeholder}`}
       >
         <Plus size={14} />
@@ -116,13 +116,13 @@ function QuickAdd({ placeholder, onAdd }: { placeholder: string; onAdd: (text: s
         onChange={e => setValue(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') setIsOpen(false) }}
         placeholder={placeholder}
-        className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/20 transition-all"
+        className="flex-1 bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-border transition-all"
         aria-label={`New ${placeholder} input`}
       />
       <button onClick={handleSubmit} className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-all" aria-label="Confirm add">
         <Check size={14} />
       </button>
-      <button onClick={() => { setIsOpen(false); setValue('') }} className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white/60 transition-all" aria-label="Cancel add">
+      <button onClick={() => { setIsOpen(false); setValue('') }} className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-all" aria-label="Cancel add">
         <X size={14} />
       </button>
     </div>
@@ -150,7 +150,7 @@ function DailyItem({ daily, onComplete, onDelete, onEdit }: {
         'group flex items-center gap-3 p-3 rounded-xl border transition-all duration-200',
         daily.is_completed
           ? 'bg-emerald-500/5 border-emerald-500/15 opacity-60'
-          : `bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10`
+          : `bg-card border-border hover:bg-secondary hover:border-border`
       )}
     >
       {/* Completion checkbox */}
@@ -161,30 +161,30 @@ function DailyItem({ daily, onComplete, onDelete, onEdit }: {
           'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
           daily.is_completed
             ? 'bg-emerald-500 border-emerald-500'
-            : `${config.border} hover:bg-white/10`
+            : `${config.border} hover:bg-muted`
         )}
         aria-label={daily.is_completed ? 'Completed' : `Complete ${daily.title}`}
       >
-        {daily.is_completed && <Check size={12} className="text-white" />}
+        {daily.is_completed && <Check size={12} className="text-foreground" />}
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(daily)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate hover:text-cyan-400 transition-colors', daily.is_completed ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-[#5db8a0] transition-colors', daily.is_completed ? 'line-through text-muted-foreground pointer-events-none' : 'text-foreground/90')}>
             {daily.title}
           </span>
         </div>
         {daily.subtasks && daily.subtasks.length > 0 && (
-          <div className="text-xs text-white/30 mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             {daily.subtasks.filter(s => s.is_completed).length}/{daily.subtasks.length} subtasks
           </div>
         )}
       </div>
 
       {/* Priority badge */}
-      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wider', config.bg, config.color)}>
+      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md', config.bg, config.color)}>
         {config.label}
       </span>
 
@@ -194,7 +194,7 @@ function DailyItem({ daily, onComplete, onDelete, onEdit }: {
       {/* Delete button */}
       <button
         onClick={() => onDelete(daily.id)}
-        className="opacity-0 group-hover:opacity-100 p-1 text-white/20 hover:text-red-400 transition-all"
+        className="opacity-0 group-hover:opacity-100 p-1 text-foreground/20 hover:text-red-400 transition-all"
         aria-label={`Delete ${daily.title}`}
       >
         <Trash2 size={12} />
@@ -224,7 +224,7 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
         'group flex items-center gap-3 p-3 rounded-xl border transition-all duration-200',
         habit.is_completed_this_cycle
           ? 'bg-emerald-500/5 border-emerald-500/15 opacity-60'
-          : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10'
+          : 'bg-card border-border hover:bg-secondary hover:border-border'
       )}
     >
       {/* Completion */}
@@ -235,18 +235,18 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
           'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
           habit.is_completed_this_cycle
             ? 'bg-emerald-500 border-emerald-500'
-            : 'border-violet-500/30 hover:bg-white/10'
+            : 'border-border hover:bg-muted'
         )}
         aria-label={habit.is_completed_this_cycle ? 'Completed this cycle' : `Complete ${habit.title}`}
       >
-        {habit.is_completed_this_cycle && <Check size={12} className="text-white" />}
+        {habit.is_completed_this_cycle && <Check size={12} className="text-foreground" />}
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(habit)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate hover:text-violet-400 transition-colors', habit.is_completed_this_cycle ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-primary transition-colors', habit.is_completed_this_cycle ? 'line-through text-muted-foreground pointer-events-none' : 'text-foreground/90')}>
             {habit.title}
           </span>
         </div>
@@ -265,7 +265,7 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
       </div>
 
       {/* Reset type badge */}
-      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wider', resetConfig.bg, resetConfig.color)}>
+      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md', resetConfig.bg, resetConfig.color)}>
         {resetConfig.label}
       </span>
 
@@ -275,7 +275,7 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
       {/* Delete */}
       <button
         onClick={() => onDelete(habit.id)}
-        className="opacity-0 group-hover:opacity-100 p-1 text-white/20 hover:text-red-400 transition-all"
+        className="opacity-0 group-hover:opacity-100 p-1 text-foreground/20 hover:text-red-400 transition-all"
         aria-label={`Delete ${habit.title}`}
       >
         <Trash2 size={12} />
@@ -307,7 +307,7 @@ function TodoItem({ todo, onComplete, onDelete, onEdit }: {
           ? 'bg-emerald-500/5 border-emerald-500/15 opacity-60'
           : todo.is_overdue
             ? 'bg-red-500/5 border-red-500/20 hover:bg-red-500/8'
-            : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10'
+            : 'bg-card border-border hover:bg-secondary hover:border-border'
       )}
     >
       {/* Completion */}
@@ -320,18 +320,18 @@ function TodoItem({ todo, onComplete, onDelete, onEdit }: {
             ? 'bg-emerald-500 border-emerald-500'
             : todo.is_overdue
               ? 'border-red-500/40 hover:bg-red-500/10'
-              : `${config.border} hover:bg-white/10`
+              : `${config.border} hover:bg-muted`
         )}
         aria-label={todo.is_completed ? 'Completed' : `Complete ${todo.title}`}
       >
-        {todo.is_completed && <Check size={12} className="text-white" />}
+        {todo.is_completed && <Check size={12} className="text-foreground" />}
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(todo)}>
         <div className="flex items-center gap-2">
           <span className="text-xs">{icon}</span>
-          <span className={cn('text-sm font-medium truncate hover:text-emerald-400 transition-colors', todo.is_completed ? 'line-through text-white/40 pointer-events-none' : 'text-white/90')}>
+          <span className={cn('text-sm font-medium truncate hover:text-emerald-400 transition-colors', todo.is_completed ? 'line-through text-muted-foreground pointer-events-none' : 'text-foreground/90')}>
             {todo.title}
           </span>
           {todo.is_overdue && (
@@ -341,16 +341,16 @@ function TodoItem({ todo, onComplete, onDelete, onEdit }: {
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider', config.bg, config.color)}>
+          <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded-md', config.bg, config.color)}>
             {config.label}
           </span>
           {todo.due_date && (
-            <span className={cn('flex items-center gap-0.5 text-xs', todo.is_overdue ? 'text-red-400' : 'text-white/30')}>
+            <span className={cn('flex items-center gap-0.5 text-xs', todo.is_overdue ? 'text-red-400' : 'text-muted-foreground')}>
               <Calendar size={10} /> {new Date(todo.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}
           {todo.subtasks && todo.subtasks.length > 0 && (
-            <span className="text-xs text-white/30">
+            <span className="text-xs text-muted-foreground">
               {todo.subtasks.filter(s => s.is_completed).length}/{todo.subtasks.length} subtasks
             </span>
           )}
@@ -358,7 +358,7 @@ function TodoItem({ todo, onComplete, onDelete, onEdit }: {
       </div>
 
       {/* Priority badge */}
-      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-wider', config.bg, config.color)}>
+      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded-md', config.bg, config.color)}>
         {config.label}
       </span>
 
@@ -368,7 +368,7 @@ function TodoItem({ todo, onComplete, onDelete, onEdit }: {
       {/* Delete */}
       <button
         onClick={() => onDelete(todo.id)}
-        className="opacity-0 group-hover:opacity-100 p-1 text-white/20 hover:text-red-400 transition-all"
+        className="opacity-0 group-hover:opacity-100 p-1 text-foreground/20 hover:text-red-400 transition-all"
         aria-label={`Delete ${todo.title}`}
       >
         <Trash2 size={12} />
@@ -395,20 +395,14 @@ function PanelColumn({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative group flex flex-col bg-slate-950/60 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-      {/* Decorative Corner Lines */}
-      <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-white/20 z-10" />
-      <div className="absolute top-0 right-0 w-6 h-6 border-t border-r border-white/20 z-10" />
-      <div className="absolute bottom-0 left-0 w-6 h-6 border-b border-l border-white/20 z-10" />
-      <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-white/20 z-10" />
-
+    <div className="flex flex-col bg-card border border-border rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-4 py-4 border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-border">
         <div className="flex items-center gap-2">
           <div className={cn('p-2 rounded-xl shadow-inner', iconColor)}>
             {icon}
           </div>
-          <h3 className="text-xs font-black text-white/90 uppercase tracking-[0.2em] italic">{title}</h3>
+          <h3 className="text-xs  text-foreground/90  ">{title}</h3>
         </div>
         {headerRight}
       </div>
@@ -420,7 +414,7 @@ function PanelColumn({
 
       {/* Footer */}
       {footer && (
-        <div className="relative z-10 px-4 py-3 border-t border-white/[0.06] bg-white/[0.01]">
+        <div className="relative z-10 px-4 py-3 border-t border-border bg-card">
           {footer}
         </div>
       )}
@@ -519,8 +513,8 @@ export function TimeDashboard() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
-          <span className="text-sm text-white/40">Initializing task system...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Initializing task system...</span>
         </div>
       </div>
     )
@@ -533,7 +527,7 @@ export function TimeDashboard() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Sparkles size={14} className="text-amber-400" />
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-foreground/50">
               <span className="text-amber-400 font-semibold">{dailiesCompleted + habitsCompleted + todosCompleted}</span> completed today
             </span>
           </div>
@@ -553,14 +547,14 @@ export function TimeDashboard() {
         {/* ── DAILIES PANEL ── */}
         <PanelColumn
           title="Dailies"
-          icon={<Zap size={16} className="text-cyan-400" />}
-          iconColor="bg-cyan-500/15"
+          icon={<Zap size={16} className="text-[#5db8a0]" />}
+          iconColor="bg-[#5db8a0]/15"
           headerRight={
-            <div className="flex items-center gap-2 text-xs text-white/30">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{dailiesCompleted}/{dailiesTotal}</span>
               <button 
                 onClick={() => { setEditingDaily(null); setIsDailyModalOpen(true); }}
-                className="text-cyan-400/60 hover:text-cyan-400 transition-colors p-1 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20"
+                className="text-[#5db8a0]/60 hover:text-[#5db8a0] transition-colors p-1 bg-[#5db8a0]/10 rounded-md hover:bg-[#5db8a0]/15"
               >
                 <Plus size={14} />
               </button>
@@ -570,15 +564,15 @@ export function TimeDashboard() {
             <div className="space-y-2">
               {/* Progress bar */}
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"
+                    className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${dailiesRate}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
                   />
                 </div>
-                <span className="text-[10px] text-white/30 font-mono">{dailiesRate}%</span>
+                <span className="text-[10px] text-muted-foreground font-mono">{dailiesRate}%</span>
               </div>
               <QuickAdd placeholder="Add daily..." onAdd={handleAddDaily} />
             </div>
@@ -586,7 +580,7 @@ export function TimeDashboard() {
         >
           <AnimatePresence mode="popLayout">
             {dailies.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-white/20">
+              <div className="flex flex-col items-center justify-center py-8 text-foreground/20">
                 <Zap size={24} className="mb-2 opacity-50" />
                 <span className="text-xs">No dailies yet</span>
               </div>
@@ -607,8 +601,8 @@ export function TimeDashboard() {
         {/* ── HABITS PANEL ── */}
         <PanelColumn
           title="Habits"
-          icon={<Flame size={16} className="text-violet-400" />}
-          iconColor="bg-violet-500/15"
+          icon={<Flame size={16} className="text-primary" />}
+          iconColor="bg-border"
           headerRight={
             <div className="flex items-center gap-2">
               {totalStreak > 0 && (
@@ -616,12 +610,12 @@ export function TimeDashboard() {
                   <Flame size={12} /> {totalStreak}
                 </span>
               )}
-              <span className="text-xs text-white/30">
+              <span className="text-xs text-muted-foreground">
                 {habitsCompleted}/{habitsTotal}
               </span>
               <button 
                 onClick={() => { setEditingHabit(null); setIsHabitModalOpen(true); }}
-                className="text-violet-400/60 hover:text-violet-400 transition-colors p-1 bg-violet-500/10 rounded-md hover:bg-violet-500/20 ml-1"
+                className="text-primary/60 hover:text-primary transition-colors p-1 bg-border rounded-md hover:bg-border ml-1"
               >
                 <Plus size={14} />
               </button>
@@ -633,7 +627,7 @@ export function TimeDashboard() {
         >
           <AnimatePresence mode="popLayout">
             {habits.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-white/20">
+              <div className="flex flex-col items-center justify-center py-8 text-foreground/20">
                 <Flame size={24} className="mb-2 opacity-50" />
                 <span className="text-xs">No habits yet</span>
               </div>
@@ -658,7 +652,7 @@ export function TimeDashboard() {
           iconColor="bg-emerald-500/15"
           headerRight={
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/30">
+              <span className="text-xs text-muted-foreground">
                 {remainingCount} remaining
               </span>
               <button 
@@ -675,7 +669,7 @@ export function TimeDashboard() {
         >
           <AnimatePresence mode="popLayout">
             {todos.filter(t => !t.is_completed).length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-white/20">
+              <div className="flex flex-col items-center justify-center py-8 text-foreground/20">
                 <CheckCircle2 size={24} className="mb-2 opacity-50" />
                 <span className="text-xs">All clear!</span>
               </div>

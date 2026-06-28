@@ -31,7 +31,7 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/80"
           />
 
           {/* Modal */}
@@ -44,7 +44,7 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
             <SystemFrame title="System Notification" className="w-full">
               <button
                 onClick={onClose}
-                className="absolute top-0 right-0 p-2 rounded-full hover:bg-blue-500/10 text-blue-400 transition-colors z-50"
+                className="absolute top-0 right-0 p-2 rounded-full hover:bg-primary/10 text-primary transition-colors z-50"
               >
                 <X size={20} />
               </button>
@@ -57,9 +57,9 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
                   transition={{ type: 'spring', damping: 12, delay: 0.1 }}
                   className="relative w-20 h-20 mx-auto mb-8 flex items-center justify-center"
                 >
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-full h-full border-2 border-blue-400/50 rounded-full flex items-center justify-center bg-blue-500/5">
-                    <AlertCircle size={40} className="text-blue-400 system-text-glow" />
+                  <div className="absolute inset-0 bg-primary/15 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-full h-full border-2 border-border rounded-full flex items-center justify-center bg-muted">
+                    <AlertCircle size={40} className="text-primary" />
                   </div>
                 </motion.div>
 
@@ -70,13 +70,13 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
                   transition={{ delay: 0.2 }}
                   className="space-y-4 mb-10"
                 >
-                  <h2 className="text-2xl font-black text-blue-100 uppercase tracking-[0.2em] system-text-glow">
+                  <h2 className="text-2xl  text-foreground ">
                     Level Up Accomplished
                   </h2>
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                  <p className="text-blue-200/80 font-medium tracking-wide">
+                  <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent" />
+                  <p className="text-foreground/80/80 font-medium tracking-wide">
                     You have acquired the qualifications to reach <br />
-                    <span className="text-blue-400 font-black uppercase tracking-widest text-lg">Level {newLevel}</span>. 
+                    <span className="text-primary  text-lg">Level {newLevel}</span>. 
                     <br />Will you accept the new strength?
                   </p>
                 </motion.div>
@@ -88,21 +88,21 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
                   transition={{ delay: 0.4 }}
                   className="grid grid-cols-2 gap-4 mb-10"
                 >
-                  <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
-                    <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
-                      <Zap size={20} className="text-blue-400" fill="currentColor" />
+                  <div className="p-4 bg-muted border border-border rounded-xl group/reward">
+                    <div className="w-10 h-10 mx-auto bg-primary/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
+                      <Zap size={20} className="text-primary" fill="currentColor" />
                     </div>
-                    <p className="text-xl font-black text-blue-100 tabular-nums">{totalXp.toLocaleString()}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/40 mt-1">Total XP</p>
+                    <p className="text-xl  text-foreground tabular-nums">{totalXp.toLocaleString()}</p>
+                    <p className="text-[10px]  text-primary/40 mt-1">Total XP</p>
                   </div>
-                  <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl group/reward">
-                    <div className="w-10 h-10 mx-auto bg-blue-500/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
+                  <div className="p-4 bg-muted border border-border rounded-xl group/reward">
+                    <div className="w-10 h-10 mx-auto bg-primary/10 rounded-lg flex items-center justify-center mb-2 group-hover/reward:scale-110 transition-transform">
                       <img src="/coin.png" alt="AiCoins" className="w-6 h-6 object-contain" />
                     </div>
-                    <p className="text-xl font-black text-blue-400 tabular-nums">+{coinsReward}</p>
+                    <p className="text-xl  text-primary tabular-nums">+{coinsReward}</p>
                     <div className="mt-1 flex items-center justify-center gap-1.5 opacity-40">
                       <img src="/coin.png" alt="AiCoins" className="w-3 h-3 object-contain" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">AiCoins</span>
+                      <span className="text-[10px]  text-primary">AiCoins</span>
                     </div>
                   </div>
                 </motion.div>
@@ -112,10 +112,10 @@ export function LevelUpModal({ isOpen, onClose, newLevel, totalXp, coinsReward }
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                   onClick={onClose}
-                  className="group relative w-full py-4 overflow-hidden rounded-xl border border-blue-500/50 bg-blue-500/10 transition-all hover:bg-blue-500/20 active:scale-95"
+                  className="group relative w-full py-4 overflow-hidden rounded-xl border border-border bg-primary/10 transition-all hover:bg-primary/15 active:scale-95"
                 >
-                  <div className="absolute inset-0 bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative z-10 text-blue-100 font-black uppercase tracking-[0.4em] text-sm">
+                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10 text-foreground   text-sm">
                     Accept Rewards
                   </span>
                 </motion.button>

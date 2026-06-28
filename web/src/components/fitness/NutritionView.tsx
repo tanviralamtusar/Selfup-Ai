@@ -138,70 +138,70 @@ export default function NutritionView() {
     return (
       <div className="group">
         <div className="flex justify-between text-[10px] mb-2">
-          <span className="text-blue-500/40 font-black uppercase tracking-[0.2em] group-hover:text-blue-400 transition-colors">{label}</span>
-          <span className="font-black text-blue-50 tracking-wider group-hover:system-text-glow transition-all">{Math.round(current)} / {target}G</span>
+          <span className="text-muted-foreground   group-hover:text-primary transition-colors">{label}</span>
+          <span className=" text-foreground group-hover:transition-all">{Math.round(current)} / {target}G</span>
         </div>
-        <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-blue-500/5">
+        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
-            className={`h-full rounded-full transition-all duration-1000 ${color} shadow-[0_0_10px_currentColor]`}
+            className={`h-full rounded-full transition-all duration-1000 ${color}`}
           />
         </div>
       </div>
     )
   }
 
-  if (loading) return <div className="h-64 rounded-xl bg-slate-950/40 animate-pulse border border-blue-500/10 shadow-[inset_0_0_30px_rgba(59,130,246,0.05)]" />
+  if (loading) return <div className="h-64 rounded-xl bg-card animate-pulse border border-border " />
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 italic">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 ">
       {/* ─── Macro & Water Tracking ─── */}
       <div className="space-y-10">
-        <section className="bg-slate-950 border border-blue-500/20 rounded-xl p-8 relative overflow-hidden group">
+        <section className="bg-background border border-border rounded-xl p-8 relative overflow-hidden group">
           <div className="absolute inset-0 scanline pointer-events-none opacity-[0.03]" />
           <div className="flex items-center justify-between mb-8 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <div className="p-2 rounded bg-primary/10 text-primary border border-border">
                 <Utensils size={20} />
               </div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Daily Calories</h2>
+              <h2 className="text-[10px]   text-muted-foreground">Daily Calories</h2>
             </div>
             <div className="flex items-center gap-6">
               {dietPlan && (
                 <button 
                   onClick={() => setIsPlanModalOpen(true)}
-                  className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-[10px] text-blue-400 font-black uppercase tracking-widest rounded-lg transition-colors"
+                  className="px-4 py-2 bg-primary/10 hover:bg-primary/15 border border-border text-[10px] text-primary  rounded-lg transition-colors"
                 >
                   View Plan
                 </button>
               )}
               <div className="text-right">
-                <span className="text-3xl font-black text-blue-50 system-text-glow tracking-tighter">{Math.round(currentMacros.calories)}</span>
-                <span className="text-[10px] text-blue-500/30 uppercase font-black tracking-widest ml-2">/ {goals.calories} KCAL</span>
+                <span className="text-3xl  text-foreground tracking-tighter">{Math.round(currentMacros.calories)}</span>
+                <span className="text-[10px] text-muted-foreground  ml-2">/ {goals.calories} KCAL</span>
               </div>
             </div>
           </div>
           
           <div className="space-y-6 relative z-10">
             <MacroBar label="Protein" current={currentMacros.protein} target={goals.protein_g} color="bg-rose-500" />
-            <MacroBar label="Carbs" current={currentMacros.carbs} target={goals.carbs_g} color="bg-cyan-400" />
+            <MacroBar label="Carbs" current={currentMacros.carbs} target={goals.carbs_g} color="bg-[#5db8a0]" />
             <MacroBar label="Fat" current={currentMacros.fat} target={goals.fat_g} color="bg-amber-500" />
           </div>
         </section>
 
-        <section className="bg-slate-950 border border-blue-500/20 rounded-xl p-8 relative overflow-hidden group">
+        <section className="bg-background border border-border rounded-xl p-8 relative overflow-hidden group">
           <div className="absolute inset-0 scanline pointer-events-none opacity-[0.03]" />
           <div className="flex items-center justify-between mb-8 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <div className="p-2 rounded bg-primary/10 text-primary border border-border">
                 <Droplet size={20} />
               </div>
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Water Intake</h2>
+              <h2 className="text-[10px]   text-muted-foreground">Water Intake</h2>
             </div>
             <div className="text-right">
-              <span className="text-3xl font-black text-blue-400 system-text-glow tracking-tighter">{waterAmount}</span>
-              <span className="text-[10px] text-blue-500/30 uppercase font-black tracking-widest ml-2">/ {goals.water_ml} ML</span>
+              <span className="text-3xl  text-primary tracking-tighter">{waterAmount}</span>
+              <span className="text-[10px] text-muted-foreground  ml-2">/ {goals.water_ml} ML</span>
             </div>
           </div>
           
@@ -210,7 +210,7 @@ export default function NutritionView() {
               <button
                 key={amount}
                 onClick={() => handleAddWater(amount)}
-                className="flex-1 py-4 bg-blue-900/5 hover:bg-blue-600 border border-blue-500/10 hover:border-blue-400 rounded-lg font-black text-blue-500/60 hover:text-white transition-all text-[11px] uppercase tracking-widest shadow-inner group/btn"
+                className="flex-1 py-4 bg-muted hover:bg-primary border border-border hover:border-primary/30 rounded-lg  text-muted-foreground hover:text-white transition-all text-[11px] shadow-inner group/btn"
               >
                 <span className="group-hover/btn:animate-pulse">+{amount}ML</span>
               </button>
@@ -220,35 +220,35 @@ export default function NutritionView() {
       </div>
 
       {/* ─── Add Meal Form ─── */}
-      <section className="bg-slate-950 border border-blue-500/20 rounded-xl p-8 relative overflow-hidden group">
+      <section className="bg-background border border-border rounded-xl p-8 relative overflow-hidden group">
         <div className="absolute inset-0 scanline pointer-events-none opacity-[0.03]" />
         <div className="flex items-center gap-4 mb-8 relative z-10">
-          <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <div className="p-2 rounded bg-primary/10 text-primary border border-border">
             <Plus size={20} />
           </div>
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">Log Food</h2>
+          <h2 className="text-[10px]   text-muted-foreground">Log Food</h2>
         </div>
         
         <form onSubmit={handleLogFood} className="space-y-6 relative z-10">
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Food Name</label>
+              <label className="block text-[10px]   text-muted-foreground mb-2">Food Name</label>
               <input
                 required
                 type="text"
                 value={form.food_name}
                 onChange={e => setForm({...form, food_name: e.target.value})}
                 placeholder="E.G. CHICKEN BREAST"
-                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 transition-colors uppercase tracking-widest placeholder:text-blue-500/10"
+                className="w-full bg-background border border-border rounded-lg px-4 py-3.5 text-xs font-medium text-foreground focus:outline-none focus:border-border transition-colors placeholder:text-muted-foreground"
               />
             </div>
             
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Meal Type</label>
+              <label className="block text-[10px]   text-muted-foreground mb-2">Meal Type</label>
               <select
                 value={form.meal_type}
                 onChange={e => setForm({...form, meal_type: e.target.value})}
-                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50 uppercase tracking-widest"
+                className="w-full bg-background border border-border rounded-lg px-4 py-3.5 text-xs font-medium text-foreground focus:outline-none focus:border-border"
               >
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
@@ -258,42 +258,42 @@ export default function NutritionView() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/30 mb-2">Calories</label>
+              <label className="block text-[10px]   text-muted-foreground mb-2">Calories</label>
               <input
                 type="number"
                 value={form.calories}
                 onChange={e => setForm({...form, calories: e.target.value})}
-                className="w-full bg-slate-950 border border-blue-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-blue-50 focus:outline-none focus:border-blue-500/50"
+                className="w-full bg-background border border-border rounded-lg px-4 py-3.5 text-xs font-medium text-foreground focus:outline-none focus:border-border"
               />
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Protein</label>
+              <label className="block text-[10px]   text-rose-500/30 mb-2 group-focus-within/input:text-rose-400 transition-colors">Protein</label>
               <input
                 type="number"
                 value={form.protein_g}
                 onChange={e => setForm({...form, protein_g: e.target.value})}
-                className="w-full bg-slate-950 border border-rose-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-rose-50 focus:outline-none focus:border-rose-500/50"
+                className="w-full bg-background border border-destructive/20 rounded-lg px-4 py-3.5 text-xs font-medium text-rose-50 focus:outline-none focus:border-rose-500/50"
               />
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/30 mb-2 group-focus-within/input:text-cyan-400 transition-colors">Carbs</label>
+              <label className="block text-[10px]   text-[#5db8a0]/30 mb-2 group-focus-within/input:text-[#5db8a0] transition-colors">Carbs</label>
               <input
                 type="number"
                 value={form.carbs_g}
                 onChange={e => setForm({...form, carbs_g: e.target.value})}
-                className="w-full bg-slate-950 border border-cyan-400/10 rounded-lg px-4 py-3.5 text-xs font-bold text-cyan-50 focus:outline-none focus:border-cyan-400/50"
+                className="w-full bg-background border border-border rounded-lg px-4 py-3.5 text-xs font-medium text-foreground focus:outline-none focus:border-border"
               />
             </div>
 
             <div className="group/input">
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/30 mb-2 group-focus-within/input:text-amber-400 transition-colors">Fat</label>
+              <label className="block text-[10px]   text-amber-500/30 mb-2 group-focus-within/input:text-amber-400 transition-colors">Fat</label>
               <input
                 type="number"
                 value={form.fat_g}
                 onChange={e => setForm({...form, fat_g: e.target.value})}
-                className="w-full bg-slate-950 border border-amber-500/10 rounded-lg px-4 py-3.5 text-xs font-bold text-amber-50 focus:outline-none focus:border-amber-500/50"
+                className="w-full bg-background border border-amber-500/10 rounded-lg px-4 py-3.5 text-xs font-medium text-amber-50 focus:outline-none focus:border-amber-500/50"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function NutritionView() {
           <button
             disabled={isSubmitting}
             type="submit"
-            className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-[0.3em] rounded-lg transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] border border-blue-400 group active:scale-95"
+            className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-primary hover:bg-primary text-white   rounded-lg transition-all  border border-primary/30 group active:scale-95"
           >
             {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} className="group-hover:rotate-90 transition-transform" />}
             Log Food

@@ -100,15 +100,15 @@ export default function SignupPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4">
             <Sparkles className="text-primary" size={32} />
-            <h1 className="text-4xl font-black tracking-tighter text-gradient font-headline">SelfUp</h1>
+            <h1 className="text-4xl  tracking-tighter text-gradient font-headline">SelfUp</h1>
           </div>
-          <p className="text-on-surface-variant font-medium">Begin your self-improvement journey</p>
+          <p className="text-muted-foreground font-medium">Begin your self-improvement journey</p>
         </div>
 
-        <div className="bg-surface-container-low p-8 md:p-10 rounded-[2.5rem] border border-outline-variant/10 shadow-2xl relative overflow-hidden">
+        <div className="bg-muted p-8 md:p-10 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
           
-          <h2 className="text-2xl font-black tracking-tighter mb-8 font-headline">Create Account</h2>
+          <h2 className="text-2xl  tracking-tighter mb-8 font-headline">Create Account</h2>
 
           <form onSubmit={handleSignup} className="space-y-4">
             {/* Username */}
@@ -154,7 +154,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 hover:text-on-surface transition-colors cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -178,7 +178,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-on-primary transition-all btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4 shadow-lg shadow-primary/20"
+              className="w-full h-14 rounded-xl  text-xs  text-on-primary transition-all btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4 shadow-lg shadow-primary/20"
               style={{
                 background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary-container))',
               }}
@@ -196,15 +196,15 @@ export default function SignupPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-outline-variant/10" />
-            <span className="text-on-surface-variant/40 text-[10px] font-black uppercase tracking-widest">or</span>
-            <div className="flex-1 h-px bg-outline-variant/10" />
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-muted-foreground text-[10px] ">or</span>
+            <div className="flex-1 h-px bg-border" />
           </div>
 
           {/* Google OAuth */}
           <button
             onClick={handleGoogleSignup}
-            className="w-full h-12 rounded-xl bg-surface-container-highest/30 border border-outline-variant/10 text-on-surface text-xs font-black uppercase tracking-widest hover:bg-surface-container-highest transition-all btn-press flex items-center justify-center gap-3"
+            className="w-full h-12 rounded-xl bg-mutedest/30 border border-border text-foreground text-xs  hover:bg-mutedest transition-all btn-press flex items-center justify-center gap-3"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -216,9 +216,9 @@ export default function SignupPage() {
           </button>
 
           {/* Login Link */}
-          <p className="text-center text-on-surface-variant text-xs mt-8 font-medium">
+          <p className="text-center text-muted-foreground text-xs mt-8 font-medium">
             Already have an account?{' '}
-            <Link href={ROUTES.LOGIN} className="text-primary hover:text-primary-fixed-dim font-black uppercase tracking-widest transition-colors">
+            <Link href={ROUTES.LOGIN} className="text-primary hover:text-primary-fixed-dim  transition-colors">
               Sign In
             </Link>
           </p>

@@ -16,10 +16,10 @@ interface HabitCalendarGridProps {
 
 const PILLAR_COLORS: Record<string, string> = {
   fitness: 'bg-rose-500',
-  skills:  'bg-blue-500',
-  time:    'bg-cyan-400',
-  style:   'bg-blue-300',
-  general: 'bg-blue-400',
+  skills:  'bg-primary',
+  time:    'bg-[#5db8a0]',
+  style:   'bg-primary/50',
+  general: 'bg-primary',
 }
 
 export function HabitCalendarGrid({ logs, pillar, weeks = 12 }: HabitCalendarGridProps) {
@@ -52,16 +52,16 @@ export function HabitCalendarGrid({ logs, pillar, weeks = 12 }: HabitCalendarGri
               key={dateStr}
               className={cn(
                 "w-3.5 h-3.5 rounded-[2px] transition-all border",
-                isCompleted 
-                  ? `${pillarColor} shadow-[0_0_8px] ${pillarColor.replace('bg-', 'shadow-')}/40 border-transparent` 
-                  : "bg-slate-900 border-blue-500/10 hover:border-blue-500/30"
+                isCompleted
+                  ? `${pillarColor} border-transparent opacity-90`
+                  : "bg-muted border-border hover:border-border"
               )}
               title={`${format(date, 'MMM d, yyyy')}${isCompleted ? ' (Synchronized)' : ''}`}
             />
           )
         })}
       </div>
-      <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/40 w-full italic">
+      <div className="flex justify-between items-center text-[9px]   text-muted-foreground w-full ">
         <span>{format(dateRange[0], 'MMM d')}</span>
         <span>Today</span>
       </div>

@@ -221,13 +221,13 @@ export default function ChatPage() {
       </AnimatePresence>
 
       {/* ─── Main Chat Area ─── */}
-      <div className="flex-1 flex flex-col relative bg-surface-container-low/20">
+      <div className="flex-1 flex flex-col relative bg-muted/20">
         {/* Chat Header */}
-        <div className="flex items-center justify-between p-4 border-b border-outline-variant/10 glass z-10">
+        <div className="flex items-center justify-between p-4 border-b border-border glass z-10">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant"
+              className="p-2 hover:bg-mutedest rounded-lg transition-colors text-muted-foreground"
             >
               <Menu size={20} />
             </button>
@@ -236,24 +236,24 @@ export default function ChatPage() {
                 "transition-colors",
                 profile?.ai_persona_style === 'strict' ? 'text-red-500' :
                 profile?.ai_persona_style === 'motivational' ? 'text-secondary' :
-                profile?.ai_persona_style === 'neutral' ? 'text-blue-400' : 'text-primary'
+                profile?.ai_persona_style === 'neutral' ? 'text-primary' : 'text-primary'
               )} />
-              <span className="font-headline font-bold text-lg">{profile?.ai_persona_name || 'SYSTEM'}</span>
+              <span className="font-headline font-medium text-lg">{profile?.ai_persona_name || 'SYSTEM'}</span>
               <div className={cn(
-                "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-colors",
+                "px-2 py-0.5 rounded-full text-[8px]  border transition-colors",
                 profile?.ai_persona_style === 'strict' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
                 profile?.ai_persona_style === 'motivational' ? 'bg-secondary/10 text-secondary border-secondary/20' :
-                profile?.ai_persona_style === 'neutral' ? 'bg-blue-400/10 text-blue-400 border-blue-400/20' : 'bg-primary/10 text-primary border-primary/20'
+                profile?.ai_persona_style === 'neutral' ? 'bg-primary/10 text-primary border-border' : 'bg-primary/10 text-primary border-primary/20'
               )}>AI Companion</div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
+             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-mutedest/50 border border-border">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
-                <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>
+                <span className="text-sm  text-foreground">{profile?.ai_coins || 0}</span>
              </div>
-             <button onClick={startNewChat} className="p-2 hover:bg-surface-container-highest rounded-lg text-on-surface-variant">
+             <button onClick={startNewChat} className="p-2 hover:bg-mutedest rounded-lg text-muted-foreground">
                <Plus size={20} />
              </button>
           </div>

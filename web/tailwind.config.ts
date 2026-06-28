@@ -114,9 +114,9 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        headline: ['Plus Jakarta Sans', 'sans-serif'],
+        display: ['Inter', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        headline: ['Inter', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
         label: ['Inter', 'sans-serif'],
       },
@@ -139,7 +139,6 @@ const config: Config = {
       boxShadow: {
         sm: 'var(--shadow-sm)',
         md: 'var(--shadow-md)',
-        glow: 'var(--shadow-glow)',
       },
       keyframes: {
         'fade-up': {
@@ -167,8 +166,8 @@ const config: Config = {
           '50%': { transform: 'translateY(-8px)' },
         },
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 5px var(--accent-glow)' },
-          '50%': { boxShadow: '0 0 20px var(--accent-glow)' },
+          '0%, 100%': { opacity: '0.8' },
+          '50%': { opacity: '1' },
         },
         'float-up': {
           '0%': { opacity: '1', transform: 'translateY(0)' },

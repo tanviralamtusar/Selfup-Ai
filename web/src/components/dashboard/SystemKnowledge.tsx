@@ -74,7 +74,7 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="absolute inset-0 bg-background/95 "
           onClick={onClose}
         />
         
@@ -82,28 +82,28 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-2xl bg-slate-900 border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] overflow-hidden"
+          className="relative w-full max-w-2xl bg-muted border border-border  overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-blue-500/20 bg-slate-950/50 flex items-center justify-between">
+          <div className="p-6 border-b border-border bg-background/50 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-sm">
-                <Database className="text-blue-400" size={20} />
+              <div className="p-2 bg-primary/10 rounded-sm">
+                <Database className="text-primary" size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-black italic tracking-[0.2em] text-white uppercase">Selfup Cognition</h2>
-                <p className="text-[10px] text-blue-400/60 font-mono tracking-widest uppercase">Selfup Memory Fragments</p>
+                <h2 className="text-xl    text-white">Selfup Cognition</h2>
+                <p className="text-[10px] text-primary/60 font-mono">Selfup Memory Fragments</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <button 
                 onClick={fetchMemories}
                 disabled={isSyncing}
-                className={`p-2 hover:bg-white/5 rounded-sm transition-colors ${isSyncing ? 'animate-spin text-blue-400' : 'text-slate-400'}`}
+                className={`p-2 hover:bg-muted rounded-sm transition-colors ${isSyncing ? 'animate-spin text-primary' : 'text-muted-foreground'}`}
               >
                 <RefreshCw size={18} />
               </button>
-              <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-sm text-slate-400">
+              <button onClick={onClose} className="p-2 hover:bg-muted rounded-sm text-muted-foreground">
                 <X size={20} />
               </button>
             </div>
@@ -113,13 +113,13 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
           <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar bg-[url('/scanlines.png')] bg-repeat">
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-4">
-                <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                <p className="text-xs font-mono text-blue-400 animate-pulse uppercase tracking-[0.2em]">Synchronizing Fragments...</p>
+                <div className="w-12 h-12 border-2 border-border border-t-primary rounded-full animate-spin" />
+                <p className="text-xs font-mono text-primary animate-pulse ">Synchronizing Fragments...</p>
               </div>
             ) : memories.length === 0 ? (
               <div className="py-20 text-center space-y-4">
-                <Brain className="mx-auto text-slate-700" size={48} />
-                <p className="text-slate-500 font-mono text-sm">No memory fragments detected in current sector.</p>
+                <Brain className="mx-auto text-muted-foreground" size={48} />
+                <p className="text-muted-foreground font-mono text-sm">No memory fragments detected in current sector.</p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -127,19 +127,19 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
                   <motion.div 
                     layout
                     key={memory.id}
-                    className="group relative p-4 bg-slate-950/40 border border-white/5 hover:border-blue-500/30 transition-all"
+                    className="group relative p-4 bg-card border border-white/5 hover:border-border transition-all"
                   >
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black tracking-widest text-blue-500 uppercase">
+                          <span className="text-[10px]  text-primary">
                             [{formatKey(memory.memory_key)}]
                           </span>
-                          <span className="text-[8px] px-1.5 py-0.5 bg-blue-500/10 text-blue-400 font-mono rounded-sm uppercase">
+                          <span className="text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary font-mono rounded-sm">
                             Source: {memory.source}
                           </span>
                         </div>
-                        <p className="text-slate-200 text-sm leading-relaxed pr-8">
+                        <p className="text-muted-foreground text-sm leading-relaxed pr-8">
                           {memory.memory_val}
                         </p>
                       </div>
@@ -153,10 +153,10 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
                     </div>
                     {/* Timestamp */}
                     <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between">
-                      <span className="text-[8px] font-mono text-slate-600 uppercase">
+                      <span className="text-[8px] font-mono text-muted-foreground">
                         Last Synchronized: {new Date(memory.updated_at).toLocaleString()}
                       </span>
-                      <Shield size={10} className="text-slate-700" />
+                      <Shield size={10} className="text-muted-foreground" />
                     </div>
                   </motion.div>
                 ))}
@@ -165,14 +165,14 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
           </div>
 
           {/* Footer */}
-          <div className="p-4 bg-slate-950/80 border-t border-blue-500/20 flex items-center justify-between">
+          <div className="p-4 bg-background/95 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-amber-400 fill-amber-400" />
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-tighter">
+              <span className="text-[10px] font-mono text-muted-foreground tracking-tighter">
                 Selfup memory influences all future companion interactions.
               </span>
             </div>
-            <div className="text-[10px] font-mono text-blue-400/40 uppercase">
+            <div className="text-[10px] font-mono text-primary/40">
               Fragments: {memories.length}
             </div>
           </div>

@@ -40,14 +40,14 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
   }, [query]);
 
   return (
-    <div className="flex flex-col h-full max-h-[600px] bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-      <div className="p-4 border-b border-zinc-800 bg-zinc-900/50">
+    <div className="flex flex-col h-full max-h-[600px] bg-zinc-950 border border-border rounded-xl overflow-hidden shadow-2xl">
+      <div className="p-4 border-b border-border bg-muted/50">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
           <input
             type="text"
             placeholder="Search exercises (e.g. Bench Press, Squat)..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+            className="w-full bg-muted border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -56,7 +56,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
         {loading && exercises.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-zinc-600 italic animate-pulse">
+          <div className="flex flex-col items-center justify-center py-10 text-muted-foreground  animate-pulse">
             Searching Library...
           </div>
         ) : exercises.length > 0 ? (
@@ -67,12 +67,12 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                 key={ex.id}
                 className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${
                   isSelected 
-                    ? 'bg-blue-500/10 border border-blue-500/20' 
-                    : 'hover:bg-zinc-900/80 border border-transparent'
+                    ? 'bg-primary/10 border border-border' 
+                    : 'hover:bg-muted/80 border border-transparent'
                 }`}
               >
                 <div>
-                  <h4 className="text-sm font-semibold text-white group-hover:text-blue-400">
+                  <h4 className="text-sm font-semibold text-white group-hover:text-primary">
                     {ex.name}
                   </h4>
                   <p className="text-[11px] text-zinc-500 flex gap-2 mt-0.5">
@@ -88,7 +88,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                   className={`p-1.5 rounded-md transition-all ${
                     isSelected
                       ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-zinc-800 text-zinc-400 hover:bg-blue-600 hover:text-white'
+                      : 'bg-background text-zinc-400 hover:bg-primary hover:text-white'
                   }`}
                 >
                   {isSelected ? <Check size={16} /> : <Plus size={16} />}
@@ -97,13 +97,13 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
             );
           })
         ) : (
-          <div className="text-center py-10 text-zinc-600">
+          <div className="text-center py-10 text-muted-foreground">
             No exercises found.
           </div>
         )}
       </div>
 
-      <div className="p-3 bg-zinc-900/30 border-t border-zinc-800 text-[10px] text-zinc-500 flex items-center gap-2">
+      <div className="p-3 bg-muted/30 border-t border-border text-[10px] text-zinc-500 flex items-center gap-2">
         <Info size={12} />
         <span>Select exercises to add them to your current workout day.</span>
       </div>

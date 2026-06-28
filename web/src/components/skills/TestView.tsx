@@ -141,23 +141,23 @@ export function TestView({ testId, onClose }: TestViewProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80"
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="w-full max-w-lg bg-slate-950 rounded-[32px] border border-blue-500/20 shadow-[0_0_60px_rgba(59,130,246,0.15)] relative z-10 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-lg bg-background rounded-[32px] border border-border  relative z-10 max-h-[85vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="p-6 border-b border-blue-500/10 bg-gradient-to-br from-purple-500/5 to-slate-950">
+        <div className="p-6 border-b border-border bg-gradient-to-br from-muted/20 to-background">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
               <FileQuestion size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black font-headline text-blue-100 tracking-wider uppercase italic">Assessment</h2>
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] italic text-purple-400/60">Knowledge Check</p>
+              <h2 className="text-lg  font-headline text-foreground ">Assessment</h2>
+              <p className="text-[9px]    text-purple-400/60">Knowledge Check</p>
             </div>
           </div>
         </div>
@@ -173,18 +173,18 @@ export function TestView({ testId, onClose }: TestViewProps) {
                       <FileQuestion className="text-purple-400 animate-pulse" size={20} />
                     </div>
                   </div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] italic text-purple-400/60">AI is crafting your questions...</p>
+                  <p className="text-xs    text-purple-400/60">AI is crafting your questions...</p>
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                  <div className="w-16 h-16 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
                     <FileQuestion size={32} />
                   </div>
-                  <p className="text-sm font-black uppercase tracking-[0.15em] italic text-blue-100 text-center">Ready to test your knowledge?</p>
-                  <p className="text-[10px] text-blue-400/40 italic text-center max-w-xs">AI will generate 5 questions based on what you've learned. Passing score is 70%.</p>
+                  <p className="text-sm    text-foreground text-center">Ready to test your knowledge?</p>
+                  <p className="text-[10px] text-primary/40  text-center max-w-xs">AI will generate 5 questions based on what you've learned. Passing score is 70%.</p>
                   <button
                     onClick={handleGenerateTest}
-                    className="mt-4 px-8 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl font-black uppercase text-[10px] tracking-[0.3em] italic border border-purple-500/30 transition-all"
+                    className="mt-4 px-8 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl  text-[10px]   border border-purple-500/30 transition-all"
                   >
                     Generate Test
                   </button>
@@ -197,7 +197,7 @@ export function TestView({ testId, onClose }: TestViewProps) {
             <div className="space-y-6">
               {/* Score Display */}
               <div className={cn(
-                "text-center py-8 rounded-2xl border",
+                "text-center py-8 rounded-xl border",
                 results.passed 
                   ? "bg-green-500/5 border-green-500/20"
                   : "bg-red-500/5 border-red-500/20"
@@ -210,9 +210,9 @@ export function TestView({ testId, onClose }: TestViewProps) {
                 )}>
                   {results.passed ? <Trophy size={36} /> : <XCircle size={36} />}
                 </div>
-                <p className="text-4xl font-black font-headline italic text-blue-100 mb-1">{results.score_pct}%</p>
+                <p className="text-4xl  font-headline  text-foreground mb-1">{results.score_pct}%</p>
                 <p className={cn(
-                  "text-xs font-black uppercase tracking-[0.3em] italic",
+                  "text-xs   ",
                   results.passed ? "text-green-400" : "text-red-400"
                 )}>
                   {results.passed ? 'Passed!' : 'Not Yet'}
@@ -222,7 +222,7 @@ export function TestView({ testId, onClose }: TestViewProps) {
               {/* Feedback per question */}
               {results.feedback && Object.entries(results.feedback).length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40">Question Feedback</h4>
+                  <h4 className="text-[10px]    text-primary/40">Question Feedback</h4>
                   {Object.entries(results.feedback).map(([qId, fb]: [string, any]) => (
                     <div key={qId} className={cn(
                       "p-3 rounded-xl border",
@@ -230,10 +230,10 @@ export function TestView({ testId, onClose }: TestViewProps) {
                     )}>
                       <div className="flex items-center gap-2 mb-1">
                         {fb.is_correct ? <CheckCircle2 size={12} className="text-green-400" /> : <XCircle size={12} className="text-red-400" />}
-                        <span className="text-[10px] font-black uppercase tracking-[0.15em] italic text-blue-100">{qId}</span>
-                        <span className="text-[9px] font-black italic text-blue-400/40 ml-auto">{fb.score}/{fb.max_score} pts</span>
+                        <span className="text-[10px]    text-foreground">{qId}</span>
+                        <span className="text-[9px]   text-primary/40 ml-auto">{fb.score}/{fb.max_score} pts</span>
                       </div>
-                      <p className="text-[10px] text-blue-100/60 italic leading-relaxed">{fb.comment}</p>
+                      <p className="text-[10px] text-foreground/60  leading-relaxed">{fb.comment}</p>
                     </div>
                   ))}
                 </div>
@@ -241,7 +241,7 @@ export function TestView({ testId, onClose }: TestViewProps) {
 
               <button
                 onClick={onClose}
-                className="w-full py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl font-black uppercase text-[10px] tracking-[0.3em] italic border border-blue-500/20 transition-all"
+                className="w-full py-3 bg-primary/10 hover:bg-primary/15 text-primary rounded-xl  text-[10px]   border border-border transition-all"
               >
                 Done
               </button>
@@ -251,7 +251,7 @@ export function TestView({ testId, onClose }: TestViewProps) {
           {step === 'submitting' && (
             <div className="flex flex-col items-center justify-center py-16 space-y-4">
               <Loader2 size={32} className="animate-spin text-purple-400" />
-              <p className="text-xs font-black uppercase tracking-[0.2em] italic text-purple-400/60">AI is evaluating your answers...</p>
+              <p className="text-xs    text-purple-400/60">AI is evaluating your answers...</p>
             </div>
           )}
         </div>

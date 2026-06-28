@@ -198,7 +198,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex bg-background h-full w-full overflow-hidden">
-      {/* ─── Sidebar ─── */}
+      {/* ─── Sidebar: desktop inline ─── */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
@@ -206,9 +206,9 @@ export default function ChatPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="hidden md:block"
+            className="hidden md:block flex-shrink-0"
           >
-            <ChatSidebar 
+            <ChatSidebar
               conversations={conversations}
               activeId={activeConversationId}
               onSelect={setActiveConversationId}
@@ -217,6 +217,39 @@ export default function ChatPage() {
               aiName={profile?.ai_persona_name || 'SYSTEM'}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Sidebar: mobile overlay ─── */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/50"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <motion.div
+              key="mobile-sidebar"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50"
+            >
+              <ChatSidebar
+                conversations={conversations}
+                activeId={activeConversationId}
+                onSelect={(id) => { setActiveConversationId(id); setIsSidebarOpen(false) }}
+                onNew={() => { startNewChat(); setIsSidebarOpen(false) }}
+                onDelete={handleDeleteChat}
+                aiName={profile?.ai_persona_name || 'SYSTEM'}
+              />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

@@ -324,27 +324,27 @@ export function ScheduleView() {
   }
 
   return (
-    <div className="space-y-8 italic">
+    <div className="space-y-8 ">
       {/* Header with Date Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="flex items-center gap-4 bg-slate-950/40 border border-blue-500/20 rounded-xl px-6 py-4 shadow-[0_0_20px_rgba(59,130,246,0.05)] relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-2 h-full bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+          <div className="flex items-center gap-4 bg-card border border-border rounded-xl px-6 py-4  relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-2 h-full bg-primary/10 group-hover:bg-primary/20 transition-colors" />
             <button
               onClick={handlePreviousDay}
-              className="p-2 hover:bg-blue-500/10 rounded-lg transition-all text-blue-500/40 hover:text-blue-400 border border-transparent hover:border-blue-500/20"
+              className="p-2 hover:bg-primary/10 rounded-lg transition-all text-muted-foreground hover:text-primary border border-transparent hover:border-border"
             >
               <ChevronLeft size={20} />
             </button>
             <div className="min-w-56 text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Schedule</p>
-              <p className="text-xl font-black text-blue-50 tracking-widest system-text-glow">
+              <p className="text-[10px]   text-muted-foreground mb-1">Schedule</p>
+              <p className="text-xl  text-foreground">
                 {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
               </p>
             </div>
             <button
               onClick={handleNextDay}
-              className="p-2 hover:bg-blue-500/10 rounded-lg transition-all text-blue-500/40 hover:text-blue-400 border border-transparent hover:border-blue-500/20"
+              className="p-2 hover:bg-primary/10 rounded-lg transition-all text-muted-foreground hover:text-primary border border-transparent hover:border-border"
             >
               <ChevronRight size={20} />
             </button>
@@ -352,7 +352,7 @@ export function ScheduleView() {
           {!isToday && (
             <button
               onClick={handleToday}
-              className="px-6 py-3 bg-blue-500/5 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-all shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]"
+              className="px-6 py-3 bg-muted text-primary border border-border rounded-lg text-[10px]   hover:bg-primary/10 transition-all "
             >
               Back to Present
             </button>
@@ -361,7 +361,7 @@ export function ScheduleView() {
         <button
           onClick={handleAutoSchedule}
           disabled={isOptimizing}
-          className="relative group flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-xl font-black uppercase tracking-[0.3em] text-[10px] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400"
+          className="relative group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-xl   text-[10px] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden  border border-primary/30"
         >
           {isOptimizing ? (
             <Loader2 className="animate-spin" size={18} />
@@ -379,26 +379,26 @@ export function ScheduleView() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-6 flex gap-6 items-start relative overflow-hidden"
+            className="bg-muted border border-border rounded-xl p-6 flex gap-6 items-start relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl pointer-events-none" />
-            <div className="p-3 bg-blue-500/10 rounded-lg shrink-0 border border-blue-500/20">
-              <Sparkles size={20} className="text-blue-400" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-muted blur-3xl pointer-events-none" />
+            <div className="p-3 bg-primary/10 rounded-lg shrink-0 border border-border">
+              <Sparkles size={20} className="text-primary" />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-4 mb-2">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                <div className="text-[10px]   text-muted-foreground flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
                   AI Planning Notes
                 </div>
                 <button 
                   onClick={handleRevertSchedule}
-                  className="text-[9px] font-black uppercase tracking-[0.3em] text-blue-500/40 hover:text-rose-500 transition-colors border-b border-transparent hover:border-rose-500/20"
+                  className="text-[9px]   text-muted-foreground hover:text-rose-500 transition-colors border-b border-transparent hover:border-destructive/20"
                 >
                   [ REVERT SCHEDULE ]
                 </button>
               </div>
-              <p className="text-sm text-blue-100 font-bold leading-relaxed tracking-wide italic">
+              <p className="text-sm text-foreground font-medium leading-relaxed tracking-wide ">
                 "{systemLogic}"
               </p>
             </div>
@@ -414,15 +414,15 @@ export function ScheduleView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-md rounded-2xl border border-blue-500/20"
+              className="absolute inset-0 z-50 flex items-center justify-center bg-card  rounded-xl border border-border"
             >
               <div className="text-center space-y-4">
                 <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse" />
-                  <Loader2 className="animate-spin text-blue-400 relative z-10" size={56} />
+                  <div className="absolute inset-0 bg-primary/15 blur-3xl rounded-full animate-pulse" />
+                  <Loader2 className="animate-spin text-primary relative z-10" size={56} />
                 </div>
-                <h4 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 system-text-glow">Planning...</h4>
-                <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em] mt-2">Analyzing your tasks, habits, and goals.</p>
+                <h4 className="text-2xl   text-foreground">Planning...</h4>
+                <p className="text-[10px] text-muted-foreground   mt-2">Analyzing your tasks, habits, and goals.</p>
               </div>
             </motion.div>
           )}
@@ -430,17 +430,17 @@ export function ScheduleView() {
 
         {/* Side Panel: Backlog & Habits */}
         <div className="lg:col-span-1 space-y-8">
-          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 shadow-2xl relative overflow-hidden group">
-             <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-6 flex items-center gap-2">
-              <Target size={16} /> Backlog <span className="text-blue-500/20">[{unscheduledTasks.length}]</span>
+          <div className="bg-card border border-border rounded-xl p-6 shadow-2xl relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-2 h-16 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
+            <h3 className="text-[10px]   text-muted-foreground mb-6 flex items-center gap-2">
+              <Target size={16} /> Backlog <span className="text-muted-foreground">[{unscheduledTasks.length}]</span>
             </h3>
 
             <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
               {unscheduledTasks.length === 0 ? (
-                <div className="text-center py-12 bg-blue-500/[0.02] rounded-xl border border-dashed border-blue-500/10">
-                  <CheckCircle2 className="mx-auto text-blue-500/20 mb-3" size={32} />
-                  <p className="text-[10px] font-black text-blue-500/30 uppercase tracking-[0.3em]">No Pending Tasks</p>
+                <div className="text-center py-12 bg-primary/[0.02] rounded-xl border border-dashed border-border">
+                  <CheckCircle2 className="mx-auto text-muted-foreground mb-3" size={32} />
+                  <p className="text-[10px]  text-muted-foreground ">No Pending Tasks</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -453,19 +453,19 @@ export function ScheduleView() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       draggable
                       onDragStart={(e: any) => handleDragStart(e, task.id, 'task')}
-                      className="group p-4 bg-slate-950/60 border border-blue-500/10 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/40 transition-all hover:bg-blue-900/10 relative overflow-hidden"
+                      className="group p-4 bg-card border border-border rounded-lg cursor-grab active:cursor-grabbing hover:border-border transition-all hover:bg-muted relative overflow-hidden"
                     >
                       <div className="flex items-start gap-4">
                         <div className={cn("w-1 h-10 rounded-full shrink-0 mt-0.5", 
-                          task.priority === 'high' ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-blue-500/40')} 
+                          task.priority === 'high' ? 'bg-rose-500' : 'bg-primary/40')} 
                         />
                         <div className="flex-1 min-w-0 space-y-1.5">
-                          <p className="text-xs font-black text-blue-50 tracking-wider truncate uppercase">{task.title}</p>
+                          <p className="text-xs  text-foreground truncate">{task.title}</p>
                           <div className="flex items-center gap-3">
-                            <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-500/10 rounded text-blue-400 border border-blue-500/20">
+                            <span className="text-[8px]   px-2 py-0.5 bg-primary/10 rounded text-primary border border-border">
                               {task.category}
                             </span>
-                            <span className="text-[9px] font-black text-blue-500/40 flex items-center gap-1.5 uppercase">
+                            <span className="text-[9px]  text-muted-foreground flex items-center gap-1.5">
                               <Clock3 size={10} /> +{task.xp_reward} XP
                             </span>
                           </div>
@@ -479,9 +479,9 @@ export function ScheduleView() {
           </div>
 
           {/* Habits Mini-Panel */}
-          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl p-6 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-6 flex items-center gap-2">
+          <div className="bg-card border border-border rounded-xl p-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-2 h-16 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
+            <h3 className="text-[10px]   text-muted-foreground mb-6 flex items-center gap-2">
               <Zap size={16} /> Active Habits
             </h3>
             <div className="space-y-3">
@@ -493,17 +493,17 @@ export function ScheduleView() {
                   className={cn(
                     "flex items-center justify-between p-4 rounded-lg border transition-all cursor-grab relative overflow-hidden group/item",
                     habit.is_completed_this_cycle 
-                      ? "bg-blue-500/5 border-blue-500/20 opacity-40 shadow-inner" 
-                      : "bg-slate-950/60 border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10"
+                      ? "bg-muted border-border opacity-40 shadow-inner" 
+                      : "bg-card border-border hover:border-border hover:bg-muted"
                   )}
                 >
-                  <span className="text-[11px] font-black text-blue-100 uppercase tracking-widest">{habit.title}</span>
+                  <span className="text-[11px]  text-foreground">{habit.title}</span>
                   {habit.is_completed_this_cycle ? (
-                    <CheckCircle2 size={16} className="text-blue-400" />
+                    <CheckCircle2 size={16} className="text-primary" />
                   ) : (
-                    <GripHorizontal size={16} className="text-blue-500/20 group-hover/item:text-blue-400 transition-colors" />
+                    <GripHorizontal size={16} className="text-muted-foreground group-hover/item:text-primary transition-colors" />
                   )}
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500/0 group-hover/item:bg-blue-500/40 transition-colors" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/0 group-hover/item:bg-primary/40 transition-colors" />
                 </div>
               ))}
             </div>
@@ -512,17 +512,17 @@ export function ScheduleView() {
 
         {/* Timeline Grid */}
         <div className="lg:col-span-3">
-          <div className="bg-slate-950/40 border border-blue-500/20 rounded-xl relative overflow-hidden flex flex-col shadow-2xl">
+          <div className="bg-card border border-border rounded-xl relative overflow-hidden flex flex-col shadow-2xl">
             {/* Timeline Header */}
-            <div className="bg-slate-950/80 backdrop-blur-md border-b border-blue-500/20 p-6 sticky top-0 z-20 flex items-center justify-between">
+            <div className="bg-background/95  border-b border-border p-6 sticky top-0 z-20 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 mb-1">Timeline</p>
-                <p className="text-sm font-black text-blue-50 uppercase tracking-widest system-text-glow">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                <p className="text-[10px]   text-muted-foreground mb-1">Timeline</p>
+                <p className="text-sm  text-foreground">{selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
               </div>
-              <div className="flex items-center gap-3 text-[10px] font-black text-blue-500/40 uppercase tracking-[0.3em]">
+              <div className="flex items-center gap-3 text-[10px]  text-muted-foreground ">
                 {isToday && (
                   <>
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse " />
                     Current Time
                   </>
                 )}
@@ -530,7 +530,7 @@ export function ScheduleView() {
             </div>
 
             {/* Scrollable timeline */}
-            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar bg-blue-500/[0.01]" style={{ backgroundImage: 'radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar bg-primary/[0.01]" style={{ backgroundImage: 'radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
               <div ref={containerRef} className="relative w-full p-6" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
                 
                 {/* Current Time Line */}
@@ -540,12 +540,12 @@ export function ScheduleView() {
                 >
                   <div className="relative">
                     <div className="absolute left-0 w-24 flex justify-end pr-6 -top-3.5">
-                      <span className="bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)] uppercase tracking-widest">
+                      <span className="bg-primary text-white text-[9px]  px-2 py-1 rounded border border-primary/30 ">
                         {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="h-px w-full bg-blue-500/60 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                    <div className="absolute left-24 -top-1.5 w-3 h-3 bg-blue-400 rounded-full shadow-[0_0_15px_rgba(59,130,246,1)] border border-white" />
+                    <div className="h-px w-full bg-primary/60 " />
+                    <div className="absolute left-24 -top-1.5 w-3 h-3 bg-primary rounded-full  border border-white" />
                   </div>
                 </div>
 
@@ -558,17 +558,17 @@ export function ScheduleView() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleTimelineDrop(e, hour)}
                     className={cn(
-                      'absolute left-0 right-0 flex items-start border-t border-blue-500/5 transition-all duration-300',
-                      hoveredHour === hour && dragState.id && 'bg-blue-500/5 border-t-blue-500/40 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
+                      'absolute left-0 right-0 flex items-start border-t border-border transition-all duration-300',
+                      hoveredHour === hour && dragState.id && 'bg-muted border-t-primary/40 '
                     )}
                     style={{ top: `${i * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
                   >
                     <div className="w-24 shrink-0 flex items-center justify-end pr-6 -mt-3.5">
-                      <span className="text-[10px] font-black text-blue-500/30 tracking-widest uppercase">
+                      <span className="text-[10px]  text-muted-foreground">
                         {hour === 12 ? '12:00 PM' : hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
                       </span>
                     </div>
-                    <div className="flex-1 h-full border-l border-blue-500/5 border-dashed" />
+                    <div className="flex-1 h-full border-l border-border border-dashed" />
                   </div>
                 ))}
 
@@ -587,7 +587,7 @@ export function ScheduleView() {
                           initial={{ opacity: 0, scale: 0.98, y: 10 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="absolute left-4 right-4 rounded-lg border pointer-events-auto shadow-2xl overflow-hidden flex flex-col group hover:shadow-blue-500/20 transition-all cursor-default backdrop-blur-md"
+                          className="absolute left-4 right-4 rounded-lg border pointer-events-auto shadow-2xl overflow-hidden flex flex-col group hover:shadow-black/20 transition-all cursor-default "
                           style={{
                             backgroundColor: bgColor,
                             borderColor: borderColor,
@@ -597,26 +597,26 @@ export function ScheduleView() {
                           <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: borderColor }} />
                           <div className="p-4 flex-1 flex flex-col min-h-0 bg-gradient-to-br from-white/[0.03] to-transparent">
                             <div className="flex items-start justify-between gap-4">
-                              <p className="text-sm font-black text-blue-50 leading-tight uppercase tracking-widest system-text-glow truncate">{task.title}</p>
+                              <p className="text-sm  text-foreground leading-tight truncate">{task.title}</p>
                               <button
                                 onClick={() => handleUnscheduleTask(task.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-500/20 rounded transition-all text-blue-500/40 hover:text-rose-400 border border-transparent hover:border-rose-500/20 shrink-0"
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-500/20 rounded transition-all text-muted-foreground hover:text-rose-400 border border-transparent hover:border-destructive/20 shrink-0"
                               >
                                 <Trash2 size={12} />
                               </button>
                             </div>
                             <div className="flex items-center gap-4 mt-auto">
-                              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                              <span className="text-[8px]   text-primary bg-primary/10 px-2 py-0.5 rounded border border-border">
                                 {task.category}
                               </span>
-                              <div className="flex items-center gap-2 text-[9px] font-black text-blue-500/40 uppercase tracking-widest">
+                              <div className="flex items-center gap-2 text-[9px]  text-muted-foreground">
                                 <Clock size={10} />
                                 {new Date(task.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
                             </div>
                           </div>
                           {/* Hover Overlay */}
-                          <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/[0.02] transition-colors pointer-events-none" />
+                          <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/[0.02] transition-colors pointer-events-none" />
                         </motion.div>
                       )
                     })}

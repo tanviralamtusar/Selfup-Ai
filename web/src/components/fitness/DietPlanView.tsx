@@ -24,38 +24,38 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
   return (
     <div className="space-y-6">
       {/* Header / Macros */}
-      <div className="bg-dark-surface/50 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+      <div className="bg-dark-surface/50 border border-white/5 rounded-xl p-6">
+        <h2 className="text-xl font-medium text-white mb-6 flex items-center gap-2">
           <Apple className="text-green-400" /> Daily Targets
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center text-center">
             <Flame className="text-orange-400 mb-2" size={24} />
-            <span className="text-2xl font-bold text-white">{targets.calories || 2000}</span>
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Calories</span>
+            <span className="text-2xl font-medium text-white">{targets.calories || 2000}</span>
+            <span className="text-xs text-gray-500">Calories</span>
           </div>
           <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center text-center">
-            <span className="text-primary-400 mb-2 font-bold">P</span>
-            <span className="text-2xl font-bold text-white">{targets.protein_g || 150}g</span>
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Protein</span>
+            <span className="text-primary-400 mb-2 font-medium">P</span>
+            <span className="text-2xl font-medium text-white">{targets.protein_g || 150}g</span>
+            <span className="text-xs text-gray-500">Protein</span>
           </div>
           <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center text-center">
-            <span className="text-yellow-400 mb-2 font-bold">C</span>
-            <span className="text-2xl font-bold text-white">{targets.carbs_g || 200}g</span>
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Carbs</span>
+            <span className="text-yellow-400 mb-2 font-medium">C</span>
+            <span className="text-2xl font-medium text-white">{targets.carbs_g || 200}g</span>
+            <span className="text-xs text-gray-500">Carbs</span>
           </div>
           <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center text-center">
-            <span className="text-blue-400 mb-2 font-bold">F</span>
-            <span className="text-2xl font-bold text-white">{targets.fats_g || 65}g</span>
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Fats</span>
+            <span className="text-primary mb-2 font-medium">F</span>
+            <span className="text-2xl font-medium text-white">{targets.fats_g || 65}g</span>
+            <span className="text-xs text-gray-500">Fats</span>
           </div>
         </div>
       </div>
 
       {/* Meal Templates */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-white">Suggested Meals</h3>
+        <h3 className="text-lg font-medium text-white">Suggested Meals</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {dietPlan.meal_templates?.map((meal, idx) => (
             <motion.div 
@@ -68,7 +68,7 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
               <div className="flex justify-between items-start mb-4">
                 <h4 className="font-semibold text-white text-lg capitalize">{meal.meal_type}</h4>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-orange-400">{meal.total_calories} kcal</span>
+                  <span className="text-sm font-medium text-orange-400">{meal.total_calories} kcal</span>
                 </div>
               </div>
               

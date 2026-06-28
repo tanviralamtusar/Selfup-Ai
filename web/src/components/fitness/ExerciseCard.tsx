@@ -33,8 +33,8 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
   return (
     <motion.div 
       layout
-      className={`bg-slate-900/40 backdrop-blur-md rounded-2xl border transition-all duration-300 ${
-        isActive ? 'border-primary-500/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.15)]' : 'border-white/5'
+      className={`bg-muted  rounded-xl border transition-all duration-300 ${
+        isActive ? 'border-primary-500/50' : 'border-white/5'
       } ${isFullyComplete ? 'opacity-60' : 'opacity-100'}`}
     >
       <div 
@@ -48,7 +48,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
             {isFullyComplete ? <Check size={24} /> : <Play size={24} className="ml-1" />}
           </div>
           <div>
-            <h3 className="text-blue-50 font-black uppercase tracking-wider text-base">{exerciseName}</h3>
+            <h3 className="text-foreground  text-base">{exerciseName}</h3>
             <p className="text-sm text-gray-400 font-medium">
               {targetSets} Sets × {exercise.reps} • {exercise.rest_seconds}s Rest
             </p>
@@ -57,8 +57,8 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
         
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <span className="text-base font-black text-blue-50">{completedSets} / {targetSets}</span>
-            <span className="text-[10px] text-blue-500/40 uppercase font-black tracking-widest block">Sets Done</span>
+            <span className="text-base  text-foreground">{completedSets} / {targetSets}</span>
+            <span className="text-[10px] text-muted-foreground  block">Sets Done</span>
           </div>
           {isExpanded ? <ChevronUp size={24} className="text-gray-500" /> : <ChevronDown size={24} className="text-gray-500" />}
         </div>
@@ -76,11 +76,11 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
               {/* Video Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/40 italic">Form Reference</h4>
+                  <h4 className="text-[10px]   text-muted-foreground ">Form Reference</h4>
                   {!exercise.exercises?.video_url && !showSuggestions && (
                     <button 
                       onClick={(e) => { e.stopPropagation(); setShowSuggestions(true); }}
-                      className="text-[10px] font-black uppercase tracking-widest text-primary-400 hover:text-primary-300 flex items-center gap-2 bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20 transition-all"
+                      className="text-[10px]  text-primary-400 hover:text-primary-300 flex items-center gap-2 bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20 transition-all"
                     >
                       <Video size={12} /> Suggest Videos
                     </button>
@@ -108,7 +108,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                         <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary-500/30 transition-all shadow-lg">
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 group-hover:bg-black/40 transition-colors">
                             <ExternalLink size={48} className="text-white/70 group-hover:scale-110 transition-transform mb-4" />
-                            <span className="text-xs font-bold uppercase tracking-widest text-white/50">Open External Video</span>
+                            <span className="text-xs font-medium text-white/50">Open External Video</span>
                           </div>
                         </div>
                       </a>
@@ -137,38 +137,38 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                               </div>
                             </div>
                             <div className="p-2">
-                              <p className="text-[10px] font-bold text-blue-50 line-clamp-1 leading-tight mb-1">{video.title}</p>
-                              <p className="text-[8px] font-black uppercase tracking-tighter text-blue-500/40 italic">{video.channelTitle}</p>
+                              <p className="text-[10px] font-medium text-foreground line-clamp-1 leading-tight mb-1">{video.title}</p>
+                              <p className="text-[8px]  tracking-tighter text-muted-foreground ">{video.channelTitle}</p>
                             </div>
                           </a>
                         ))}
                       </div>
                     ) : (
                       <div className="p-4 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-500/20 italic">No suggestions found</p>
+                        <p className="text-[10px]  text-muted-foreground ">No suggestions found</p>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="p-8 text-center bg-slate-950/40 rounded-xl border border-dashed border-blue-500/10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/20 italic">No video available</p>
+                  <div className="p-8 text-center bg-card rounded-xl border border-dashed border-border">
+                    <p className="text-[10px]   text-muted-foreground ">No video available</p>
                   </div>
                 )}
               </div>
               
               {(exercise.technique_note || exercise.weight_note) && (
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/40 italic">Instructions</h4>
-                  <div className="text-[13px] text-blue-300/80 bg-blue-500/5 p-4 rounded-xl border border-blue-500/10 italic font-medium leading-relaxed space-y-2">
+                  <h4 className="text-[10px]   text-muted-foreground ">Instructions</h4>
+                  <div className="text-[13px] text-primary/80/80 bg-muted p-4 rounded-xl border border-border  font-medium leading-relaxed space-y-2">
                     {exercise.technique_note && (
                       <p>
-                        <span className="text-primary-400 font-black not-italic mr-2">TECHNIQUE:</span>
+                        <span className="text-primary-400  not-italic mr-2">TECHNIQUE:</span>
                         {exercise.technique_note}
                       </p>
                     )}
                     {exercise.weight_note && (
                       <p>
-                        <span className="text-blue-400 font-black not-italic mr-2">WEIGHT RECOMMENDATION:</span>
+                        <span className="text-primary  not-italic mr-2">WEIGHT RECOMMENDATION:</span>
                         {exercise.weight_note}
                       </p>
                     )}
@@ -177,7 +177,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
               )}
 
               <div className="space-y-3">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/40 italic mb-1">Set Log</h4>
+                <h4 className="text-[10px]   text-muted-foreground  mb-1">Set Log</h4>
                 {Array.from({ length: targetSets }).map((_, idx) => {
                   const setNum = idx + 1;
                   const isSetDone = completedSets >= setNum;
@@ -189,10 +189,10 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                         ? 'border-primary-500/40 bg-primary-500/10 shadow-[inset_0_0_15px_rgba(var(--primary-rgb),0.1)]' 
                         : 'border-white/5 bg-white/[0.02]'
                     }`}>
-                      <span className="text-sm font-black text-blue-50/60 uppercase tracking-widest italic">Set {setNum}</span>
+                      <span className="text-sm  text-foreground/60 ">Set {setNum}</span>
                       
                       {isSetDone ? (
-                        <div className="flex items-center text-green-400 text-xs font-black uppercase tracking-widest gap-2">
+                        <div className="flex items-center text-green-400 text-xs  gap-2">
                           <Check size={18} /> Recorded
                         </div>
                       ) : (
@@ -201,12 +201,12 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                             <input 
                               type="number"
                               placeholder="WEIGHT"
-                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-white focus:outline-none focus:border-primary-500/50 transition-all font-black uppercase tracking-tighter"
+                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-white focus:outline-none focus:border-primary-500/50 transition-all  tracking-tighter"
                               value={weightInput}
                               onChange={(e) => setWeightInput(e.target.value)}
                               disabled={!isCurrentSet}
                             />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-500/20">KG</span>
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px]  text-muted-foreground">KG</span>
                           </div>
                           <button
                             onClick={() => {
@@ -214,7 +214,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                               setWeightInput('');
                             }}
                             disabled={!isCurrentSet}
-                            className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
+                            className={`px-5 py-2 rounded-lg text-xs  transition-all ${
                               isCurrentSet 
                                 ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20 hover:bg-primary-500 hover:scale-105 active:scale-95' 
                                 : 'bg-white/5 text-gray-600 cursor-not-allowed opacity-50'

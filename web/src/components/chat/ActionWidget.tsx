@@ -264,13 +264,13 @@ function ConfirmationWidget({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <h4 className={cn('font-bold text-xs uppercase tracking-wider', config.textClass)}>
+            <h4 className={cn('font-bold text-xs', config.textClass)}>
               {config.label}
             </h4>
             {hasDetailedPlan && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/70 hover:text-white transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-muted text-[10px] font-medium text-white/70 hover:text-white transition-colors"
               >
                 {isExpanded ? (
                   <>
@@ -285,19 +285,19 @@ function ConfirmationWidget({
             )}
           </div>
 
-          <p className="text-white font-headline font-bold text-lg mb-1 truncate">
+          <p className="text-white font-headline font-medium text-lg mb-1 truncate">
             {action.payload.title || action.payload.skill_name || action.payload.goal || 'Untitled'}
           </p>
 
           {/* Parameters Tags */}
           <div className="flex flex-wrap gap-2 mt-2 mb-3">
             {action.payload.priority && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium tracking-tight">
                 {action.payload.priority}
               </span>
             )}
             {action.payload.category && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium tracking-tight">
                 {action.payload.category}
               </span>
             )}
@@ -317,17 +317,17 @@ function ConfirmationWidget({
               </span>
             )}
             {action.payload.experience_level && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium tracking-tight">
                 {action.payload.experience_level}
               </span>
             )}
             {action.payload.learning_style && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold uppercase tracking-tight">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-medium tracking-tight">
                 {action.payload.learning_style}
               </span>
             )}
             {action.payload.includes_tests && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-bold uppercase tracking-tight">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-border text-muted-foreground font-medium tracking-tight">
                 + TESTS
               </span>
             )}
@@ -348,7 +348,7 @@ function ConfirmationWidget({
 
           {/* Simple Description (fallback/unexpanded) */}
           {!isExpanded && description && (
-            <p className="text-xs text-gray-400 mb-4 line-clamp-2 italic">
+            <p className="text-xs text-gray-400 mb-4 line-clamp-2 ">
               {description.replace(/[#*`]/g, '')}
             </p>
           )}
@@ -358,7 +358,7 @@ function ConfirmationWidget({
             <button
               onClick={onConfirm}
               className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-black/20 active:scale-95',
+                'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm active:scale-95',
                 config.confirmBtnClass
               )}
             >
@@ -366,7 +366,7 @@ function ConfirmationWidget({
             </button>
             <button
               onClick={onCancel}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 rounded-lg text-sm font-medium transition-colors border border-white/5"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-muted text-gray-400 hover:text-gray-200 rounded-lg text-sm font-medium transition-colors border border-white/5"
             >
               <X size={16} />
             </button>
@@ -450,9 +450,9 @@ function StatusWidget({
 }) {
   const colorMap: Record<string, { bg: string; border: string; iconBg: string; text: string; linkBg: string; linkHover: string }> = {
     green: { bg: 'bg-green-500/10', border: 'border-green-500/20', iconBg: 'bg-green-500/20', text: 'text-green-400', linkBg: 'bg-green-500/20', linkHover: 'hover:bg-green-500/30' },
-    blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', iconBg: 'bg-blue-500/20', text: 'text-blue-400', linkBg: 'bg-blue-500/20', linkHover: 'hover:bg-blue-500/30' },
+    blue: { bg: 'bg-primary/10', border: 'border-border', iconBg: 'bg-primary/15', text: 'text-primary', linkBg: 'bg-primary/15', linkHover: 'hover:bg-primary/20' },
     purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/20', iconBg: 'bg-purple-500/20', text: 'text-purple-400', linkBg: 'bg-purple-500/20', linkHover: 'hover:bg-purple-500/30' },
-    cyan: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', iconBg: 'bg-cyan-500/20', text: 'text-cyan-400', linkBg: 'bg-cyan-500/20', linkHover: 'hover:bg-cyan-500/30' },
+    cyan: { bg: 'bg-[#5db8a0]/10', border: 'border-border', iconBg: 'bg-[#5db8a0]/15', text: 'text-[#5db8a0]', linkBg: 'bg-[#5db8a0]/15', linkHover: 'hover:bg-[#5db8a0]/30' },
     amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', iconBg: 'bg-amber-500/20', text: 'text-amber-400', linkBg: 'bg-amber-500/20', linkHover: 'hover:bg-amber-500/30' },
     orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', iconBg: 'bg-orange-500/20', text: 'text-orange-400', linkBg: 'bg-orange-500/20', linkHover: 'hover:bg-orange-500/30' },
   }
@@ -500,17 +500,17 @@ function getConfirmationConfig(action: Action) {
       return {
         label: 'CREATE DAILY',
         icon: <CalendarClock size={20} />,
-        bgClass: 'bg-gradient-to-r from-blue-500/10 to-cyan-500/5',
-        borderClass: 'border-blue-500/20',
-        iconBgClass: 'bg-blue-500/20',
-        textClass: 'text-blue-400',
-        confirmBtnClass: 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30',
+        bgClass: 'bg-gradient-to-r from-transparent to-transparent',
+        borderClass: 'border-border',
+        iconBgClass: 'bg-primary/15',
+        textClass: 'text-primary',
+        confirmBtnClass: 'bg-primary/15 hover:bg-primary/20 text-primary border border-border',
       }
     case 'create_habit':
       return {
         label: 'CREATE HABIT',
         icon: <Repeat size={20} />,
-        bgClass: 'bg-gradient-to-r from-purple-500/10 to-violet-500/5',
+        bgClass: 'bg-gradient-to-r from-muted/20 to-border',
         borderClass: 'border-purple-500/20',
         iconBgClass: 'bg-purple-500/20',
         textClass: 'text-purple-400',
@@ -540,11 +540,11 @@ function getConfirmationConfig(action: Action) {
       return {
         label: 'GENERATE SKILL ROADMAP',
         icon: <Map size={20} />,
-        bgClass: 'bg-gradient-to-r from-violet-500/10 to-fuchsia-500/5',
-        borderClass: 'border-violet-500/20',
-        iconBgClass: 'bg-violet-500/20',
-        textClass: 'text-violet-400',
-        confirmBtnClass: 'bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 border border-violet-500/30',
+        bgClass: 'bg-gradient-to-r from-border to-fuchsia-500/5',
+        borderClass: 'border-border',
+        iconBgClass: 'bg-border',
+        textClass: 'text-primary',
+        confirmBtnClass: 'bg-border hover:bg-border text-primary border border-border',
       }
     case 'tasks_clear_all':
       return {
@@ -564,7 +564,7 @@ function getConfirmationConfig(action: Action) {
         borderClass: 'border-white/10',
         iconBgClass: 'bg-white/10',
         textClass: 'text-gray-300',
-        confirmBtnClass: 'bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20',
+        confirmBtnClass: 'bg-white/10 hover:bg-muted text-gray-300 border border-white/20',
       }
   }
 }

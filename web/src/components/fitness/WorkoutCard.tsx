@@ -30,10 +30,10 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
     <motion.div
       whileHover={{ scale: 1.02 }}
       className={cn(
-        "relative overflow-hidden group rounded-xl p-6 border cursor-pointer transition-all duration-500 italic",
+        "relative overflow-hidden group rounded-xl p-6 border cursor-pointer transition-all duration-500 ",
         isActive 
-          ? "bg-slate-950 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]" 
-          : "bg-slate-950/40 border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10"
+          ? "bg-background border-border " 
+          : "bg-card border-border hover:border-border hover:bg-muted"
       )}
       onClick={() => onSelect?.(plan.id)}
     >
@@ -42,43 +42,43 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
       
       <div className={cn(
         "absolute -top-24 -right-24 w-48 h-48 blur-[80px] rounded-full pointer-events-none transition-opacity duration-500",
-        isActive ? "bg-blue-500/20 opacity-100" : "bg-blue-500/10 opacity-0 group-hover:opacity-100"
+        isActive ? "bg-primary/15 opacity-100" : "bg-primary/10 opacity-0 group-hover:opacity-100"
       )} />
 
       <div className="flex justify-between items-start mb-6">
         <div className={cn(
           "p-3 rounded-lg border transition-all duration-500",
-          isActive ? "bg-blue-500/20 border-blue-500/40 text-blue-300" : "bg-blue-500/5 border-blue-500/10 text-blue-500/40 group-hover:text-blue-400 group-hover:border-blue-500/30"
+          isActive ? "bg-primary/15 border-border text-primary/80" : "bg-muted border-border text-muted-foreground group-hover:text-primary group-hover:border-border"
         )}>
           <Dumbbell size={22} />
         </div>
         <div className="flex gap-3">
-          <span className="px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-[0.2em] bg-slate-950 border border-blue-500/20 text-blue-400/80 shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]">
+          <span className="px-3 py-1.5 rounded text-[10px]   bg-background border border-border text-primary/80 ">
             {plan.difficulty}
           </span>
           {isActive && (
-            <span className="px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-300 border border-blue-400/40 animate-pulse">
+            <span className="px-3 py-1.5 rounded text-[10px]   bg-primary/15 text-primary/80 border border-border animate-pulse">
               Active
             </span>
           )}
         </div>
       </div>
 
-      <h3 className="text-xl font-black text-blue-50 mb-2 group-hover:text-blue-300 transition-colors uppercase tracking-[0.2em] system-text-glow">
+      <h3 className="text-xl  text-foreground mb-2 group-hover:text-primary/80 transition-colors ">
         {plan.name}
       </h3>
-      <p className="text-[13px] text-blue-400/60 line-clamp-2 mb-6 leading-relaxed font-medium italic">
+      <p className="text-[13px] text-primary/60 line-clamp-2 mb-6 leading-relaxed font-medium ">
         {plan.description || 'AI-generated fitness plan.'}
       </p>
 
-      <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/40">
+      <div className="flex items-center gap-6 text-[10px]   text-primary/40">
         <div className="flex items-center gap-2">
-          <Calendar size={16} className="text-blue-400/50" />
+          <Calendar size={16} className="text-primary/50" />
           <span>{plan.days_per_week} DAYS / WEEK</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-          <span className="text-blue-300/80">{plan.goal.replace('_', ' ')}</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/40 " />
+          <span className="text-primary/80/80">{plan.goal.replace('_', ' ')}</span>
         </div>
       </div>
 
@@ -88,27 +88,24 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
             <Link 
               href={resumeUrl}
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400 hover:scale-105 transition-all"
+              className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary text-white text-xs    border border-primary/30 hover:scale-105 transition-all"
             >
               <Play size={16} fill="currentColor" />
               Continue Workout
             </Link>
           ) : (
-            <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-blue-600/50 text-white/50 text-xs font-black uppercase tracking-[0.2em] border border-blue-400/30 cursor-not-allowed">
+            <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary/50 text-white/50 text-xs   border border-border cursor-not-allowed">
               <Play size={16} fill="currentColor" />
               Next Workout Scheduled
             </button>
           )
         ) : (
-          <div className="flex items-center gap-2 text-xs font-black text-blue-400/40 uppercase tracking-[0.2em] group-hover:text-blue-300 transition-colors italic">
+          <div className="flex items-center gap-2 text-xs  text-primary/40  group-hover:text-primary/80 transition-colors ">
             Plan Details <ChevronRight size={16} />
           </div>
         )}
       </div>
 
-      {/* Decorative Corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-blue-500/20" />
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-blue-500/20" />
     </motion.div>
   );
 };

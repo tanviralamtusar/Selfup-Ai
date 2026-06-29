@@ -108,7 +108,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                         <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary-500/30 transition-all shadow-lg">
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 group-hover:bg-black/40 transition-colors">
                             <ExternalLink size={48} className="text-white/70 group-hover:scale-110 transition-transform mb-4" />
-                            <span className="text-xs font-medium text-white/50">Open External Video</span>
+                            <span className="text-xs font-medium text-primary-foreground/50">Open External Video</span>
                           </div>
                         </div>
                       </a>
@@ -201,7 +201,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                             <input 
                               type="number"
                               placeholder="WEIGHT"
-                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-white focus:outline-none focus:border-primary-500/50 transition-all  tracking-tighter"
+                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-primary-foreground focus:outline-none focus:border-primary-500/50 transition-all  tracking-tighter"
                               value={weightInput}
                               onChange={(e) => setWeightInput(e.target.value)}
                               disabled={!isCurrentSet}
@@ -216,7 +216,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                             disabled={!isCurrentSet}
                             className={`px-5 py-2 rounded-lg text-xs  transition-all ${
                               isCurrentSet 
-                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20 hover:bg-primary-500 hover:scale-105 active:scale-95' 
+                                ? 'bg-primary-600 text-primary-foreground shadow-lg shadow-primary-900/20 hover:bg-primary-500 hover:scale-105 active:scale-95' 
                                 : 'bg-white/5 text-gray-600 cursor-not-allowed opacity-50'
                             }`}
                           >

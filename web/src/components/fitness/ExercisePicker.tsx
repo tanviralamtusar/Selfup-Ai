@@ -40,14 +40,14 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
   }, [query]);
 
   return (
-    <div className="flex flex-col h-full max-h-[600px] bg-zinc-950 border border-border rounded-xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full max-h-[600px] bg-background border border-border rounded-xl overflow-hidden shadow-2xl">
       <div className="p-4 border-b border-border bg-muted/50">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
           <input
             type="text"
             placeholder="Search exercises (e.g. Bench Press, Squat)..."
-            className="w-full bg-muted border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+            className="w-full bg-muted border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -72,7 +72,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                 }`}
               >
                 <div>
-                  <h4 className="text-sm font-semibold text-white group-hover:text-primary">
+                  <h4 className="text-sm font-semibold text-primary-foreground group-hover:text-primary">
                     {ex.name}
                   </h4>
                   <p className="text-[11px] text-zinc-500 flex gap-2 mt-0.5">
@@ -88,7 +88,7 @@ const ExercisePicker: React.FC<ExercisePickerProps> = ({ onSelect, selectedIds =
                   className={`p-1.5 rounded-md transition-all ${
                     isSelected
                       ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-background text-zinc-400 hover:bg-primary hover:text-white'
+                      : 'bg-background text-zinc-400 hover:bg-primary hover:text-foreground'
                   }`}
                 >
                   {isSelected ? <Check size={16} /> : <Plus size={16} />}

@@ -180,7 +180,7 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
                 className={cn(
                   "flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[10px]   transition-all ",
                   canComplete 
-                    ? 'bg-primary text-white shadow-sm hover:scale-105 active:scale-95 border border-primary/30'
+                    ? 'bg-primary text-primary-foreground shadow-sm hover:scale-105 active:scale-95 border border-primary/30'
                     : 'bg-muted text-muted-foreground cursor-not-allowed border border-border'
                 )}
               >
@@ -201,8 +201,8 @@ function QuestCard({ quest, onAccept, onComplete, onAbandon, isActioning }: {
               className={cn(
                 "flex items-center gap-2 px-6 py-3 rounded-xl text-[10px]   transition-all shadow-xl ",
                 quest.difficulty === 'legendary'
-                  ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-400 border border-amber-400'
-                  : 'bg-primary text-white shadow-black/20 hover:bg-primary border border-primary/30'
+                  ? 'bg-amber-500 text-primary-foreground shadow-amber-500/20 hover:bg-amber-400 border border-amber-400'
+                  : 'bg-primary text-primary-foreground shadow-black/20 hover:bg-primary border border-primary/30'
               )}
             >
               {loading ? <Loader2 size={12} className="animate-spin" /> : <Sword size={14} />}

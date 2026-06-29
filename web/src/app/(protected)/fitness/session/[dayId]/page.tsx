@@ -92,7 +92,7 @@ export default function FitnessSessionPage({ params }: { params: Promise<{ dayId
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
         <AlertCircle className="w-12 h-12 text-red-500/50 mb-4" />
-        <h1 className="text-xl  text-white tracking-tighter mb-2">Protocol Error</h1>
+        <h1 className="text-xl  text-primary-foreground tracking-tighter mb-2">Protocol Error</h1>
         <p className="text-foreground/80/40 text-sm text-center max-w-md mb-8">{error || 'Unable to load workout session.'}</p>
         <button 
           onClick={() => router.back()}
@@ -105,7 +105,7 @@ export default function FitnessSessionPage({ params }: { params: Promise<{ dayId
   }
 
   return (
-    <div className="h-screen w-full bg-background text-white">
+    <div className="h-screen w-full bg-background text-primary-foreground">
       <SessionView 
         sessionId={sessionLog.id}
         workoutDay={workoutDay}

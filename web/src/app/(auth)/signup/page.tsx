@@ -204,7 +204,7 @@ export default function SignupPage() {
           {/* Google OAuth */}
           <button
             onClick={handleGoogleSignup}
-            className="w-full h-12 rounded-xl bg-mutedest/30 border border-border text-foreground text-xs  hover:bg-mutedest transition-all btn-press flex items-center justify-center gap-3"
+            className="w-full h-12 rounded-xl bg-muted border border-border text-foreground text-xs  hover:bg-muted transition-all btn-press flex items-center justify-center gap-3"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />

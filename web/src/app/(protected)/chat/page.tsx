@@ -260,7 +260,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-mutedest rounded-lg transition-colors text-muted-foreground"
+              className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
             >
               <Menu size={20} />
             </button>
@@ -282,11 +282,11 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-mutedest/50 border border-border">
+             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted border border-border">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
                 <span className="text-sm  text-foreground">{profile?.ai_coins || 0}</span>
              </div>
-             <button onClick={startNewChat} className="p-2 hover:bg-mutedest rounded-lg text-muted-foreground">
+             <button onClick={startNewChat} className="p-2 hover:bg-muted rounded-lg text-muted-foreground">
                <Plus size={20} />
              </button>
           </div>

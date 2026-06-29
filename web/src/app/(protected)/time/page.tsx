@@ -40,7 +40,7 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; glow: st
   critical: { label: 'Critical', color: 'text-red-400 bg-red-500/10 border-red-500/20', glow: 'shadow-red-500/20' },
   high:     { label: 'High',     color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', glow: 'shadow-orange-500/20' },
   medium:   { label: 'Medium',   color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20', glow: 'shadow-yellow-500/20' },
-  low:      { label: 'Low',      color: 'text-muted-foreground bg-mutedest/30 border-border', glow: '' },
+  low:      { label: 'Low',      color: 'text-muted-foreground bg-muted border-border', glow: '' },
 }
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -356,7 +356,7 @@ export default function TimePage() {
                 <select
                   value={linkedTaskId || ''}
                   onChange={e => setLinkedTaskId(e.target.value || null)}
-                  className="w-full h-12 px-4 rounded-xl bg-mutedest border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm font-medium appearance-none"
+                  className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 text-sm font-medium appearance-none"
                 >
                   <option value="">No task linked</option>
                   {activeTodos.map(t => (
@@ -370,7 +370,7 @@ export default function TimePage() {
             <div className="flex items-center justify-center gap-4 relative z-10">
               <button
                 onClick={handleReset}
-                className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-mutedest transition-all"
+                className="w-12 h-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
               >
                 <RotateCcw size={18} />
               </button>
@@ -470,7 +470,7 @@ export default function TimePage() {
                       value={newTask.title}
                       onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && handleAddTask()}
-                      className="w-full h-12 px-4 rounded-xl bg-mutedest border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium text-sm"
+                      className="w-full h-12 px-4 rounded-xl bg-muted border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 font-medium text-sm"
                     />
                     <div className="flex gap-3 flex-wrap">
                       {(['low','medium','high','critical'] as Priority[]).map(p => (
@@ -509,7 +509,7 @@ export default function TimePage() {
                   {tab.count > 0 && (
                     <span className={cn(
                       "ml-2 px-1.5 py-0.5 rounded-full text-[9px]",
-                      (tab.key === 'completed') === showCompleted ? 'bg-primary/20 text-primary' : 'bg-mutedest text-muted-foreground'
+                      (tab.key === 'completed') === showCompleted ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
                     )}>{tab.count}</span>
                   )}
                   {(tab.key === 'completed') === showCompleted && (
@@ -583,7 +583,7 @@ export default function TimePage() {
                           onClick={() => { setLinkedTaskId(task.id); toast.success(`Linked: "${task.title}"`) }}
                           className={cn(
                             "p-2 rounded-lg text-[10px] opacity-0 group-hover:opacity-100 transition-all",
-                            linkedTaskId === task.id ? 'bg-primary/20 text-primary' : 'hover:bg-mutedest text-muted-foreground'
+                            linkedTaskId === task.id ? 'bg-primary/20 text-primary' : 'hover:bg-muted text-muted-foreground'
                           )}
                           title="Link to Pomodoro"
                         >

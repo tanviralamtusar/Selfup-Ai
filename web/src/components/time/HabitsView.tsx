@@ -40,7 +40,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   skills:  'text-primary bg-primary/10 border-primary/20',
   time:    'text-secondary bg-secondary/10 border-secondary/20',
   style:   'text-pink-400 bg-pink-400/10 border-pink-400/20',
-  general: 'text-muted-foreground bg-mutedest/30 border-border',
+  general: 'text-muted-foreground bg-muted border-border',
 }
 
 export function HabitsView() {
@@ -198,7 +198,7 @@ export function HabitsView() {
           </div>
           <button
             onClick={() => setIsAddingHabit(prev => !prev)}
-            className="flex items-center gap-3 px-8 py-3 rounded bg-primary/10 text-primary text-xs   border border-border hover:bg-primary hover:text-white transition-all  active:scale-95 group-hover:"
+            className="flex items-center gap-3 px-8 py-3 rounded bg-primary/10 text-primary text-xs   border border-border hover:bg-primary hover:text-foreground transition-all  active:scale-95 group-hover:"
           >
             <Plus size={18} /> New Habit
           </button>
@@ -268,7 +268,7 @@ export function HabitsView() {
                           className={cn(
                             "px-3 py-2.5 rounded text-[9px]   transition-all border",
                             newHabit.category === p 
-                              ? "bg-primary text-white border-primary/30 " 
+                              ? "bg-primary text-primary-foreground border-primary/30 " 
                               : "text-muted-foreground border-transparent hover:text-primary hover:border-border"
                           )}
                         >{p}</button>
@@ -320,7 +320,7 @@ export function HabitsView() {
                         className={cn(
                           "flex-1 h-12 rounded border text-[11px]  transition-all",
                           isActive
-                            ? "bg-primary text-white border-primary/30 "
+                            ? "bg-primary text-primary-foreground border-primary/30 "
                             : "bg-background border-border text-muted-foreground hover:border-border"
                         )}
                       >
@@ -333,7 +333,7 @@ export function HabitsView() {
 
               <div className="flex justify-end gap-4 pt-8 border-t border-border relative z-10">
                 <button onClick={() => setIsAddingHabit(false)} className="px-6 py-3 rounded text-muted-foreground text-[10px]   hover:text-primary/80 transition-colors">Abort</button>
-                <button onClick={handleAddHabit} className="px-10 py-3 bg-primary text-white rounded text-[10px]   hover:bg-primary hover: transition-all active:scale-95 border border-primary/30">Create Habit</button>
+                <button onClick={handleAddHabit} className="px-10 py-3 bg-primary text-primary-foreground rounded text-[10px]   hover:bg-primary hover: transition-all active:scale-95 border border-primary/30">Create Habit</button>
               </div>
             </div>
           </motion.div>
@@ -428,7 +428,7 @@ export function HabitsView() {
                     "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px]   transition-all relative z-10 border shadow-inner",
                     habit.is_completed_this_cycle
                       ? "bg-primary/15 text-primary/60 border-border cursor-not-allowed opacity-50"
-                      : "bg-muted text-primary border-border hover:bg-primary hover:text-white hover:border-primary/30 hover: active:scale-95"
+                      : "bg-muted text-primary border-border hover:bg-primary hover:text-foreground hover:border-primary/30 hover: active:scale-95"
                   )}
                 >
                   {habit.is_completed_this_cycle ? (

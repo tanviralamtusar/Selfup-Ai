@@ -54,7 +54,7 @@ export function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete
             >
               <div className={cn(
                 "mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
-                activeId === conv.id ? "bg-primary/20 text-primary" : "bg-mutedest text-muted-foreground group-hover:text-foreground"
+                activeId === conv.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-foreground"
               )}>
                 <MessageSquare size={14} />
               </div>

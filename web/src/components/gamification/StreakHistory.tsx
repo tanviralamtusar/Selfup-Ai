@@ -64,7 +64,7 @@ export function StreakHistory({ isOpen, onClose, currentStreak, bestStreak, free
               </div>
               <button 
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-mutedest/50 flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
               >
                 <X size={20} />
               </button>
@@ -73,15 +73,15 @@ export function StreakHistory({ isOpen, onClose, currentStreak, bestStreak, free
             <div className="p-8 pt-0 space-y-8">
               {/* Stats Summary */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-mutedest/20 rounded-xl p-4 border border-border">
+                <div className="bg-muted rounded-xl p-4 border border-border">
                   <p className="text-[8px]  text-muted-foreground mb-1">Current</p>
                   <p className="text-2xl  text-foreground leading-none">{currentStreak}<span className="text-[10px] ml-1 text-muted-foreground">D</span></p>
                 </div>
-                <div className="bg-mutedest/20 rounded-xl p-4 border border-border">
+                <div className="bg-muted rounded-xl p-4 border border-border">
                   <p className="text-[8px]  text-muted-foreground mb-1">Record</p>
                   <p className="text-2xl  text-foreground leading-none">{bestStreak}<span className="text-[10px] ml-1 text-muted-foreground">D</span></p>
                 </div>
-                <div className="bg-mutedest/20 rounded-xl p-4 border border-border">
+                <div className="bg-muted rounded-xl p-4 border border-border">
                   <p className="text-[8px]  text-muted-foreground mb-1">Freezes</p>
                   <p className="text-2xl  text-foreground leading-none">{freezeCount}</p>
                 </div>
@@ -113,7 +113,7 @@ export function StreakHistory({ isOpen, onClose, currentStreak, bestStreak, free
                         "aspect-square rounded-lg flex items-center justify-center transition-all duration-500 relative group/tile",
                         day.isCompleted ? "bg-orange-500 shadow-lg shadow-orange-500/20" :
                         day.isFreezeUsed ? "bg-primary shadow-sm" :
-                        "bg-mutedest/50 border border-border"
+                        "bg-muted border border-border"
                       )}
                     >
                       {day.isToday && (
@@ -134,7 +134,7 @@ export function StreakHistory({ isOpen, onClose, currentStreak, bestStreak, free
 
               {/* Information / Legend */}
               <div className="space-y-4 pt-4 border-t border-border">
-                 <div className="flex items-start gap-4 p-4 rounded-xl bg-mutedest/10 border border-border">
+                 <div className="flex items-start gap-4 p-4 rounded-xl bg-muted border border-border">
                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                      <Info size={16} />
                    </div>

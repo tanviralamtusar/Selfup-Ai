@@ -342,7 +342,7 @@ export default function StylePage() {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl bg-pink-500 text-white  text-sm shadow-lg shadow-pink-500/20 hover:bg-pink-400 transition-all active:scale-95 disabled:opacity-60"
+            className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl bg-pink-500 text-primary-foreground  text-sm shadow-lg shadow-pink-500/20 hover:bg-pink-400 transition-all active:scale-95 disabled:opacity-60"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
             {isGenerating ? 'Selfup Styling...' : 'Generate Look'}

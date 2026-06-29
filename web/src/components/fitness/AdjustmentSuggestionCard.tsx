@@ -53,7 +53,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl  text-white flex items-center gap-2 mb-2 tracking-wide">
+          <h3 className="text-xl  text-primary-foreground flex items-center gap-2 mb-2 tracking-wide">
             <Sparkles size={22} className={isPositive ? "text-primary-400" : "text-orange-400"} />
             AI Plan Update
           </h3>
@@ -69,7 +69,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
                 <ArrowRight size={20} className="text-white" />
               </div>
               <div>
-                <span className="block text-base  text-white">
+                <span className="block text-base  text-primary-foreground">
                   {adjustment.suggestion?.change || "Update Plan"}
                 </span>
                 <span className="block text-[11px] text-gray-400  mt-1">
@@ -84,7 +84,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
           <button 
             onClick={() => handleAction('ignore')}
             disabled={isProcessing}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-muted transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
           >
             Ignore
           </button>
@@ -93,8 +93,8 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
             disabled={isProcessing}
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
               isPositive 
-                ? 'bg-primary-600 text-white hover:bg-primary-500' 
-                : 'bg-orange-600 text-white hover:bg-orange-500'
+                ? 'bg-primary-600 text-primary-foreground hover:bg-primary-500' 
+                : 'bg-orange-600 text-primary-foreground hover:bg-orange-500'
             }`}
           >
             {isProcessing ? 'Applying...' : <><Check size={18} /> Apply Change</>}

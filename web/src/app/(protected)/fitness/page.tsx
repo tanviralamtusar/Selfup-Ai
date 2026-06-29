@@ -101,7 +101,7 @@ export default function FitnessPage() {
   const activePlan = plans.find(p => p.is_active);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 pb-20 ">
+    <div className="min-h-screen bg-black text-primary-foreground p-6 pb-20 ">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div className="relative group">
@@ -133,7 +133,7 @@ export default function FitnessPage() {
           
           <button 
             onClick={handleOpenAiModal}
-            className="flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-xl  text-[10px]   border border-primary/30 transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-3 px-6 py-3 bg-primary text-primary-foreground rounded-xl  text-[10px]   border border-primary/30 transition-all hover:scale-105 active:scale-95"
           >
             <Plus size={16} />
             New Plan

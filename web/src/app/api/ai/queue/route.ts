@@ -31,10 +31,13 @@ export async function POST(req: NextRequest) {
       payload: payload
     })
 
-    return NextResponse.json({ 
+    // For fitness_plan tasks the worker returns { plan, planId }; spread it alongside result
+    const extra = typeof result === 'object' && result !== null ? result : {}
+    return NextResponse.json({
       success: true,
       status: 'completed',
-      result: result
+      result: typeof result === 'string' ? result : undefined,
+      ...extra,
     })
 
   } catch (err: any) {

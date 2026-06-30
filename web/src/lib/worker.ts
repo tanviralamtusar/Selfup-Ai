@@ -197,8 +197,16 @@ export async function executeAiTask(data: AiJobData) {
         await badgeService.awardBadge(userId, 'first_protocol');
 
         result = `Success: Generated and activated fitness plan ${generatedPlan.plan_meta.name}.`;
-        
-        break;
+
+        // Return plan object so the client can show the preview modal
+        if (queueId) {
+          await supabase
+            .from('ai_queue')
+            .update({ status: 'done', processed_at: new Date().toISOString() })
+            .eq('id', queueId)
+          queueId = null // prevent double-update below
+        }
+        return { plan: generatedPlan, planId }
       }
       case 'fitness_adaptation_check': {
         const { planId } = payload;

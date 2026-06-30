@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error: dbErr } = await db
     .from('habits')
-    .select('*')
+    .select('*, habit_logs(completed_at)')
     .eq('user_id', user.id)
     .eq('is_active', true)
     .order('reset_type', { ascending: true })

@@ -119,6 +119,8 @@ export default function TimePage() {
   const [linkedTaskId, setLinkedTaskId] = useState<string | null>(null)
   const [pomodoroHistory, setPomodoroHistory] = useState<PomodoroSession[]>([])
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Ref tracks the current session ID so timer callbacks don't close over stale state
+  const activeSessionIdRef = useRef<string | null>(null)
 
   // ── Task State ──
   const [todos, setTodos] = useState<Todo[]>([])
@@ -126,6 +128,9 @@ export default function TimePage() {
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium' })
   const [isLoading, setIsLoading] = useState(true)
+
+  // Keep ref in sync so timer callbacks always see the latest session ID
+  useEffect(() => { activeSessionIdRef.current = activeSessionId }, [activeSessionId])
 
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
@@ -160,45 +165,48 @@ export default function TimePage() {
   }
 
   // ── Timer Tick ──
+  // Pure tick: no side effects inside the state updater (React can call updaters
+  // twice in StrictMode; async calls inside updaters would double-fire).
   useEffect(() => {
-    if (timerState === 'active' || timerState === 'break') {
-      intervalRef.current = setInterval(() => {
-        setSecondsLeft(s => {
-          if (s <= 1) {
-            if (timerState === 'active') handleTimerComplete()
-            else switchToWork()
-            return 0
-          }
-          return s - 1
-        })
-      }, 1000)
-    }
+    if (timerState !== 'active' && timerState !== 'break') return
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft(s => (s <= 1 ? 0 : s - 1))
+    }, 1000)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [timerState])
 
   const handleTimerComplete = useCallback(async () => {
     clearInterval(intervalRef.current!)
     toast.success(`Focus session complete! +${workMinutes + 5} XP`)
-    if (activeSessionId) {
+    const sessionId = activeSessionIdRef.current
+    if (sessionId) {
       await fetch('/api/pomodoro', {
         method: 'PATCH',
         headers: headers(),
-        body: JSON.stringify({ session_id: activeSessionId, action: 'complete' })
+        body: JSON.stringify({ session_id: sessionId, action: 'complete' })
       })
       setActiveSessionId(null)
     }
     fetchAll()
-    // Switch to break
     setTimerState('break')
     setSecondsLeft(breakMinutes * 60)
     setTotalSeconds(breakMinutes * 60)
-  }, [activeSessionId, workMinutes, breakMinutes, headers])
+  }, [workMinutes, breakMinutes, headers])
 
   const switchToWork = useCallback(() => {
     setTimerState('idle')
     setSecondsLeft(workMinutes * 60)
     setTotalSeconds(workMinutes * 60)
   }, [workMinutes])
+
+  // ── Timer Completion ──
+  // Watches for secondsLeft hitting 0 and fires the appropriate handler.
+  // Runs as a separate effect so side effects never happen inside state updaters.
+  useEffect(() => {
+    if (secondsLeft !== 0) return
+    if (timerState === 'active') handleTimerComplete()
+    else if (timerState === 'break') switchToWork()
+  }, [secondsLeft, timerState, handleTimerComplete, switchToWork])
 
   const handleStart = async () => {
     if (timerState === 'paused') { setTimerState('active'); return }

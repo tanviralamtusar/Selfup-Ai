@@ -49,6 +49,8 @@ export function HabitsView() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAddingHabit, setIsAddingHabit] = useState(false)
+  const [checkingInId, setCheckingInId] = useState<string | null>(null)
+  const [checkInNote, setCheckInNote] = useState('')
   const [newHabit, setNewHabit] = useState<{
     title: string;
     description: string;
@@ -103,28 +105,42 @@ export function HabitsView() {
     } catch { toast.error('Failed to create habit') }
   }
 
-  const handleCompleteHabit = async (habit: Habit) => {
-    if (habit.is_completed_this_cycle) return // already done
+  const handleCompleteHabit = async (habit: Habit, notes?: string) => {
+    if (habit.is_completed_this_cycle) return
     try {
       const res = await fetch(`/api/habits/${habit.id}/log`, {
         method: 'POST',
         headers: headers(),
+        body: JSON.stringify({ notes: notes?.trim() || undefined }),
       })
       if (res.ok) {
         const data = await res.json()
         const xp = data.data?.xp_awarded || 10
         toast.success(`+${xp} XP!`)
-        // Optimistic update
-        setHabits(prev => prev.map(h => 
-          h.id === habit.id ? { 
-            ...h, 
-            is_completed_this_cycle: true, 
+        setCheckingInId(null)
+        setCheckInNote('')
+        setHabits(prev => prev.map(h =>
+          h.id === habit.id ? {
+            ...h,
+            is_completed_this_cycle: true,
             current_streak: h.current_streak + 1,
             habit_logs: [...(h.habit_logs || []), { completed_at: new Date().toISOString().split('T')[0] }]
           } : h
         ))
       }
     } catch { toast.error('Failed to update habit') }
+  }
+
+  const handleCheckIn = (habit: Habit) => {
+    if (habit.is_completed_this_cycle) return
+    if (checkingInId === habit.id) {
+      // Already open — cancel
+      setCheckingInId(null)
+      setCheckInNote('')
+    } else {
+      setCheckingInId(habit.id)
+      setCheckInNote('')
+    }
   }
 
   const handleDeleteHabit = async (id: string) => {
@@ -420,15 +436,54 @@ export function HabitsView() {
                   </div>
                 </div>
 
-                {/* Check-in button */}
+                {/* Check-in flow */}
+                <AnimatePresence>
+                  {checkingInId === habit.id && !habit.is_completed_this_cycle && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mb-3 relative z-10"
+                    >
+                      <div className="bg-muted rounded-lg border border-border p-3 space-y-3">
+                        <label className="text-[9px] text-muted-foreground">Note (optional)</label>
+                        <textarea
+                          autoFocus
+                          rows={2}
+                          placeholder="How did it go? Any reflections..."
+                          value={checkInNote}
+                          onChange={e => setCheckInNote(e.target.value)}
+                          className="w-full px-3 py-2 rounded bg-background border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none transition-all"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setCheckingInId(null); setCheckInNote('') }}
+                            className="flex-1 py-2 rounded text-[9px] text-muted-foreground border border-border hover:text-foreground transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleCompleteHabit(habit, checkInNote)}
+                            className="flex-1 py-2 rounded text-[9px] bg-primary text-primary-foreground border border-primary/30 hover:bg-primary/90 active:scale-95 transition-all"
+                          >
+                            Confirm Check In
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <button
-                  onClick={() => handleCompleteHabit(habit)}
+                  onClick={() => habit.is_completed_this_cycle ? undefined : handleCheckIn(habit)}
                   disabled={habit.is_completed_this_cycle}
                   className={cn(
-                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px]   transition-all relative z-10 border shadow-inner",
+                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px] transition-all relative z-10 border shadow-inner",
                     habit.is_completed_this_cycle
                       ? "bg-primary/15 text-primary/60 border-border cursor-not-allowed opacity-50"
-                      : "bg-muted text-primary border-border hover:bg-primary hover:text-foreground hover:border-primary/30 hover: active:scale-95"
+                      : checkingInId === habit.id
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-muted text-primary border-border hover:bg-primary hover:text-foreground hover:border-primary/30 active:scale-95"
                   )}
                 >
                   {habit.is_completed_this_cycle ? (
@@ -437,10 +492,9 @@ export function HabitsView() {
                     </div>
                   ) : (
                     <>
-                      <Plus size={16} /> Complete
+                      <Plus size={16} /> {checkingInId === habit.id ? 'Cancel Check In' : 'Check In'}
                     </>
-                  )
-                }
+                  )}
                 </button>
               </motion.div>
             ))}

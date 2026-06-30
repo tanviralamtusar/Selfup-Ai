@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import { generateResponse } from '../gemma'
 import { getUserModelConfig } from '../model-config'
+import { GamificationService } from '../gamification.service'
 import type { GeneratedTestQuestion } from '@/types/skills'
 
 interface EvaluationResult {
@@ -71,22 +72,33 @@ No markdown outside JSON.`
     
     const scorePct = totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0
     
-    // Fetch passing score
-    const { data: test } = await supabase.from('milestone_tests').select('passing_score_pct').eq('id', testId).single()
+    // Fetch passing score and XP rewards in one query
+    const { data: test } = await supabase
+      .from('milestone_tests')
+      .select('passing_score_pct, xp_on_pass, xp_on_fail')
+      .eq('id', testId)
+      .single()
     const passingScore = test?.passing_score_pct || 70
-    
+
     const result: EvaluationResult = {
       score_pct: scorePct,
       passed: scorePct >= passingScore,
       feedback: evaluation.feedback
     }
-    
+
     await supabase.from('test_attempts').update({
       score_pct: result.score_pct,
       passed: result.passed,
       feedback: result.feedback
     }).eq('id', attemptId)
-    
+
+    // Award XP for pass or fail
+    const xpAmount = result.passed
+      ? (test?.xp_on_pass || 100)
+      : (test?.xp_on_fail || 20)
+    const gamification = new GamificationService(supabase)
+    await gamification.addXp(userId, xpAmount, { actionType: 'skill' })
+
     return result
   } catch (err) {
     console.error('[TestEvaluator] JSON parse error:', err, cleanJson)

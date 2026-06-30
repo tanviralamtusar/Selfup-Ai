@@ -95,7 +95,14 @@ export async function saveRoadmapToDb(
   aicoinCost: number,
   supabase: SupabaseClient
 ) {
-  // Insert Roadmap
+  // Deactivate any existing active roadmap for this skill to enforce one-active rule
+  await supabase
+    .from('skill_roadmaps')
+    .update({ status: 'deactivated' })
+    .eq('skill_id', skillId)
+    .eq('status', 'active')
+
+  // Insert roadmap
   const { data: roadmap, error: roadmapError } = await supabase
     .from('skill_roadmaps')
     .insert({
@@ -116,6 +123,8 @@ export async function saveRoadmapToDb(
 
   if (roadmapError) throw roadmapError
 
+  // Insert phases sequentially (need IDs for milestone FK), but batch milestones,
+  // topics, and tests within each phase to cut round trips.
   for (const phaseData of roadmapData.phases) {
     const { data: phase, error: phaseError } = await supabase
       .from('skill_phases')
@@ -131,54 +140,66 @@ export async function saveRoadmapToDb(
 
     if (phaseError) throw phaseError
 
-    for (const milestoneData of phaseData.milestones) {
-      const { data: milestone, error: milestoneError } = await supabase
-        .from('skill_milestones')
-        .insert({
+    if (!phaseData.milestones?.length) continue
+
+    // Bulk insert all milestones for this phase in one round trip
+    const { data: milestones, error: milestoneError } = await supabase
+      .from('skill_milestones')
+      .insert(
+        phaseData.milestones.map(m => ({
           roadmap_id: roadmap.id,
           phase_id: phase.id,
-          order_index: milestoneData.order_index,
-          title: milestoneData.title,
-          description: milestoneData.description,
-          estimated_hours: milestoneData.estimated_hours,
-          xp_reward: milestoneData.xp_reward
-        })
-        .select()
-        .single()
-
-      if (milestoneError) throw milestoneError
-
-      if (milestoneData.topics && milestoneData.topics.length > 0) {
-        const topicsToInsert = milestoneData.topics.map(t => ({
-          milestone_id: milestone.id,
-          order_index: t.order_index,
-          title: t.title,
-          type: t.type,
-          estimated_minutes: t.estimated_minutes,
-          xp_reward: t.xp_reward
+          order_index: m.order_index,
+          title: m.title,
+          description: m.description,
+          estimated_hours: m.estimated_hours,
+          xp_reward: m.xp_reward
         }))
+      )
+      .select()
 
-        const { data: insertedTopics, error: topicError } = await supabase
-          .from('skill_topics')
-          .insert(topicsToInsert)
-          .select()
+    if (milestoneError) throw milestoneError
 
-        if (topicError) throw topicError
-        
-        // Let's create an initial mapping for resources, they will be resolved later lazily
+    // Collect topics and test placeholders across all milestones, then bulk insert both
+    const allTopics: object[] = []
+    const allTests: object[] = []
+
+    for (const [idx, milestoneData] of phaseData.milestones.entries()) {
+      const milestone = milestones[idx]
+
+      if (milestoneData.topics?.length) {
+        allTopics.push(
+          ...milestoneData.topics.map(t => ({
+            milestone_id: milestone.id,
+            order_index: t.order_index,
+            title: t.title,
+            type: t.type,
+            estimated_minutes: t.estimated_minutes,
+            xp_reward: t.xp_reward
+          }))
+        )
       }
-      
+
       if (milestoneData.requires_test) {
-         // Create a placeholder for the test
-         await supabase.from('milestone_tests').insert({
-             roadmap_id: roadmap.id,
-             milestone_id: milestone.id,
-             title: `${milestoneData.title} Assessment`,
-             is_ad_hoc: false,
-             questions: [], // Will be generated when the test is started
-             passing_score_pct: 70
-         })
+        allTests.push({
+          roadmap_id: roadmap.id,
+          milestone_id: milestone.id,
+          title: `${milestoneData.title} Assessment`,
+          is_ad_hoc: false,
+          questions: [],
+          passing_score_pct: 70
+        })
       }
+    }
+
+    if (allTopics.length) {
+      const { error: topicError } = await supabase.from('skill_topics').insert(allTopics)
+      if (topicError) throw topicError
+    }
+
+    if (allTests.length) {
+      const { error: testError } = await supabase.from('milestone_tests').insert(allTests)
+      if (testError) throw testError
     }
   }
 

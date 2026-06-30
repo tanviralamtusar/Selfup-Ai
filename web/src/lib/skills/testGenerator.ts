@@ -32,7 +32,6 @@ The test should have 5 questions. Mix multiple_choice, short_answer, and code_sn
 Provide the output strictly as a JSON object:
 {
   "title": "${testRow.title}",
-  "passing_score_pct": 70,
   "xp_on_pass": 100,
   "xp_on_fail": 20,
   "questions": [

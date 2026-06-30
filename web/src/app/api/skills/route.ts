@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       global: { headers: { Authorization: `Bearer ${token}` } }
     })
 
-    // Fetch skills with roadmap + milestone stats
+    // Fetch skills with roadmap + milestone stats; order roadmaps newest-first so [0] is the active one
     const { data: skills, error } = await authSupabase
       .from('skills')
       .select(`
@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       `)
       .eq('user_id', user.id)
       .is('is_active', true)
+      .eq('skill_roadmaps.status', 'active')
       .order('created_at', { ascending: false })
 
     if (error) throw error
@@ -110,19 +111,28 @@ export async function POST(req: NextRequest) {
 
     if (skillError) throw skillError
 
-    // 2. If interview data provided, queue roadmap generation
+    // 2. If interview data provided, generate roadmap synchronously.
+    // On failure, rollback the skill row so no orphaned skills are left.
     if (interviewData) {
-      await addAiTask({
-        userId: user.id,
-        type: 'skill_roadmap',
-        payload: { 
-          skillId: skill.id, 
-          interviewData: {
-            skill_name: name,
-            ...interviewData
+      try {
+        await addAiTask({
+          userId: user.id,
+          type: 'skill_roadmap',
+          payload: {
+            skillId: skill.id,
+            interviewData: {
+              skill_name: name,
+              ...interviewData
+            }
           }
-        }
-      })
+        })
+      } catch (taskError: any) {
+        await authSupabase.from('skills').delete().eq('id', skill.id)
+        return NextResponse.json(
+          { error: `Roadmap generation failed: ${taskError.message}` },
+          { status: 500 }
+        )
+      }
     }
 
     return NextResponse.json({ success: true, data: skill })

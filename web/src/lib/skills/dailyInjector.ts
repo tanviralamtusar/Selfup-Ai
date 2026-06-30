@@ -22,15 +22,14 @@ export async function injectSkillDailies(
   
   // Create study days in DB
   const studyDayEntries = Array.from({ length: totalStudyDays }).map((_, index) => {
-      // Calculate scheduled date based on week/day (simple approximation for now)
-      const weekNumber = Math.floor(index / weeklyStudyDays.length);
       const dayOfWeekStr = weeklyStudyDays[index % weeklyStudyDays.length];
-      
+
       return {
           roadmap_id: roadmapId,
           day_number: index + 1,
           day_label: `Study Session ${index + 1}`,
           estimated_minutes: roadmap.daily_study_minutes,
+          repeat_day: dayOfWeekStr,
           has_test: false,
           is_completed: false,
           is_missed: false,

@@ -455,20 +455,12 @@ export function HabitsView() {
                           onChange={e => setCheckInNote(e.target.value)}
                           className="w-full px-3 py-2 rounded bg-background border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none transition-all"
                         />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => { setCheckingInId(null); setCheckInNote('') }}
-                            className="flex-1 py-2 rounded text-[9px] text-muted-foreground border border-border hover:text-foreground transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleCompleteHabit(habit, checkInNote)}
-                            className="flex-1 py-2 rounded text-[9px] bg-primary text-primary-foreground border border-primary/30 hover:bg-primary/90 active:scale-95 transition-all"
-                          >
-                            Confirm Check In
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleCompleteHabit(habit, checkInNote)}
+                          className="w-full py-2 rounded text-[9px] bg-primary text-primary-foreground border border-primary/30 hover:bg-primary/90 active:scale-95 transition-all"
+                        >
+                          Confirm Check In
+                        </button>
                       </div>
                     </motion.div>
                   )}

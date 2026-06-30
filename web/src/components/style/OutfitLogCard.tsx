@@ -89,7 +89,7 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
           <button
             onClick={handleSubmit}
             disabled={loading || !desc.trim()}
-            className="w-full py-3 rounded-xl bg-pink-500 text-white  text-xs hover:bg-pink-400 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+            className="w-full py-3 rounded-xl bg-pink-500 text-primary-foreground  text-xs hover:bg-pink-400 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
             Log Outfit

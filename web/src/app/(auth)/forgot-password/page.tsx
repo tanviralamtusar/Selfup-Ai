@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-sm font-semibold text-white transition-all btn-press disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-sm font-semibold text-primary-foreground transition-all btn-press disabled:opacity-50 flex items-center justify-center gap-2"
                   style={{
                     background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-blue))',
                   }}

@@ -198,7 +198,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex bg-background h-full w-full overflow-hidden">
-      {/* ─── Sidebar ─── */}
+      {/* ─── Sidebar: desktop inline ─── */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
@@ -206,9 +206,9 @@ export default function ChatPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="hidden md:block"
+            className="hidden md:block flex-shrink-0"
           >
-            <ChatSidebar 
+            <ChatSidebar
               conversations={conversations}
               activeId={activeConversationId}
               onSelect={setActiveConversationId}
@@ -220,6 +220,39 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
+      {/* ─── Sidebar: mobile overlay ─── */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/50"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <motion.div
+              key="mobile-sidebar"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50"
+            >
+              <ChatSidebar
+                conversations={conversations}
+                activeId={activeConversationId}
+                onSelect={(id) => { setActiveConversationId(id); setIsSidebarOpen(false) }}
+                onNew={() => { startNewChat(); setIsSidebarOpen(false) }}
+                onDelete={handleDeleteChat}
+                aiName={profile?.ai_persona_name || 'SYSTEM'}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ─── Main Chat Area ─── */}
       <div className="flex-1 flex flex-col relative bg-muted/20">
         {/* Chat Header */}
@@ -227,7 +260,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-mutedest rounded-lg transition-colors text-muted-foreground"
+              className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
             >
               <Menu size={20} />
             </button>
@@ -249,11 +282,11 @@ export default function ChatPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-mutedest/50 border border-border">
+             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted border border-border">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
                 <span className="text-sm  text-foreground">{profile?.ai_coins || 0}</span>
              </div>
-             <button onClick={startNewChat} className="p-2 hover:bg-mutedest rounded-lg text-muted-foreground">
+             <button onClick={startNewChat} className="p-2 hover:bg-muted rounded-lg text-muted-foreground">
                <Plus size={20} />
              </button>
           </div>

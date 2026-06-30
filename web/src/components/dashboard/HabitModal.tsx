@@ -125,7 +125,7 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
                     <button
                       onClick={handleSubmit(onSubmit)}
                       disabled={isSubmitting}
-                      className="px-5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs   transition-all flex items-center gap-2 disabled:opacity-50"
+                      className="px-5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs   transition-all flex items-center gap-2 disabled:opacity-50"
                     >
                       {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save'}
                     </button>

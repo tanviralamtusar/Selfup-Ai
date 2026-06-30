@@ -91,7 +91,7 @@ export function SystemKnowledge({ isOpen, onClose }: { isOpen: boolean; onClose:
                 <Database className="text-primary" size={20} />
               </div>
               <div>
-                <h2 className="text-xl    text-white">Selfup Cognition</h2>
+                <h2 className="text-xl    text-primary-foreground">Selfup Cognition</h2>
                 <p className="text-[10px] text-primary/60 font-mono">Selfup Memory Fragments</p>
               </div>
             </div>

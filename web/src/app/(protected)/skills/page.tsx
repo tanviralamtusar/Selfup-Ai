@@ -479,7 +479,7 @@ export default function SkillsPage() {
                 </button>
                 <button
                   onClick={handleAddSkill}
-                  className="flex-1 h-14 bg-primary text-white rounded-xl  text-xs shadow-sm btn-press"
+                  className="flex-1 h-14 bg-primary text-primary-foreground rounded-xl  text-xs shadow-sm btn-press"
                 >
                   Create Skill
                 </button>
@@ -544,7 +544,7 @@ export default function SkillsPage() {
                 </button>
                 <button
                   onClick={handleLogSession}
-                  className="flex-1 h-14 bg-primary text-white rounded-xl  text-xs shadow-sm btn-press"
+                  className="flex-1 h-14 bg-primary text-primary-foreground rounded-xl  text-xs shadow-sm btn-press"
                 >
                   Log Session
                 </button>

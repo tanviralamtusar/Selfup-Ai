@@ -37,7 +37,7 @@ export default function FitnessPage() {
 
       const [plansRes, logsRes] = await Promise.all([
         fetch('/api/fitness/plans', { headers }),
-        fetch('/api/fitness/logs', { headers })
+        fetch('/api/fitness/sessions', { headers })
       ]);
       const [plansData, logsData] = await Promise.all([
         plansRes.json(),
@@ -72,18 +72,29 @@ export default function FitnessPage() {
         headers,
         body: JSON.stringify({
           type: 'fitness_plan',
-          payload: { goal, days }
+          payload: {
+            goal,
+            days_per_week: days,
+            plan_type: 'ongoing',
+            fitness_level: 'intermediate',
+            session_duration_minutes: 60,
+            training_location: 'gym',
+            training_style: 'hypertrophy',
+            equipment: ['barbells', 'dumbbells', 'cables', 'machines'],
+            wants_diet: false,
+            preferred_time: '07:00',
+          }
         })
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok && data.status === 'completed') {
         setIsGenerating(false);
         setIsAiModalOpen(false);
-        
-        if (data.result && data.result.plan_meta) {
-          setPreviewData(data.result);
+
+        if (data.plan && data.plan.plan_meta) {
+          setPreviewData(data.plan);
           setIsPreviewModalOpen(true);
         } else {
           toast.success('Your AI fitness plan is ready!');
@@ -101,7 +112,7 @@ export default function FitnessPage() {
   const activePlan = plans.find(p => p.is_active);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 pb-20 ">
+    <div className="min-h-screen bg-background text-foreground p-6 pb-20">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
         <div className="relative group">
@@ -133,7 +144,7 @@ export default function FitnessPage() {
           
           <button 
             onClick={handleOpenAiModal}
-            className="flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-xl  text-[10px]   border border-primary/30 transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-3 px-6 py-3 bg-primary text-primary-foreground rounded-xl  text-[10px]   border border-primary/30 transition-all hover:scale-105 active:scale-95"
           >
             <Plus size={16} />
             New Plan
@@ -184,16 +195,16 @@ export default function FitnessPage() {
                       logs.slice(0, 5).map((log) => (
                         <div key={log.id} className="p-4 bg-card border border-border rounded-lg hover:border-border transition-all hover:bg-muted relative group/log overflow-hidden">
                           <div className="flex justify-between items-center mb-3">
-                            <span className="text-[9px]  text-primary bg-primary/10 px-2 py-0.5 rounded border border-border">+{log.xp_earned} XP</span>
+                            <span className="text-[9px] text-primary bg-primary/10 px-2 py-0.5 rounded border border-border">+{log.total_xp_earned || 0} XP</span>
                             <div className="flex items-center gap-2">
                               {log.status === 'partial' && (
-                                <span className="text-[7px]  bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20 tracking-tighter">In Progress</span>
+                                <span className="text-[7px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/20">In Progress</span>
                               )}
-                              <span className="text-[8px]  text-muted-foreground">{new Date(log.completed_at).toLocaleDateString()}</span>
+                              <span className="text-[8px] text-muted-foreground">{new Date(log.logged_date).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          <h4 className="text-[11px]  text-foreground mb-1">{log.day_name || 'Workout Complete'}</h4>
-                          <p className="text-[10px] text-muted-foreground line-clamp-1   leading-relaxed">"{log.notes || 'No log data recorded.'}"</p>
+                          <h4 className="text-[11px] text-foreground mb-1">{log.workout_days?.day_label || 'Workout Session'}</h4>
+                          <p className="text-[10px] text-muted-foreground line-clamp-1 leading-relaxed">{Object.keys(log.sets_done || {}).length} exercises logged</p>
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/0 group-hover/log:bg-primary/40 transition-colors" />
                         </div>
                       ))

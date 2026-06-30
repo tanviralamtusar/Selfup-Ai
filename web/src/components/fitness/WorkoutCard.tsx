@@ -88,13 +88,13 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
             <Link 
               href={resumeUrl}
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary text-white text-xs    border border-primary/30 hover:scale-105 transition-all"
+              className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground text-xs    border border-primary/30 hover:scale-105 transition-all"
             >
               <Play size={16} fill="currentColor" />
               Continue Workout
             </Link>
           ) : (
-            <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary/50 text-white/50 text-xs   border border-border cursor-not-allowed">
+            <button className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-primary/50 text-primary-foreground/50 text-xs   border border-border cursor-not-allowed">
               <Play size={16} fill="currentColor" />
               Next Workout Scheduled
             </button>

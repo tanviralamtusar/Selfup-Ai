@@ -40,7 +40,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
                   type="checkbox" 
                   checked={checked} 
                   readOnly 
-                  className="mr-2 w-3.5 h-3.5 accent-primary bg-mutedest border-border rounded-sm inline-block align-middle"
+                  className="mr-2 w-3.5 h-3.5 accent-primary bg-muted border-border rounded-sm inline-block align-middle"
                   {...props} 
                 />
               )
@@ -62,14 +62,14 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             
             if (!isBlock) {
               return (
-                <code className="px-1.5 py-0.5 rounded-md bg-mutedest text-primary font-mono text-[11px] whitespace-pre-wrap break-words" {...props}>
+                <code className="px-1.5 py-0.5 rounded-md bg-muted text-primary font-mono text-[11px] whitespace-pre-wrap break-words" {...props}>
                   {children}
                 </code>
               )
             }
             return (
-              <div className="my-3 rounded-lg overflow-hidden border border-border bg-mutedest">
-                <div className="px-3 py-1.5 bg-mutedest/50 border-b border-border flex items-center">
+              <div className="my-3 rounded-lg overflow-hidden border border-border bg-muted">
+                <div className="px-3 py-1.5 bg-muted border-b border-border flex items-center">
                   <span className="text-[10px] font-mono text-muted-foreground">
                     {match?.[1] || 'Code'}
                   </span>
@@ -94,7 +94,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               <table className="w-full text-sm text-left" {...props} />
             </div>
           ),
-          thead: ({node, ...props}) => <thead className="bg-mutedest/50 border-b border-border text-xs text-muted-foreground" {...props} />,
+          thead: ({node, ...props}) => <thead className="bg-muted border-b border-border text-xs text-muted-foreground" {...props} />,
           th: ({node, ...props}) => <th className="px-4 py-2 font-medium" {...props} />,
           td: ({node, ...props}) => <td className="px-4 py-2 border-b border-border text-foreground" {...props} />,
           

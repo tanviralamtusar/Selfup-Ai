@@ -52,7 +52,7 @@ export function SkillSessionsHistory({ sessions, isLoading }: SkillSessionsHisto
     <div className="space-y-6 pb-6 px-2">
       {/* Mini Stats Summary */}
       <div className="grid grid-cols-2 gap-4 px-6 pt-4">
-        <div className="flex items-center gap-3 p-3 bg-mutedest/20 rounded-xl border border-border">
+        <div className="flex items-center gap-3 p-3 bg-muted rounded-xl border border-border">
            <div className="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
              <Clock size={14} />
            </div>
@@ -61,7 +61,7 @@ export function SkillSessionsHistory({ sessions, isLoading }: SkillSessionsHisto
              <p className="text-sm  text-foreground">{totalHours} <span className="text-[10px] text-muted-foreground">HRS</span></p>
            </div>
         </div>
-        <div className="flex items-center gap-3 p-3 bg-mutedest/20 rounded-xl border border-border">
+        <div className="flex items-center gap-3 p-3 bg-muted rounded-xl border border-border">
            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
              <Trophy size={14} />
            </div>
@@ -90,7 +90,7 @@ export function SkillSessionsHistory({ sessions, isLoading }: SkillSessionsHisto
               <div className="w-2 h-2 rounded-full bg-primary" />
             </div>
 
-            <div className="bg-mutedest/50 hover:bg-muted transition-colors rounded-xl p-4 border border-border shadow-sm group">
+            <div className="bg-muted hover:bg-muted transition-colors rounded-xl p-4 border border-border shadow-sm group">
               <div className="flex items-start justify-between gap-4 mb-2">
                 <div>
                   <h4 className="text-xs  text-foreground">
@@ -112,7 +112,7 @@ export function SkillSessionsHistory({ sessions, isLoading }: SkillSessionsHisto
               </div>
 
               {session.notes && (
-                <div className="mt-3 p-3 bg-mutedest/20 rounded-xl border border-border">
+                <div className="mt-3 p-3 bg-muted rounded-xl border border-border">
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     "{session.notes}"
                   </p>

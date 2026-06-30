@@ -136,7 +136,7 @@ export function ChatInput({
               className={cn(
                 "w-10 h-10 flex items-center justify-center rounded-full transition-all",
                 isDisabled 
-                  ? "bg-[#2c2d30] text-gray-400 hover:text-white" 
+                  ? "bg-[#2c2d30] text-gray-400 hover:text-foreground" 
                   : input.trim() 
                     ? "bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/10" 
                     : "bg-[#2c2d30] text-gray-500"

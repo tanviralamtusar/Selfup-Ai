@@ -270,7 +270,7 @@ function ConfirmationWidget({
             {hasDetailedPlan && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-muted text-[10px] font-medium text-white/70 hover:text-white transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-muted text-[10px] font-medium text-primary-foreground/70 hover:text-foreground transition-colors"
               >
                 {isExpanded ? (
                   <>
@@ -554,7 +554,7 @@ function getConfirmationConfig(action: Action) {
         borderClass: 'border-red-500/20',
         iconBgClass: 'bg-red-500/20',
         textClass: 'text-red-400',
-        confirmBtnClass: 'bg-red-500/60 hover:bg-red-500/70 text-white border border-red-500/30',
+        confirmBtnClass: 'bg-red-500/60 hover:bg-red-500/70 text-primary-foreground border border-red-500/30',
       }
     default:
       return {

@@ -243,7 +243,7 @@ export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModal
                   <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
-                    className="px-6 py-2 rounded-lg bg-rose-500 hover:bg-rose-400 text-white text-xs  transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-6 py-2 rounded-lg bg-rose-500 hover:bg-rose-400 text-primary-foreground text-xs  transition-all flex items-center gap-2 disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save Task'}
                   </button>

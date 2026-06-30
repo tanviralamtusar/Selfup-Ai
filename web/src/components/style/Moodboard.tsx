@@ -83,7 +83,7 @@ export function Moodboard({ items, onAdd, onDelete }: { items: MoodboardItem[], 
               <button
                 onClick={handleSubmit}
                 disabled={loading || (!title && !imageUrl)}
-                className="col-span-1 md:col-span-2 py-3 rounded-xl bg-pink-500 text-white  text-xs hover:bg-pink-400 transition-all disabled:opacity-50"
+                className="col-span-1 md:col-span-2 py-3 rounded-xl bg-pink-500 text-primary-foreground  text-xs hover:bg-pink-400 transition-all disabled:opacity-50"
               >
                 {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Pin to Moodboard'}
               </button>
@@ -116,7 +116,7 @@ export function Moodboard({ items, onAdd, onDelete }: { items: MoodboardItem[], 
             {onDelete && (
               <button 
                 onClick={() => onDelete(item.id)}
-                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white/70 hover:text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute top-2 right-2 p-1.5 bg-black/50 text-primary-foreground/70 hover:text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-all"
               >
                 <X size={14} />
               </button>

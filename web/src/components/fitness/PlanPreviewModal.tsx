@@ -54,24 +54,24 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
               <Dumbbell size={120} />
             </div>
             
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-black/20 rounded-full">
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-foreground bg-black/20 rounded-full">
               <X size={20} />
             </button>
             
             <div className="flex items-center gap-2 text-primary-400 font-medium mb-2 text-sm">
               <Flame size={16} /> New Protocol Ready
             </div>
-            <h2 className="text-3xl font-medium text-white mb-2">{previewData.plan_meta?.name || 'Your Fitness Plan'}</h2>
+            <h2 className="text-3xl font-medium text-primary-foreground mb-2">{previewData.plan_meta?.name || 'Your Fitness Plan'}</h2>
             <p className="text-gray-400 max-w-md">{previewData.plan_meta?.description}</p>
             
             <div className="flex items-center gap-4 mt-6">
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
                 <Calendar size={16} className="text-primary" />
-                <span className="text-sm font-medium text-white">{previewData.plan_meta?.days_per_week || 3} Days/Week</span>
+                <span className="text-sm font-medium text-primary-foreground">{previewData.plan_meta?.days_per_week || 3} Days/Week</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
                 <Trophy size={16} className="text-yellow-400" />
-                <span className="text-sm font-medium text-white">~{previewData.total_xp_per_week || 0} XP/Week</span>
+                <span className="text-sm font-medium text-primary-foreground">~{previewData.total_xp_per_week || 0} XP/Week</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
                 <span className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded font-medium">
@@ -84,7 +84,7 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           {/* Body */}
           <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-black/20">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-primary-foreground mb-4 flex items-center gap-2">
                 <Calendar size={20} className="text-primary-400" /> Schedule Summary
               </h3>
               <div className="space-y-3">
@@ -93,10 +93,10 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-dark-bg rounded-lg flex flex-col items-center justify-center border border-border">
                         <span className="text-xs text-gray-500">{day.day.substring(0,3)}</span>
-                        <span className="text-sm font-medium text-white">{day.time || 'Any'}</span>
+                        <span className="text-sm font-medium text-primary-foreground">{day.time || 'Any'}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-white capitalize">{day.label}</p>
+                        <p className="font-medium text-primary-foreground capitalize">{day.label}</p>
                         <p className="text-xs text-gray-400">Workout Day {idx + 1}</p>
                       </div>
                     </div>
@@ -119,14 +119,14 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           <div className="p-6 border-t border-border flex justify-end gap-3 bg-dark-surface">
             <button 
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl font-medium text-gray-400 hover:text-white hover:bg-muted transition-colors"
+              className="px-6 py-2.5 rounded-xl font-medium text-gray-400 hover:text-foreground hover:bg-muted transition-colors"
             >
               Review Later
             </button>
             <button 
               onClick={handleActivate}
               disabled={isActivating}
-              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-500 transition-colors shadow-lg shadow-primary-500/20 disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-primary-foreground bg-primary-600 hover:bg-primary-500 transition-colors shadow-lg shadow-primary-500/20 disabled:opacity-50"
             >
               {isActivating ? 'Activating...' : (
                 <>Accept & Inject <ChevronRight size={18} /></>

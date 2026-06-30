@@ -58,7 +58,7 @@ export function ActiveDietPlanModal({ isOpen, onClose, plan }: ActiveDietPlanMod
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 text-muted-foreground hover:text-white bg-muted rounded-lg border border-border hover:border-border transition-all relative z-10"
+                className="p-2 text-muted-foreground hover:text-foreground bg-muted rounded-lg border border-border hover:border-border transition-all relative z-10"
               >
                 <X size={18} />
               </button>

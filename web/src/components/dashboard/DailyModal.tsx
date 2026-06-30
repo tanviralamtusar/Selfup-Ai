@@ -287,7 +287,7 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
                                 className={cn(
                                   "w-10 h-10 rounded-full flex items-center justify-center text-[10px]  transition-all border",
                                   isActive
-                                    ? "bg-primary border-primary/30 text-white "
+                                    ? "bg-primary border-primary/30 text-primary-foreground "
                                     : "bg-muted border-border text-primary/40 hover:border-border hover:text-primary"
                                 )}
                               >
@@ -326,7 +326,7 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
                   <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
-                    className="px-6 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs   transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-6 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs   transition-all flex items-center gap-2 disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : 'Save Daily'}
                   </button>

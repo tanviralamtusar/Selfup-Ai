@@ -361,7 +361,7 @@ export function ScheduleView() {
         <button
           onClick={handleAutoSchedule}
           disabled={isOptimizing}
-          className="relative group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-xl   text-[10px] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden  border border-primary/30"
+          className="relative group flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-xl   text-[10px] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 overflow-hidden  border border-primary/30"
         >
           {isOptimizing ? (
             <Loader2 className="animate-spin" size={18} />
@@ -530,7 +530,7 @@ export function ScheduleView() {
             </div>
 
             {/* Scrollable timeline */}
-            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar bg-primary/[0.01]" style={{ backgroundImage: 'radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar">
               <div ref={containerRef} className="relative w-full p-6" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
                 
                 {/* Current Time Line */}
@@ -540,7 +540,7 @@ export function ScheduleView() {
                 >
                   <div className="relative">
                     <div className="absolute left-0 w-24 flex justify-end pr-6 -top-3.5">
-                      <span className="bg-primary text-white text-[9px]  px-2 py-1 rounded border border-primary/30 ">
+                      <span className="bg-primary text-primary-foreground text-[9px]  px-2 py-1 rounded border border-primary/30 ">
                         {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>

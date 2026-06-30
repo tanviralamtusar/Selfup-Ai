@@ -124,7 +124,7 @@ export default function BodyView() {
           <button
             disabled={isSubmitting}
             type="submit"
-            className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-primary hover:bg-primary text-white   rounded-lg transition-all  border border-primary/30 group active:scale-95"
+            className="w-full mt-6 flex items-center justify-center gap-3 py-4 bg-primary hover:bg-primary text-primary-foreground   rounded-lg transition-all  border border-primary/30 group active:scale-95"
           >
             {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} className="group-hover:rotate-90 transition-transform" />}
             Save Stats

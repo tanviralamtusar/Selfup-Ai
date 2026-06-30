@@ -88,10 +88,14 @@ async function cacheSkillResource(
       source: 'youtube_api',
     })
 
-  if (error) {
-    console.error('[YouTube] Failed to cache skill resource for:', topicName, error)
-  } else {
+  if (!error) {
     console.log(`[YouTube] Cached resource for ${topicName}: ${videoUrl}`)
+    return
+  }
+
+  // 23505 = unique_violation — another concurrent request already cached this topic; safe to ignore
+  if (error.code !== '23505') {
+    console.error('[YouTube] Failed to cache skill resource for:', topicName, error)
   }
 }
 

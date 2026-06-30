@@ -66,7 +66,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                     disabled={isGenerating}
                     className={`p-4 rounded-lg border text-[11px]   transition-all relative overflow-hidden group ${
                       goal === g.id 
-                        ? 'bg-primary text-white border-primary/30 ' 
+                        ? 'bg-primary text-primary-foreground border-primary/30 ' 
                         : 'bg-card border-border text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground/80 shadow-inner'
                     }`}
                   >
@@ -90,7 +90,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                     disabled={isGenerating}
                     className={`flex-1 py-4 rounded-lg border text-[11px]   transition-all relative overflow-hidden group ${
                       days === d
-                        ? 'bg-primary text-white border-primary/30 '
+                        ? 'bg-primary text-primary-foreground border-primary/30 '
                         : 'bg-card border-border text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground/80'
                     }`}
                   >
@@ -107,7 +107,7 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
             <button
               onClick={() => onSubmit(goal, days)}
               disabled={isGenerating}
-              className="w-full py-5 rounded-lg bg-primary hover:bg-primary text-white   text-[11px] transition-all flex items-center justify-center gap-3  border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
+              className="w-full py-5 rounded-lg bg-primary hover:bg-primary text-primary-foreground   text-[11px] transition-all flex items-center justify-center gap-3  border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
             >
               {isGenerating ? (
                 <>

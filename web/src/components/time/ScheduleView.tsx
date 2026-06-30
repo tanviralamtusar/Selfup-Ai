@@ -530,7 +530,7 @@ export function ScheduleView() {
             </div>
 
             {/* Scrollable timeline */}
-            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar bg-primary/[0.01]" style={{ backgroundImage: 'radial-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+            <div className="flex-1 overflow-y-auto max-h-[850px] custom-scrollbar">
               <div ref={containerRef} className="relative w-full p-6" style={{ height: `${HOURS.length * HOUR_HEIGHT}px` }}>
                 
                 {/* Current Time Line */}

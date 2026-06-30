@@ -36,11 +36,11 @@ interface PomodoroSession {
   started_at: string
 }
 
-const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; glow: string }> = {
-  critical: { label: 'Critical', color: 'text-red-400 bg-red-500/10 border-red-500/20', glow: 'shadow-red-500/20' },
-  high:     { label: 'High',     color: 'text-orange-400 bg-orange-500/10 border-orange-500/20', glow: 'shadow-orange-500/20' },
-  medium:   { label: 'Medium',   color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20', glow: 'shadow-yellow-500/20' },
-  low:      { label: 'Low',      color: 'text-muted-foreground bg-muted border-border', glow: '' },
+const PRIORITY_CONFIG: Record<Priority, { label: string; color: string }> = {
+  critical: { label: 'Critical', color: 'text-red-400 bg-red-500/10 border-red-500/20' },
+  high:     { label: 'High',     color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+  medium:   { label: 'Medium',   color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
+  low:      { label: 'Low',      color: 'text-muted-foreground bg-muted border-border' },
 }
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -61,22 +61,20 @@ function CircularTimer({
   const pct = state === 'idle' ? 0 : (seconds / totalSeconds)
   const offset = circ - pct * circ
 
-  const glowColor = state === 'break'
-    ? 'rgba(107,255,193,0.3)'
+  const strokeColor = state === 'break'
+    ? 'var(--color-tertiary)'
     : state === 'active'
-      ? 'rgba(174,162,255,0.4)'
-      : 'rgba(100,100,120,0.2)'
-
-  const strokeColor = state === 'break' ? '#6bffc1' : state === 'active' ? '#90caf9' : '#48474d'
+      ? 'var(--color-primary)'
+      : 'var(--color-outline)'
 
   const mins = Math.floor(seconds / 60).toString().padStart(2, '0')
   const secs = (seconds % 60).toString().padStart(2, '0')
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size} style={{ filter: `drop-shadow(0 0 20px ${glowColor})` }}>
+      <svg width={size} height={size}>
         {/* Track */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1f1f26" strokeWidth={stroke} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--color-surface-container)" strokeWidth={stroke} />
         {/* Progress */}
         <motion.circle
           cx={size/2} cy={size/2} r={r}
@@ -92,12 +90,12 @@ function CircularTimer({
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-5xl  font-headline tracking-tighter tabular-nums text-foreground">
+        <span className="text-5xl font-headline tracking-tighter tabular-nums text-foreground">
           {mins}:{secs}
         </span>
         <span className={cn(
-          "text-[10px]   mt-1",
-          state === 'break' ? 'text-tertiary-fixed-dim' :
+          "text-[10px] mt-1",
+          state === 'break' ? 'text-tertiary' :
           state === 'active' ? 'text-primary' : 'text-muted-foreground'
         )}>
           {state === 'break' ? 'Rest Phase' : state === 'active' ? 'Focus Mode' : state === 'paused' ? 'Paused' : 'Ready'}
@@ -319,11 +317,11 @@ export default function TimePage() {
         {/* ── Left: Pomodoro Timer ── */}
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-muted border border-border rounded-xl p-8 space-y-8 relative overflow-hidden">
-            {/* Background glow */}
+            {/* Subtle state indicator */}
             <div className={cn(
-              "absolute inset-0 transition-all duration-1000 pointer-events-none",
-              timerState === 'active' ? 'bg-primary/3' :
-              timerState === 'break' ? 'bg-tertiary-fixed/3' : 'opacity-0'
+              "absolute inset-0 transition-all duration-1000 pointer-events-none rounded-xl",
+              timerState === 'active' ? 'bg-primary/5' :
+              timerState === 'break' ? 'bg-tertiary/5' : 'opacity-0'
             )} />
 
             {/* Timer */}
@@ -341,7 +339,7 @@ export default function TimePage() {
                     className={cn(
                       "px-4 py-2 rounded-xl text-xs  border transition-all",
                       workMinutes === m
-                        ? 'bg-primary text-on-primary border-primary shadow-lg shadow-primary/20'
+                        ? 'bg-primary text-primary-foreground border-primary'
                         : 'border-border text-muted-foreground hover:border-primary/30'
                     )}
                   >{m}m</button>
@@ -380,8 +378,8 @@ export default function TimePage() {
                 className={cn(
                   "w-20 h-20 rounded-full flex items-center justify-center  transition-all shadow-2xl",
                   timerState === 'break'
-                    ? 'bg-tertiary-fixed-dim text-foreground cursor-not-allowed opacity-50'
-                    : 'bg-primary text-on-primary hover:scale-105 active:scale-95 shadow-primary/30'
+                    ? 'bg-tertiary/20 text-tertiary cursor-not-allowed opacity-50'
+                    : 'bg-primary text-primary-foreground hover:scale-105 active:scale-95'
                 )}
                 disabled={timerState === 'break'}
               >
@@ -390,7 +388,7 @@ export default function TimePage() {
 
               <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center">
                 {timerState === 'break' ? (
-                  <Coffee size={18} className="text-tertiary-fixed-dim" />
+                  <Coffee size={18} className="text-tertiary" />
                 ) : (
                   <Flame size={18} className="text-muted-foreground" />
                 )}
@@ -419,14 +417,14 @@ export default function TimePage() {
                   <div key={s.id} className="flex items-center gap-3 py-2">
                     <div className={cn(
                       "w-2 h-2 rounded-full flex-shrink-0",
-                      s.status === 'completed' ? 'bg-tertiary-fixed-dim' : 'bg-muted-foreground'
+                      s.status === 'completed' ? 'bg-tertiary' : 'bg-muted-foreground'
                     )} />
                     <span className="text-xs font-medium text-foreground flex-1 truncate">
                       {s.task?.title || 'Free session'}
                     </span>
                     <span className="text-[10px]  text-muted-foreground">{s.duration_minutes}m</span>
                     {s.status === 'completed' && (
-                      <CheckCircle2 size={14} className="text-tertiary-fixed-dim flex-shrink-0" />
+                      <CheckCircle2 size={14} className="text-tertiary flex-shrink-0" />
                     )}
                   </div>
                 ))}
@@ -462,7 +460,7 @@ export default function TimePage() {
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden border-b border-border"
                 >
-                  <div className="p-6 space-y-4 bg-muted-medium/50">
+                  <div className="p-6 space-y-4 bg-surface-container/50">
                     <input
                       autoFocus
                       type="text"
@@ -486,7 +484,7 @@ export default function TimePage() {
 
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={handleAddTask} className="flex-1 h-10 bg-primary text-on-primary rounded-xl text-xs ">Add Task</button>
+                      <button onClick={handleAddTask} className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl text-xs">Add Task</button>
                       <button onClick={() => setIsAddingTask(false)} className="px-4 h-10 rounded-xl border border-border text-muted-foreground text-xs ">Cancel</button>
                     </div>
                   </div>
@@ -541,7 +539,7 @@ export default function TimePage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
                       className={cn(
-                        "flex items-center gap-4 p-5 hover:bg-muted-medium/30 transition-all group",
+                        "flex items-center gap-4 p-5 hover:bg-surface-container/50 transition-all group",
                         task.is_completed && 'opacity-40'
                       )}
                     >
@@ -552,7 +550,7 @@ export default function TimePage() {
                         className={cn(
                           "w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
                           task.is_completed
-                            ? 'bg-tertiary-fixed-dim border-tertiary-fixed-dim text-foreground'
+                            ? 'bg-tertiary border-tertiary text-white'
                             : 'border-border hover:border-primary'
                         )}
                       >

@@ -98,7 +98,7 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         {(rec.items || []).map((item, i) => (
-          <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-muted-medium/50 border border-border">
+          <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-surface-container border border-border">
             <span className="text-lg leading-none">{ITEM_TYPE_ICON[item.type] || '👔'}</span>
             <div className="min-w-0">
               <p className="text-xs  text-foreground truncate">{item.name}</p>

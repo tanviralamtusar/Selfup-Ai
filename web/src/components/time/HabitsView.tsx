@@ -348,7 +348,7 @@ export function HabitsView() {
         </div>
       ) : habits.length === 0 ? (
         <div className="py-24 text-center space-y-6 bg-card border border-border rounded-xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
           <Sparkles size={48} className="text-muted-foreground mx-auto" />
           <div className="space-y-2">
             <h3 className="text-muted-foreground   text-sm">No Habits Found</h3>

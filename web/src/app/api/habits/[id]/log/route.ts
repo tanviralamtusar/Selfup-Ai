@@ -26,6 +26,8 @@ export async function POST(
 
   const { id: habitId } = await params
   const db = getDb(req)
+  const body = await req.json().catch(() => ({}))
+  const notes: string | undefined = typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim() : undefined
 
   // Fetch the habit
   const { data: habit, error: fetchErr } = await db
@@ -69,9 +71,11 @@ export async function POST(
 
   // Also log in habit_logs for historical tracking
   const today = new Date().toISOString().split('T')[0]
+  const logRow: Record<string, unknown> = { habit_id: habitId, user_id: user.id, completed_at: today }
+  if (notes) logRow.notes = notes
   await db
     .from('habit_logs')
-    .insert({ habit_id: habitId, user_id: user.id, completed_at: today })
+    .insert(logRow)
     .then(() => {}) // ignore if logs table has issues
 
   // Award XP — idempotent via xp_transactions

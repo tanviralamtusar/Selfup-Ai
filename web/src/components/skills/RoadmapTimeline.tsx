@@ -2,9 +2,25 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Circle, Clock, Info, ExternalLink, Play, ChevronDown, Loader2, Sparkles, AlertCircle } from 'lucide-react'
+import { 
+  CheckCircle2, Circle, Clock, ChevronDown, ChevronRight,
+  Loader2, Sparkles, AlertCircle, Trophy, Layers, BookOpen,
+  FileQuestion
+} from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { cn } from '@/lib/utils'
+import { TopicCard } from './TopicCard'
+
+interface Topic {
+  id: string
+  title: string
+  type: 'theory' | 'practical' | 'project' | 'quiz'
+  estimated_minutes: number
+  xp_reward: number
+  is_completed: boolean
+  order_index: number
+  topic_resources?: { id: string; url: string; title: string }[]
+}
 
 interface Milestone {
   id: string
@@ -12,39 +28,58 @@ interface Milestone {
   description: string
   order_index: number
   estimated_hours: number
+  xp_reward: number
   is_completed: boolean
+  skill_topics?: Topic[]
+  milestone_tests?: { id: string; title: string; passing_score_pct: number }[]
+}
+
+interface Phase {
+  id: string
+  phase_number: number
+  phase_name: string
+  estimated_weeks: number
+  xp_bonus: number
+  status: string
+  skill_milestones?: Milestone[]
 }
 
 interface RoadmapTimelineProps {
+  skillId: string
   skillName: string
-  milestones: Milestone[]
-  onToggleMilestone: (id: string, isCompleted: boolean) => void
-  isLoading?: string | null // ID of milestone being toggled
-  roadmapStatus: 'not_started' | 'pending' | 'processing' | 'completed' | 'failed'
-  roadmapError: string | null
+  roadmap: {
+    id: string
+    title: string
+    goal: string
+    difficulty: string
+    plan_type: string
+    daily_study_minutes: number
+    status: string
+    skill_phases?: Phase[]
+  } | null
+  progress?: { completed: number; total: number; percentage: number }
+  roadmapStatus: string
+  onCompleteMilestone: (milestoneId: string) => void
+  onCompleteTopic: (topicId: string) => void
+  onStartTest: (testId: string) => void
 }
 
-export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLoading, roadmapStatus, roadmapError }: RoadmapTimelineProps) {
+export function RoadmapTimeline({ 
+  skillId, skillName, roadmap, progress, roadmapStatus,
+  onCompleteMilestone, onCompleteTopic, onStartTest
+}: RoadmapTimelineProps) {
   const { session } = useAuthStore()
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [resources, setResources] = useState<Record<string, any[]>>({})
+  const [expandedPhase, setExpandedPhase] = useState<string | null>(null)
+  const [expandedMilestone, setExpandedMilestone] = useState<string | null>(null)
   const [isFetchingResources, setIsFetchingResources] = useState<string | null>(null)
+  const [topicResources, setTopicResources] = useState<Record<string, any[]>>({})
 
-  const handleFetchResources = async (e: React.MouseEvent, milestone: Milestone) => {
-    e.stopPropagation() // prevent bubbling if we click a button
-    
-    // Toggle expand/collapse
-    if (expandedId === milestone.id) {
-      setExpandedId(null)
-      return
-    }
-    
-    setExpandedId(milestone.id)
+  const isGenerating = roadmapStatus === 'pending' || roadmapStatus === 'processing'
+  const isFailed = roadmapStatus === 'failed'
 
-    // If we already have resources for this milestone, don't refetch
-    if (resources[milestone.id] && resources[milestone.id].length > 0) return
-
-    setIsFetchingResources(milestone.id)
+  const handleFindResource = async (topicId: string, topicTitle: string) => {
+    if (topicResources[topicId]) return
+    setIsFetchingResources(topicId)
     try {
       const res = await fetch('/api/youtube/search', {
         method: 'POST',
@@ -52,48 +87,55 @@ export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLo
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        // We use the skill name to provide context (e.g. "Python: Variables" instead of just "Variables")
-        body: JSON.stringify({ query: `${skillName} ${milestone.title}` })
+        body: JSON.stringify({ query: `${skillName} ${topicTitle}` })
       })
-
       if (res.ok) {
         const data = await res.json()
-        setResources(prev => ({ ...prev, [milestone.id]: data }))
+        setTopicResources(prev => ({ ...prev, [topicId]: data }))
       }
     } catch (err) {
-      console.error('Failed to fetch resources:', err)
+      console.error('[RoadmapTimeline] Resource fetch failed:', err)
     } finally {
       setIsFetchingResources(null)
     }
   }
 
-  const isGenerating = roadmapStatus === 'pending' || roadmapStatus === 'processing'
-  const isFailed = roadmapStatus === 'failed'
-  const error = roadmapError
+  // Auto-expand first incomplete phase
+  const autoExpandPhase = () => {
+    if (!roadmap?.skill_phases) return null
+    const firstIncomplete = roadmap.skill_phases.find(p => 
+      p.skill_milestones?.some(m => !m.is_completed)
+    )
+    return firstIncomplete?.id || roadmap.skill_phases[0]?.id || null
+  }
+
+  // Set initial expanded state
+  if (expandedPhase === null && roadmap?.skill_phases?.length) {
+    const autoId = autoExpandPhase()
+    if (autoId) setExpandedPhase(autoId)
+  }
 
   if (isGenerating) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6 bg-slate-950/20 rounded-3xl border border-blue-500/10 backdrop-blur-md">
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6 bg-background/20 rounded-xl border border-border ">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full border-4 border-blue-500/10 border-t-blue-400 animate-spin" />
+          <div className="w-20 h-20 rounded-full border-4 border-border border-t-primary animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <Sparkles className="text-blue-400 animate-pulse" size={24} />
+            <Sparkles className="text-primary animate-pulse" size={24} />
           </div>
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-black font-headline tracking-[0.3em] italic text-blue-100 uppercase">
-            {roadmapStatus === 'pending' ? 'Queuing Architect...' : 'System is Architecting...'}
+          <h3 className="text-xl  font-headline   text-foreground">
+            Building Roadmap...
           </h3>
-          <p className="text-xs text-blue-400/60 max-w-[280px] font-bold italic tracking-widest uppercase">
-            {roadmapStatus === 'pending' 
-              ? `Waiting for System to begin mapping your journey for ${skillName}.` 
-              : `Analyzing millions of data points to create your personalized ${skillName} roadmap.`}
+          <p className="text-xs text-primary/60 max-w-[280px] font-medium ">
+            AI is crafting your personalized {skillName} learning path.
           </p>
         </div>
         <div className="flex gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:-0.3s]" />
-          <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:-0.15s]" />
-          <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
         </div>
       </div>
     )
@@ -101,190 +143,290 @@ export function RoadmapTimeline({ skillName, milestones, onToggleMilestone, isLo
 
   if (isFailed) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6 bg-slate-950/20 rounded-3xl border border-red-500/20 backdrop-blur-md">
-        <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6 bg-background/20 rounded-xl border border-red-500/20 ">
+        <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 border border-red-500/20">
           <AlertCircle size={40} />
         </div>
         <div className="space-y-2">
-          <h3 className="text-xl font-black font-headline tracking-[0.3em] italic text-red-400 uppercase">Architectural Error</h3>
-          <p className="text-xs text-red-400/60 max-w-[280px] font-bold italic tracking-widest uppercase">
-            {error || "System encountered an unexpected turbulence while mapping your path."}
+          <h3 className="text-xl  font-headline   text-red-400">Generation Error</h3>
+          <p className="text-xs text-red-400/60 max-w-[280px] font-medium ">
+            Something went wrong while building your roadmap. Please try again.
           </p>
         </div>
         <button 
           onClick={() => window.location.reload()}
-          className="h-12 px-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] italic border border-red-500/30 transition-all"
+          className="h-12 px-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl  text-[10px]   border border-red-500/30 transition-all"
         >
-          Retry Blueprinting
+          Retry
         </button>
       </div>
     )
   }
 
-  if (milestones.length === 0) {
+  if (!roadmap || !roadmap.skill_phases || roadmap.skill_phases.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
-        <div className="w-16 h-16 rounded-3xl bg-surface-container-high flex items-center justify-center text-on-surface-variant/40 mb-2">
+        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary/40 mb-2 border border-border">
           <Sparkles size={32} />
         </div>
         <div className="space-y-1">
-          <h3 className="text-sm font-black uppercase tracking-widest text-on-surface-variant/60">No Roadmap Found</h3>
-          <p className="text-xs text-on-surface-variant/40 max-w-[200px]">This mastery hasn't been architected yet.</p>
+          <h3 className="text-sm  text-primary/60">No Roadmap Found</h3>
+          <p className="text-xs text-primary/40 max-w-[200px]">Start the Scholar interview in Chat to generate one.</p>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="relative space-y-8 pl-10 pr-4 py-4">
-      {/* Connector Line */}
-      <div className="absolute left-[19px] top-8 bottom-8 w-[2px] bg-blue-500/10" />
+  const phases = roadmap.skill_phases
 
-      {milestones.map((milestone, idx) => {
-        const isNext = !milestone.is_completed && (idx === 0 || milestones[idx - 1].is_completed)
-        const isLocked = !milestone.is_completed && idx > 0 && !milestones[idx - 1].is_completed
-        const isUpdating = isLoading === milestone.id
+  return (
+    <div className="space-y-3 p-4">
+      {/* Roadmap Header */}
+      <div className="px-2 pb-4 border-b border-border mb-2">
+        <h3 className="text-xs    text-foreground mb-1">{roadmap.title}</h3>
+        <p className="text-[10px] text-primary/40 ">{roadmap.goal}</p>
+        {progress && (
+          <div className="mt-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[9px]    text-primary/40">Overall Progress</span>
+              <span className="text-sm   text-primary">{progress.percentage}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress.percentage}%` }}
+                transition={{ duration: 1 }}
+                className="h-full bg-primary rounded-full"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Phases */}
+      {phases.map((phase, phaseIdx) => {
+        const phaseMilestones = phase.skill_milestones || []
+        const phaseCompleted = phaseMilestones.filter(m => m.is_completed).length
+        const phaseTotal = phaseMilestones.length
+        const phaseProgress = phaseTotal > 0 ? Math.round((phaseCompleted / phaseTotal) * 100) : 0
+        const isExpanded = expandedPhase === phase.id
+        const isPhaseComplete = phaseCompleted === phaseTotal && phaseTotal > 0
 
         return (
           <motion.div
-            key={milestone.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className={cn(
-              "relative group transition-all duration-500",
-              isLocked && "opacity-40 grayscale"
-            )}
+            key={phase.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: phaseIdx * 0.1 }}
+            className="rounded-xl border border-border overflow-hidden"
           >
-            {/* Status Icon / Node */}
-            <div className="absolute -left-[31px] top-1">
-              <motion.button
-                whileHover={!isLocked ? { scale: 1.2 } : {}}
-                whileTap={!isLocked ? { scale: 0.9 } : {}}
-                onClick={() => !isLocked && onToggleMilestone(milestone.id, !milestone.is_completed)}
-                disabled={isLocked || isUpdating}
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 border-2 relative z-10",
-                  milestone.is_completed
-                    ? "bg-cyan-500 border-cyan-500 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.5)]"
-                    : isNext
-                      ? "bg-slate-950 border-blue-400 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)] system-text-glow"
-                      : "bg-slate-950 border-blue-500/20 text-blue-500/20"
-                )}
-              >
-                {isUpdating ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                ) : milestone.is_completed ? (
-                  <CheckCircle2 size={18} />
-                ) : (
-                  <Circle size={10} fill={isNext ? "currentColor" : "transparent"} />
-                )}
-              </motion.button>
-              
-              {/* Highlight Line Segment (Animated) */}
-              <AnimatePresence>
-                {milestone.is_completed && idx < milestones.length - 1 && (
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: "100%" }}
-                    className="absolute top-10 left-[19px] w-[2px] bg-green-500 z-0 origin-top"
-                  />
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Phase Header */}
+            <button
+              onClick={() => setExpandedPhase(isExpanded ? null : phase.id)}
+              className={cn(
+                "w-full flex items-center gap-3 p-4 transition-all text-left",
+                isPhaseComplete 
+                  ? "bg-[#5db8a0]/5 hover:bg-[#5db8a0]/10" 
+                  : "bg-background/30 hover:bg-muted"
+              )}
+            >
+              <div className={cn(
+                "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border text-xs  ",
+                isPhaseComplete
+                  ? "bg-[#5db8a0]/15 text-[#5db8a0] border-border"
+                  : "bg-primary/10 text-primary border-border"
+              )}>
+                {isPhaseComplete ? <CheckCircle2 size={16} /> : phase.phase_number}
+              </div>
 
-            {/* Content Card */}
-            <div className={cn(
-               "p-5 rounded-2xl border transition-all duration-500 backdrop-blur-md relative overflow-hidden",
-               milestone.is_completed 
-                 ? "bg-cyan-500/5 border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.1)]"
-                 : isNext
-                   ? "bg-blue-500/5 border-blue-400/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
-                   : "bg-slate-950/20 border-blue-500/10"
-            )}>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none" />
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1 relative z-10">
-                  <h4 className={cn(
-                    "font-bold text-sm tracking-widest uppercase italic",
-                    milestone.is_completed ? "text-cyan-400 system-text-glow" : "text-blue-100"
-                  )}>
-                    {milestone.title}
-                  </h4>
-                  <p className="text-xs text-blue-100/60 leading-relaxed max-w-sm font-medium">
-                    {milestone.description}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] italic text-blue-400/40 relative z-10">
-                  <Clock size={10} />
-                  <span>~{milestone.estimated_hours}h Depth</span>
+              <div className="flex-1 min-w-0">
+                <h4 className={cn(
+                  "text-xs    truncate",
+                  isPhaseComplete ? "text-[#5db8a0]" : "text-foreground"
+                )}>
+                  {phase.phase_name}
+                </h4>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <span className="text-[8px]    text-primary/30">
+                    {phaseCompleted}/{phaseTotal} milestones
+                  </span>
+                  <span className="text-[8px]    text-primary/30">
+                    ~{phase.estimated_weeks}w
+                  </span>
+                  {phase.xp_bonus > 0 && (
+                    <span className="text-[8px]    text-[#5db8a0]/40">
+                      +{phase.xp_bonus} XP bonus
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Find Resources Action */}
-              <div className="mt-4 pt-4 border-t border-outline-variant/10">
-                <button
-                  onClick={(e) => handleFetchResources(e, milestone)}
-                  disabled={isLocked}
-                  className={cn(
-                    "flex items-center gap-2 text-xs font-black uppercase tracking-widest transition-colors",
-                    isLocked ? "opacity-50 cursor-not-allowed text-on-surface-variant/40" : "text-primary hover:text-primary/80"
-                  )}
+              {/* Mini progress */}
+              <div className="w-12 shrink-0">
+                <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                  <div className={cn("h-full rounded-full transition-all", isPhaseComplete ? "bg-[#5db8a0]" : "bg-primary")} style={{ width: `${phaseProgress}%` }} />
+                </div>
+              </div>
+
+              <ChevronDown size={16} className={cn(
+                "text-primary/30 transition-transform shrink-0",
+                isExpanded && "rotate-180"
+              )} />
+            </button>
+
+            {/* Phase Content (Milestones) */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
                 >
-                  <Play size={14} />
-                  <span>Find Resources</span>
-                  <ChevronDown size={14} className={cn(
-                    "ml-auto transition-transform duration-300", 
-                    expandedId === milestone.id ? "rotate-180" : ""
-                  )} />
-                </button>
+                  <div className="px-4 pb-4 space-y-3">
+                    {phaseMilestones.map((milestone, mIdx) => {
+                      const isNext = !milestone.is_completed && (mIdx === 0 || phaseMilestones[mIdx - 1].is_completed)
+                      const isLocked = !milestone.is_completed && mIdx > 0 && !phaseMilestones[mIdx - 1].is_completed
+                      const isMilestoneExpanded = expandedMilestone === milestone.id
+                      const topics = milestone.skill_topics || []
+                      const topicsCompleted = topics.filter(t => t.is_completed).length
+                      const allTopicsDone = topicsCompleted === topics.length && topics.length > 0
 
-                {/* Sub-content dropdown: YouTube Links */}
-                <AnimatePresence>
-                  {expandedId === milestone.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden mt-4 space-y-3"
-                    >
-                      {isFetchingResources === milestone.id ? (
-                        <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium py-2">
-                           <Loader2 size={14} className="animate-spin text-primary" />
-                           Running deep search...
-                        </div>
-                      ) : resources[milestone.id] && resources[milestone.id].length > 0 ? (
-                        <div className="grid grid-cols-1 gap-3">
-                          {resources[milestone.id].map((vid: any) => (
-                            <a 
-                              key={vid.id}
-                              href={vid.link} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="group flex gap-3 p-2 rounded-xl hover:bg-surface-container border border-transparent hover:border-outline-variant/10 transition-all"
-                            >
-                              <div className="w-24 h-16 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 relative">
-                                <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <ExternalLink size={16} className="text-white" />
+                      return (
+                        <div
+                          key={milestone.id}
+                          className={cn(
+                            "rounded-xl border transition-all",
+                            milestone.is_completed
+                              ? "bg-[#5db8a0]/5 border-border"
+                              : isNext
+                                ? "bg-muted border-border "
+                                : "bg-background/20 border-border",
+                            isLocked && "opacity-40"
+                          )}
+                        >
+                          {/* Milestone Header */}
+                          <button
+                            onClick={() => !isLocked && setExpandedMilestone(isMilestoneExpanded ? null : milestone.id)}
+                            disabled={isLocked}
+                            className="w-full flex items-center gap-3 p-3 text-left"
+                          >
+                            {/* Status circle */}
+                            <div className={cn(
+                              "w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                              milestone.is_completed
+                                ? "bg-[#5db8a0] border-[#5db8a0]/50 text-foreground"
+                                : isNext
+                                  ? "border-primary/30 text-primary "
+                                  : "border-border text-muted-foreground"
+                            )}>
+                              {milestone.is_completed ? (
+                                <CheckCircle2 size={14} />
+                              ) : (
+                                <Circle size={8} fill={isNext ? "currentColor" : "transparent"} />
+                              )}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h5 className={cn(
+                                "text-[11px] font-medium truncate",
+                                milestone.is_completed ? "text-[#5db8a0]" : "text-foreground"
+                              )}>
+                                {milestone.title}
+                              </h5>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[8px]    text-primary/30">
+                                  <Clock size={8} className="inline mr-0.5 -mt-0.5" /> ~{milestone.estimated_hours}h
+                                </span>
+                                {topics.length > 0 && (
+                                  <span className="text-[8px]    text-primary/30">
+                                    <Layers size={8} className="inline mr-0.5 -mt-0.5" /> {topicsCompleted}/{topics.length} topics
+                                  </span>
+                                )}
+                                {milestone.milestone_tests && milestone.milestone_tests.length > 0 && (
+                                  <span className="text-[8px]    text-purple-400/50">
+                                    <FileQuestion size={8} className="inline mr-0.5 -mt-0.5" /> Test
+                                  </span>
+                                )}
+                                <span className="text-[8px]    text-[#5db8a0]/40">
+                                  +{milestone.xp_reward} XP
+                                </span>
+                              </div>
+                            </div>
+
+                            {!isLocked && (
+                              <ChevronRight size={14} className={cn(
+                                "text-primary/20 transition-transform shrink-0",
+                                isMilestoneExpanded && "rotate-90"
+                              )} />
+                            )}
+                          </button>
+
+                          {/* Milestone Content (Topics) */}
+                          <AnimatePresence>
+                            {isMilestoneExpanded && !isLocked && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-3 pb-3 space-y-1.5 border-t border-border pt-3">
+                                  {milestone.description && (
+                                    <p className="text-[10px] text-foreground/50  mb-2 leading-relaxed">{milestone.description}</p>
+                                  )}
+
+                                  {topics.length > 0 ? (
+                                    topics.map(topic => (
+                                      <TopicCard
+                                        key={topic.id}
+                                        topic={topic}
+                                        isLocked={false}
+                                        onComplete={onCompleteTopic}
+                                        onFindResource={handleFindResource}
+                                      />
+                                    ))
+                                  ) : (
+                                    <p className="text-[10px] text-primary/30  py-2 text-center">No topics in this milestone</p>
+                                  )}
+
+                                  {/* Actions */}
+                                  <div className="flex items-center gap-2 pt-2 border-t border-border mt-2">
+                                    {/* Complete milestone button */}
+                                    {!milestone.is_completed && allTopicsDone && (
+                                      <button
+                                        onClick={() => onCompleteMilestone(milestone.id)}
+                                        className="flex-1 py-2 bg-[#5db8a0]/10 hover:bg-[#5db8a0]/15 text-[#5db8a0] rounded-lg  text-[9px]   border border-border transition-all"
+                                      >
+                                        <Trophy size={10} className="inline mr-1 -mt-0.5" />
+                                        Complete Milestone (+{milestone.xp_reward} XP)
+                                      </button>
+                                    )}
+
+                                    {/* Test button */}
+                                    {milestone.milestone_tests && milestone.milestone_tests.length > 0 && (
+                                      <button
+                                        onClick={() => onStartTest(milestone.milestone_tests![0].id)}
+                                        className="flex-1 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg  text-[9px]   border border-purple-500/20 transition-all"
+                                      >
+                                        <FileQuestion size={10} className="inline mr-1 -mt-0.5" />
+                                        Take Assessment
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="py-1">
-                                <h5 className="text-xs font-bold text-on-surface line-clamp-2 leading-tight group-hover:text-primary transition-colors">{vid.title}</h5>
-                                <p className="text-[10px] text-on-surface-variant mt-1 font-medium">{vid.channelTitle}</p>
-                              </div>
-                            </a>
-                          ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                      ) : resources[milestone.id] ? (
-                         <div className="text-xs text-on-surface-variant/40 italic py-2">No videos found.</div>
-                      ) : null}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+                      )
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )
       })}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { QuestService } from '@/lib/quest.service'
+import { TaskEconomyService } from '@/lib/task-economy.service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -70,22 +71,20 @@ export async function PATCH(req: NextRequest) {
 
   let xpEarned = 0
   if (action === 'complete') {
-    // XP = 1 per minute + 5 completion bonus
+    // XP = 1 per minute + 5 completion bonus, deduped via xp_transactions
     xpEarned = (session?.duration_minutes || 25) + 5
-    const { data: profile } = await db.from('user_profiles').select('xp').eq('id', user.id).single()
-    if (profile) {
-      await db.from('user_profiles').update({ xp: profile.xp + xpEarned }).eq('id', user.id)
-    }
-
-    // Also mark linked todo as in-progress (not completed yet)
-    if (session?.task_id) {
-      // Pomodoro completion doesn't auto-complete the todo,
-      // but we could track progress via metadata if needed
-    }
+    const economy = new TaskEconomyService(db)
+    await economy.awardXp(
+      user.id,
+      'todo',
+      `pomodoro:${session_id}`,
+      xpEarned,
+      `Completed pomodoro session (${session?.duration_minutes || 25}m)`
+    )
 
     // Track quest progress for pomodoro-related quests
     const questService = new QuestService(db)
-    const questUpdates = await questService.checkAndUpdateProgress(user.id, 'pomodoro', 1)
+    await questService.checkAndUpdateProgress(user.id, 'pomodoro', 1)
   }
 
   return NextResponse.json({ session, xpEarned })
@@ -106,7 +105,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error: dbErr } = await db
     .from('pomodoro_sessions')
-    .select('*, todo:todos(title)')
+    .select('*, task:todos(title)')
     .eq('user_id', user.id)
     .gte('started_at', todayStart.toISOString())
     .order('started_at', { ascending: false })

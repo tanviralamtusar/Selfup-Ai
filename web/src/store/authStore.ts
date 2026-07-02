@@ -45,6 +45,8 @@ export interface UserProfile {
   streak_skills: number
   streak_habits: number
   streak_tasks: number
+  ai_chat_model?: string;
+  ai_background_model?: string;
 }
 
 interface AuthState {

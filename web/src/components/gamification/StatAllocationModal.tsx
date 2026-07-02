@@ -44,7 +44,7 @@ export function StatAllocationModal({ isOpen, onClose, statPoints, attributes, o
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/80"
           />
 
           <motion.div
@@ -56,23 +56,23 @@ export function StatAllocationModal({ isOpen, onClose, statPoints, attributes, o
             <SystemFrame title="Attribute Allocation" className="w-full">
               <button
                 onClick={onClose}
-                className="absolute top-0 right-0 p-2 rounded-full hover:bg-blue-500/10 text-blue-400 transition-colors z-50"
+                className="absolute top-0 right-0 p-2 rounded-full hover:bg-primary/10 text-primary transition-colors z-50"
               >
                 <X size={20} />
               </button>
 
               <div className="text-center mb-6">
                 <div className="inline-flex flex-col items-center justify-center gap-1 mb-4">
-                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                    <span className="text-2xl font-black text-amber-300">+{statPoints}</span>
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/10">
+                    <span className="text-2xl  text-amber-300">+{statPoints}</span>
                   </div>
-                  <p className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em]">Points Available</p>
+                  <p className="text-[10px]  text-amber-400 ">Points Available</p>
                 </div>
                 
-                <h2 className="text-xl font-black text-blue-50 uppercase tracking-[0.1em] system-text-glow">
+                <h2 className="text-xl  text-foreground ">
                   Enhance Your Vessel
                 </h2>
-                <p className="text-xs text-blue-200/60 mt-2 font-medium">
+                <p className="text-xs text-foreground/80/60 mt-2 font-medium">
                   Allocate stat points to permanently increase your base attributes.
                 </p>
               </div>
@@ -83,18 +83,18 @@ export function StatAllocationModal({ isOpen, onClose, statPoints, attributes, o
                   const isMaxed = currentValue >= 50
                   
                   return (
-                    <div key={attr.key} className={cn("p-3 rounded-xl border flex items-center gap-4 bg-slate-900/50 transition-all", isMaxed ? "border-blue-500/10 opacity-60" : "border-blue-500/20 hover:border-blue-400/40")}>
+                    <div key={attr.key} className={cn("p-3 rounded-xl border flex items-center gap-4 bg-muted transition-all", isMaxed ? "border-border opacity-60" : "border-border hover:border-border")}>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className={cn("text-sm font-black uppercase tracking-wider", attr.color)}>
+                          <h3 className={cn("text-sm ", attr.color)}>
                             {attr.name}
                           </h3>
-                          <span className="px-1.5 py-0.5 rounded bg-slate-950 text-blue-100 text-[10px] font-bold border border-blue-500/20 tabular-nums">
+                          <span className="px-1.5 py-0.5 rounded bg-background text-foreground text-[10px] font-medium border border-border tabular-nums">
                             {currentValue} / 50
                           </span>
                         </div>
-                        <p className="text-[10px] text-blue-200/60 leading-snug">
-                          {attr.domain} &bull; <span className="text-blue-300/80">{attr.primaryBonus}</span>
+                        <p className="text-[10px] text-foreground/80/60 leading-snug">
+                          {attr.domain} &bull; <span className="text-primary/80/80">{attr.primaryBonus}</span>
                         </p>
                       </div>
                       
@@ -104,10 +104,10 @@ export function StatAllocationModal({ isOpen, onClose, statPoints, attributes, o
                         className={cn(
                           "shrink-0 w-10 h-10 rounded-lg flex items-center justify-center border transition-all",
                           isMaxed 
-                            ? "bg-slate-950 border-blue-500/10 text-blue-500/30 cursor-not-allowed" 
+                            ? "bg-background border-border text-muted-foreground cursor-not-allowed" 
                             : allocating === attr.key
                               ? "bg-amber-500/20 border-amber-500/50 text-amber-400 animate-pulse"
-                              : "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-amber-500/20 hover:border-amber-500/50 hover:text-amber-400 active:scale-90 shadow-[0_0_10px_rgba(59,130,246,0.1)]"
+                              : "bg-primary/10 border-border text-primary hover:bg-amber-500/20 hover:border-amber-500/50 hover:text-amber-400 active:scale-90 "
                         )}
                       >
                         {isMaxed ? <ShieldAlert size={16} /> : <Plus size={18} strokeWidth={3} />}

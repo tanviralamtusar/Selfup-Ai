@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from('workout_session_logs')
-    .select('*')
+    .select('*, workout_days(day_label)')
     .eq('user_id', user.id)
     .order('logged_date', { ascending: false });
 

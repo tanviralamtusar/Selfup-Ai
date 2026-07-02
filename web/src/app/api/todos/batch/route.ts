@@ -25,22 +25,25 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Updates must be an array' }, { status: 400 })
     }
 
-    // Use upsert to batch-update scheduling fields
-    const { data, error: dbErr } = await db
-      .from('todos')
-      .upsert(
-        updates.map((u: any) => ({
-          id: u.id,
-          user_id: user.id,
-          scheduled_start: u.scheduled_start,
-          scheduled_end: u.scheduled_end,
-        }))
+    // Update scheduling fields on existing rows only; upsert would create
+    // malformed rows if an ID doesn't match an existing todo.
+    const results = await Promise.all(
+      updates.map((u: any) =>
+        db
+          .from('todos')
+          .update({
+            scheduled_start: u.scheduled_start ?? null,
+            scheduled_end: u.scheduled_end ?? null,
+          })
+          .eq('id', u.id)
+          .eq('user_id', user.id)
       )
-      .select()
+    )
 
-    if (dbErr) throw dbErr
+    const firstError = results.find(r => r.error)?.error
+    if (firstError) throw firstError
 
-    return NextResponse.json({ success: true, count: data?.length })
+    return NextResponse.json({ success: true, count: updates.length })
   } catch (err: any) {
     console.error('Batch update error:', err)
     return NextResponse.json({ success: false, error: err.message }, { status: 500 })

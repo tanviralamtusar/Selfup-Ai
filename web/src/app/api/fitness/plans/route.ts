@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/api-auth';
 import { createClient } from '@supabase/supabase-js';
+import { deactivateExistingPlan } from '@/lib/fitness/planGenerator';
 
 export async function GET(request: NextRequest) {
   const { user, error: authError } = await verifyAuth(request);
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest) {
   // This endpoint might be used to save a drafted plan manually or to "activate" a generated plan.
   const body = await request.json();
   const { name, description, difficulty, goal, days_per_week, plan_type, session_duration_min, start_date, end_date, days } = body;
+
+  // Enforce one-active-plan rule before inserting
+  await deactivateExistingPlan(user.id, plan_type || 'ongoing', supabase);
 
   // Create the plan
   const { data: plan, error: planError } = await supabase

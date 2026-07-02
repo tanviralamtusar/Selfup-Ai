@@ -103,11 +103,11 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
       {/* Header */}
       <header className="p-4 border-b border-white/10 flex items-center justify-between bg-dark-surface">
         <div className="flex items-center gap-4">
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
             <X size={24} className="text-gray-400" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-white">{workoutDay.name}</h1>
+            <h1 className="text-xl font-medium text-primary-foreground">{workoutDay.name}</h1>
             <p className="text-sm text-gray-400">{workoutDay.muscle_groups.join(', ')}</p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
           <button 
             onClick={handleFinishSession}
             disabled={isFinishing}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-primary-foreground px-4 py-2 rounded-full font-medium transition-colors disabled:opacity-50"
           >
             {isFinishing ? 'Finishing...' : <><CheckCircle size={18} /> Finish Workout</>}
           </button>

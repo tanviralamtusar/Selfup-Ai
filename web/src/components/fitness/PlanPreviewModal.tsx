@@ -38,7 +38,7 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/60"
           onClick={onClose}
         />
         
@@ -46,35 +46,35 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-dark-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-2xl bg-dark-surface border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
-          <div className="p-6 border-b border-white/10 bg-gradient-to-br from-primary-900/40 to-transparent relative overflow-hidden">
+          <div className="p-6 border-b border-border bg-gradient-to-br from-primary/10 to-transparent relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Dumbbell size={120} />
             </div>
             
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-black/20 rounded-full">
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-foreground bg-black/20 rounded-full">
               <X size={20} />
             </button>
             
-            <div className="flex items-center gap-2 text-primary-400 font-medium mb-2 text-sm uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-primary-400 font-medium mb-2 text-sm">
               <Flame size={16} /> New Protocol Ready
             </div>
-            <h2 className="text-3xl font-bold text-white mb-2">{previewData.plan_meta?.name || 'Your Fitness Plan'}</h2>
+            <h2 className="text-3xl font-medium text-primary-foreground mb-2">{previewData.plan_meta?.name || 'Your Fitness Plan'}</h2>
             <p className="text-gray-400 max-w-md">{previewData.plan_meta?.description}</p>
             
             <div className="flex items-center gap-4 mt-6">
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
-                <Calendar size={16} className="text-blue-400" />
-                <span className="text-sm font-medium text-white">{previewData.plan_meta?.days_per_week || 3} Days/Week</span>
+                <Calendar size={16} className="text-primary" />
+                <span className="text-sm font-medium text-primary-foreground">{previewData.plan_meta?.days_per_week || 3} Days/Week</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
                 <Trophy size={16} className="text-yellow-400" />
-                <span className="text-sm font-medium text-white">~{previewData.total_xp_per_week || 0} XP/Week</span>
+                <span className="text-sm font-medium text-primary-foreground">~{previewData.total_xp_per_week || 0} XP/Week</span>
               </div>
               <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-lg border border-white/5">
-                <span className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded uppercase font-bold">
+                <span className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded font-medium">
                   -{previewData.coin_cost} AiC
                 </span>
               </div>
@@ -84,19 +84,19 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           {/* Body */}
           <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-black/20">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-primary-foreground mb-4 flex items-center gap-2">
                 <Calendar size={20} className="text-primary-400" /> Schedule Summary
               </h3>
               <div className="space-y-3">
                 {previewData.schedule_summary?.map((day: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-dark-bg rounded-lg flex flex-col items-center justify-center border border-white/10">
-                        <span className="text-xs text-gray-500 uppercase">{day.day.substring(0,3)}</span>
-                        <span className="text-sm font-bold text-white">{day.time || 'Any'}</span>
+                      <div className="w-12 h-12 bg-dark-bg rounded-lg flex flex-col items-center justify-center border border-border">
+                        <span className="text-xs text-gray-500">{day.day.substring(0,3)}</span>
+                        <span className="text-sm font-medium text-primary-foreground">{day.time || 'Any'}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-white capitalize">{day.label}</p>
+                        <p className="font-medium text-primary-foreground capitalize">{day.label}</p>
                         <p className="text-xs text-gray-400">Workout Day {idx + 1}</p>
                       </div>
                     </div>
@@ -116,17 +116,17 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-white/10 flex justify-end gap-3 bg-dark-surface">
+          <div className="p-6 border-t border-border flex justify-end gap-3 bg-dark-surface">
             <button 
               onClick={onClose}
-              className="px-6 py-2.5 rounded-xl font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="px-6 py-2.5 rounded-xl font-medium text-gray-400 hover:text-foreground hover:bg-muted transition-colors"
             >
               Review Later
             </button>
             <button 
               onClick={handleActivate}
               disabled={isActivating}
-              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-white bg-primary-600 hover:bg-primary-500 transition-colors shadow-lg shadow-primary-500/20 disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-primary-foreground bg-primary-600 hover:bg-primary-500 transition-colors shadow-lg shadow-primary-500/20 disabled:opacity-50"
             >
               {isActivating ? 'Activating...' : (
                 <>Accept & Inject <ChevronRight size={18} /></>

@@ -19,6 +19,7 @@ export type TaskType =
   | 'test_evaluation'
   | 'weekly_summary'
   | 'memory_extraction'
+  | 'task_generation';
 
 export interface GenerationParams {
   temperature: number
@@ -57,6 +58,11 @@ export const TASK_PARAMS: Record<TaskType, GenerationParams> = {
     topP: 0.80,
     maxOutputTokens: 512,
   },
+  task_generation: {
+    temperature: 0.5,
+    topP: 0.90,
+    maxOutputTokens: 4096,
+  },
 }
 
 // ─── AiCoin Costs ────────────────────────────────
@@ -69,6 +75,7 @@ export const AICOIN_COSTS: Record<string, number> = {
   skill_roadmap_open: 15,
   skill_roadmap_tests: 5, // add-on
   fitness_protocol: 25,
+  skills_protocol: 15,
   ad_hoc_test: 2,
   weekly_summary: 0,
   test_evaluation: 0,

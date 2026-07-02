@@ -18,21 +18,31 @@ export async function GET(req: NextRequest) {
       global: { headers: { Authorization: `Bearer ${token}` } }
     })
 
-    // Fetch skills and join status from milestones (basic logic)
+    // Fetch skills with roadmap + milestone stats; order roadmaps newest-first so [0] is the active one
     const { data: skills, error } = await authSupabase
       .from('skills')
       .select(`
         *,
         skill_roadmaps (
           id,
-          skill_milestones (
+          title,
+          status,
+          plan_type,
+          difficulty,
+          daily_study_minutes,
+          created_at,
+          skill_phases (
             id,
-            is_completed
+            skill_milestones (
+              id,
+              is_completed
+            )
           )
         )
       `)
       .eq('user_id', user.id)
       .is('is_active', true)
+      .eq('skill_roadmaps.status', 'active')
       .order('created_at', { ascending: false })
 
     if (error) throw error
@@ -40,13 +50,21 @@ export async function GET(req: NextRequest) {
     // Transform for the frontend
     const results = skills.map(skill => {
       const roadmap = skill.skill_roadmaps?.[0]
-      const milestones = roadmap?.skill_milestones || []
+      const milestones = roadmap?.skill_phases?.flatMap((p: any) => p.skill_milestones || []) || []
       const completed = milestones.filter((m: any) => m.is_completed).length
       const total = milestones.length
-      const progress = total > 0 ? (completed / total) * 100 : 0
+      const progress = total > 0 ? Math.round((completed / total) * 100) : 0
 
       return {
         ...skill,
+        activeRoadmap: roadmap ? {
+          id: roadmap.id,
+          title: roadmap.title,
+          status: roadmap.status,
+          plan_type: roadmap.plan_type,
+          difficulty: roadmap.difficulty,
+          daily_study_minutes: roadmap.daily_study_minutes,
+        } : null,
         milestoneStats: {
           completed,
           total,
@@ -55,7 +73,7 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    return NextResponse.json(results)
+    return NextResponse.json({ success: true, data: results })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
@@ -68,7 +86,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: authError || 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, category, generateRoadmap } = await req.json()
+    const body = await req.json()
+    const { name, category, interviewData } = body
     if (!name) return NextResponse.json({ error: 'Skill name is required' }, { status: 400 })
 
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
@@ -92,16 +111,31 @@ export async function POST(req: NextRequest) {
 
     if (skillError) throw skillError
 
-    // 2. If roadmap generation is requested, execute immediately (Queue removed)
-    if (generateRoadmap) {
-      await addAiTask({
-        userId: user.id,
-        type: 'roadmap',
-        payload: { skillId: skill.id, skillName: name, category }
-      })
+    // 2. If interview data provided, generate roadmap synchronously.
+    // On failure, rollback the skill row so no orphaned skills are left.
+    if (interviewData) {
+      try {
+        await addAiTask({
+          userId: user.id,
+          type: 'skill_roadmap',
+          payload: {
+            skillId: skill.id,
+            interviewData: {
+              skill_name: name,
+              ...interviewData
+            }
+          }
+        })
+      } catch (taskError: any) {
+        await authSupabase.from('skills').delete().eq('id', skill.id)
+        return NextResponse.json(
+          { error: `Roadmap generation failed: ${taskError.message}` },
+          { status: 500 }
+        )
+      }
     }
 
-    return NextResponse.json(skill)
+    return NextResponse.json({ success: true, data: skill })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

@@ -38,13 +38,13 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
   }
 
   return (
-    <div className="bg-surface-container-low border border-outline-variant/10 rounded-3xl p-6 relative overflow-hidden">
+    <div className="bg-muted border border-border rounded-3xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 blur-3xl rounded-full pointer-events-none" />
 
       <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
-          <h3 className="text-xl font-black text-on-surface">Outfit Log</h3>
-          <p className="text-xs text-on-surface-variant/60">Track your daily fits</p>
+          <h3 className="text-xl  text-foreground">Outfit Log</h3>
+          <p className="text-xs text-muted-foreground">Track your daily fits</p>
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
@@ -61,7 +61,7 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
             placeholder="What are you wearing today?"
             value={desc}
             onChange={e => setDesc(e.target.value)}
-            className="w-full bg-surface-container border border-outline-variant/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500/50"
+            className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500/50"
           />
           <div className="flex items-center gap-4">
             <input
@@ -69,7 +69,7 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
               placeholder="Tags (comma separated)..."
               value={tags}
               onChange={e => setTags(e.target.value)}
-              className="flex-1 bg-surface-container border border-outline-variant/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500/50"
+              className="flex-1 bg-muted border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500/50"
             />
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map(r => (
@@ -78,7 +78,7 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
                   onClick={() => setRating(r)}
                   className={cn(
                     "p-2 rounded-lg transition-all",
-                    rating >= r ? "text-amber-400" : "text-on-surface-variant/20 hover:text-amber-400/50"
+                    rating >= r ? "text-amber-400" : "text-muted-foreground hover:text-amber-400/50"
                   )}
                 >
                   <Star size={18} fill={rating >= r ? "currentColor" : "none"} />
@@ -89,7 +89,7 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
           <button
             onClick={handleSubmit}
             disabled={loading || !desc.trim()}
-            className="w-full py-3 rounded-xl bg-pink-500 text-white font-black text-xs uppercase tracking-widest hover:bg-pink-400 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+            className="w-full py-3 rounded-xl bg-pink-500 text-primary-foreground  text-xs hover:bg-pink-400 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
             Log Outfit
@@ -99,24 +99,24 @@ export function OutfitLogCard({ logs, onAdd }: { logs: OutfitLog[], onAdd: (v: a
 
       <div className="space-y-3">
         {logs.length === 0 ? (
-          <p className="text-sm text-center py-6 text-on-surface-variant/40">No outfits logged yet.</p>
+          <p className="text-sm text-center py-6 text-muted-foreground">No outfits logged yet.</p>
         ) : (
           logs.map(log => (
-            <div key={log.id} className="p-4 rounded-2xl bg-surface-container border border-outline-variant/5">
+            <div key={log.id} className="p-4 rounded-xl bg-muted border border-border">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-bold text-on-surface">{log.description}</p>
+                <p className="text-sm font-medium text-foreground">{log.description}</p>
                 <div className="flex gap-0.5">
                   {[...Array(log.rating)].map((_, i) => <Star key={i} size={12} className="text-amber-400" fill="currentColor" />)}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mb-2">
                 {log.tags.map(t => (
-                  <span key={t} className="text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-pink-500/10 text-pink-400 rounded-md">
+                  <span key={t} className="text-[10px]  px-2 py-1 bg-pink-500/10 text-pink-400 rounded-md">
                     {t}
                   </span>
                 ))}
               </div>
-              <p className="text-[10px] uppercase font-bold text-on-surface-variant/40">
+              <p className="text-[10px] font-medium text-muted-foreground">
                 {new Date(log.log_date).toLocaleDateString()}
               </p>
             </div>

@@ -17,42 +17,39 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md italic">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80  ">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 40 }}
-          className="w-full max-w-md bg-slate-950 border border-blue-500/50 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(59,130,246,0.2)] flex flex-col relative"
+          className="w-full max-w-md bg-background border border-border rounded-xl overflow-hidden  flex flex-col relative"
         >
-          {/* Scanline Effect */}
-          <div className="absolute inset-0 scanline pointer-events-none opacity-10" />
-          
           {/* Header */}
-          <div className="p-8 pb-6 border-b border-blue-500/20 flex justify-between items-center relative overflow-hidden bg-blue-500/5">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                <Sparkles size={24} />
+          <div className="p-6 border-b border-border flex justify-between items-center bg-muted">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                <Sparkles size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-black uppercase tracking-[0.3em] text-blue-50 system-text-glow">Fitness Planner</h2>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-blue-500/60 font-black">Create Your Plan</p>
+                <h2 className="text-base font-semibold text-foreground">Fitness Planner</h2>
+                <p className="text-xs text-muted-foreground">Create Your Plan</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={onClose}
               disabled={isGenerating}
-              className="w-10 h-10 rounded-lg bg-blue-500/5 hover:bg-rose-500/20 border border-blue-500/20 hover:border-rose-500/40 flex items-center justify-center text-blue-500/40 hover:text-rose-400 transition-all relative z-10"
+              className="w-8 h-8 rounded-md bg-muted hover:bg-destructive/10 border border-border hover:border-destructive/30 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
             >
-              <X size={20} />
+              <X size={16} />
             </button>
           </div>
 
           {/* Body */}
-          <div className="p-8 space-y-10 flex-1 overflow-y-auto relative z-10 bg-gradient-to-b from-blue-500/[0.02] to-transparent">
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
             {/* Goal Selection */}
             <div className="space-y-6">
-              <label className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">
-                <Activity size={14} className="text-blue-400" /> Choose Your Goal
+              <label className="flex items-center gap-3 text-[10px]   text-muted-foreground">
+                <Activity size={14} className="text-primary" /> Choose Your Goal
               </label>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -67,10 +64,10 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                     key={g.id}
                     onClick={() => setGoal(g.id)}
                     disabled={isGenerating}
-                    className={`p-4 rounded-lg border text-[11px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group ${
+                    className={`p-4 rounded-lg border text-[11px]   transition-all relative overflow-hidden group ${
                       goal === g.id 
-                        ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]' 
-                        : 'bg-slate-950/60 border-blue-500/10 text-blue-500/40 hover:border-blue-500/40 hover:bg-blue-900/10 hover:text-blue-200 shadow-inner'
+                        ? 'bg-primary text-primary-foreground border-primary/30 ' 
+                        : 'bg-card border-border text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground/80 shadow-inner'
                     }`}
                   >
                     {g.label}
@@ -82,8 +79,8 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
 
             {/* Days per week */}
             <div className="space-y-6">
-              <label className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40">
-                <CalendarDays size={14} className="text-blue-400" /> Days Per Week
+              <label className="flex items-center gap-3 text-[10px]   text-muted-foreground">
+                <CalendarDays size={14} className="text-primary" /> Days Per Week
               </label>
               <div className="flex gap-3">
                 {[2, 3, 4, 5, 6].map(d => (
@@ -91,10 +88,10 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
                     key={d}
                     onClick={() => setDays(d)}
                     disabled={isGenerating}
-                    className={`flex-1 py-4 rounded-lg border text-[11px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group ${
+                    className={`flex-1 py-4 rounded-lg border text-[11px]   transition-all relative overflow-hidden group ${
                       days === d
-                        ? 'bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                        : 'bg-slate-950/60 border-blue-500/10 text-blue-500/40 hover:border-blue-500/40 hover:bg-blue-900/10 hover:text-blue-200'
+                        ? 'bg-primary text-primary-foreground border-primary/30 '
+                        : 'bg-card border-border text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground/80'
                     }`}
                   >
                     {d} DAYS
@@ -106,11 +103,11 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
           </div>
 
           {/* Footer */}
-          <div className="p-8 border-t border-blue-500/20 bg-slate-950/80 backdrop-blur-sm relative z-10">
+          <div className="p-8 border-t border-border bg-background/95 relative z-10">
             <button
               onClick={() => onSubmit(goal, days)}
               disabled={isGenerating}
-              className="w-full py-5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-[0.4em] text-[11px] transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(59,130,246,0.4)] border border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
+              className="w-full py-5 rounded-lg bg-primary hover:bg-primary text-primary-foreground   text-[11px] transition-all flex items-center justify-center gap-3  border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
             >
               {isGenerating ? (
                 <>
@@ -126,9 +123,6 @@ export function AiPlanGeneratorModal({ isOpen, onClose, onSubmit, isGenerating }
             </button>
           </div>
 
-          {/* Decorative Corners */}
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500/40" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500/40" />
         </motion.div>
       </div>
     </AnimatePresence>

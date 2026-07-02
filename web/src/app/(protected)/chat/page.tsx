@@ -41,6 +41,7 @@ export default function ChatPage() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [selectedModel, setSelectedModel] = useState(AI_MODELS[0].id)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch initial conversations
   useEffect(() => {
@@ -110,6 +111,9 @@ export default function ChatPage() {
     setMessages(prev => [...prev, newUserMessage])
     setIsLoading(true)
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -117,11 +121,14 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel })
+        body: JSON.stringify({ content, conversationId: activeConversationId, modelName: selectedModel }),
+        signal: controller.signal
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const responseJson = await res.json()
+      if (!res.ok) throw new Error(responseJson.error || responseJson.message)
+
+      const data = responseJson.data
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.content, metadata: data.metadata }])
       
@@ -133,9 +140,28 @@ export default function ChatPage() {
       if (profile) setProfile({ ...profile, ai_coins: data.coinsRemaining })
 
     } catch (err: any) {
-      toast.error(err.message)
+      if (err.name === 'AbortError') {
+        toast.info('Response stopped')
+      } else {
+        toast.error(err.message)
+      }
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+  }
+
+  const handleRetry = () => {
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg && lastMsg.role === 'user') {
+      setMessages(prev => prev.slice(0, -1))
+      handleSendMessage(lastMsg.content)
     }
   }
 
@@ -172,7 +198,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex bg-background h-full w-full overflow-hidden">
-      {/* ─── Sidebar ─── */}
+      {/* ─── Sidebar: desktop inline ─── */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
@@ -180,9 +206,9 @@ export default function ChatPage() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="hidden md:block"
+            className="hidden md:block flex-shrink-0"
           >
-            <ChatSidebar 
+            <ChatSidebar
               conversations={conversations}
               activeId={activeConversationId}
               onSelect={setActiveConversationId}
@@ -194,14 +220,47 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
+      {/* ─── Sidebar: mobile overlay ─── */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/50"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <motion.div
+              key="mobile-sidebar"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50"
+            >
+              <ChatSidebar
+                conversations={conversations}
+                activeId={activeConversationId}
+                onSelect={(id) => { setActiveConversationId(id); setIsSidebarOpen(false) }}
+                onNew={() => { startNewChat(); setIsSidebarOpen(false) }}
+                onDelete={handleDeleteChat}
+                aiName={profile?.ai_persona_name || 'SYSTEM'}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ─── Main Chat Area ─── */}
-      <div className="flex-1 flex flex-col relative bg-surface-container-low/20">
+      <div className="flex-1 flex flex-col relative bg-muted/20">
         {/* Chat Header */}
-        <div className="flex items-center justify-between p-4 border-b border-outline-variant/10 glass z-10">
+        <div className="flex items-center justify-between p-4 border-b border-border glass z-10">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant"
+              className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
             >
               <Menu size={20} />
             </button>
@@ -210,35 +269,24 @@ export default function ChatPage() {
                 "transition-colors",
                 profile?.ai_persona_style === 'strict' ? 'text-red-500' :
                 profile?.ai_persona_style === 'motivational' ? 'text-secondary' :
-                profile?.ai_persona_style === 'neutral' ? 'text-blue-400' : 'text-primary'
+                profile?.ai_persona_style === 'neutral' ? 'text-primary' : 'text-primary'
               )} />
-              <span className="font-headline font-bold text-lg">{profile?.ai_persona_name || 'SYSTEM'}</span>
+              <span className="font-headline font-medium text-lg">{profile?.ai_persona_name || 'SYSTEM'}</span>
               <div className={cn(
-                "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border transition-colors",
+                "px-2 py-0.5 rounded-full text-[8px]  border transition-colors",
                 profile?.ai_persona_style === 'strict' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
                 profile?.ai_persona_style === 'motivational' ? 'bg-secondary/10 text-secondary border-secondary/20' :
-                profile?.ai_persona_style === 'neutral' ? 'bg-blue-400/10 text-blue-400 border-blue-400/20' : 'bg-primary/10 text-primary border-primary/20'
+                profile?.ai_persona_style === 'neutral' ? 'bg-primary/10 text-primary border-border' : 'bg-primary/10 text-primary border-primary/20'
               )}>AI Companion</div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-             <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="hidden md:block bg-surface-container-highest/50 border border-outline-variant/10 rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant outline-none focus:border-primary/50 transition-colors cursor-pointer"
-             >
-                {AI_MODELS.map(m => (
-                  <option key={m.id} value={m.id} className="bg-surface-container-highest text-on-surface">
-                    {m.name}
-                  </option>
-                ))}
-             </select>
-             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-highest/50 border border-outline-variant/10">
+             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted border border-border">
                 <img src="/coin.png" alt="AiCoins" className="w-3.5 h-3.5 object-contain" />
-                <span className="text-sm font-black text-on-surface">{profile?.ai_coins || 0}</span>
+                <span className="text-sm  text-foreground">{profile?.ai_coins || 0}</span>
              </div>
-             <button onClick={startNewChat} className="p-2 hover:bg-surface-container-highest rounded-lg text-on-surface-variant">
+             <button onClick={startNewChat} className="p-2 hover:bg-muted rounded-lg text-muted-foreground">
                <Plus size={20} />
              </button>
           </div>
@@ -249,18 +297,24 @@ export default function ChatPage() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto px-6 py-8 space-y-2 scrollbar-thin scrollbar-thumb-primary/20"
         >
-          {messages.map((msg, i) => (
-            <ChatMessage 
-              key={i} 
-              id={msg.id}
-              role={msg.role} 
-              content={msg.content} 
-              metadata={msg.metadata}
-              name={profile?.ai_persona_name || 'SYSTEM'}
-              style={profile?.ai_persona_style}
-              isLast={i === messages.length - 1 && isLoading && msg.role === 'assistant'}
-            />
-          ))}
+          {messages.map((msg, i) => {
+            const isLastMessage = i === messages.length - 1
+            const isFailed = isLastMessage && !isLoading && msg.role === 'user'
+
+            return (
+              <ChatMessage 
+                key={i} 
+                id={msg.id}
+                role={msg.role} 
+                content={msg.content} 
+                metadata={msg.metadata}
+                name={profile?.ai_persona_name || 'SYSTEM'}
+                style={profile?.ai_persona_style}
+                isLast={isLastMessage && isLoading && msg.role === 'assistant'}
+                onRetry={isFailed ? handleRetry : undefined}
+              />
+            )
+          })}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <ChatMessage 
               role="assistant" 
@@ -277,8 +331,12 @@ export default function ChatPage() {
           <div className="max-w-4xl mx-auto">
             <ChatInput 
               onSend={handleSendMessage} 
+              onStop={handleStop}
               isDisabled={isLoading} 
               aiName={profile?.ai_persona_name || 'SYSTEM'} 
+              models={AI_MODELS}
+              selectedModel={selectedModel}
+              onModelChange={setSelectedModel}
             />
           </div>
         </div>

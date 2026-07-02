@@ -13,6 +13,12 @@ import { BadgeService } from './badge.service'
 import { getUserModelConfig, AICOIN_COSTS } from './model-config'
 import { embedAndStoreMessage, extractAndSaveMemory } from './ai-memory'
 import type { FitnessInterviewData } from '@/types/fitness'
+import type { SkillInterviewData, GeneratedTestQuestion } from '@/types/skills'
+import { generateSkillRoadmap, saveRoadmapToDb } from './skills/roadmapGenerator'
+import { generateTest } from './skills/testGenerator'
+import { evaluateTest } from './skills/testEvaluator'
+import { checkAvailability as checkSkillAvailability } from './skills/calendarCheck'
+import { injectSkillDailies } from './skills/dailyInjector'
 
 const AI_QUEUE_NAME = 'ai-tasks'
 
@@ -191,8 +197,16 @@ export async function executeAiTask(data: AiJobData) {
         await badgeService.awardBadge(userId, 'first_protocol');
 
         result = `Success: Generated and activated fitness plan ${generatedPlan.plan_meta.name}.`;
-        
-        break;
+
+        // Return plan object so the client can show the preview modal
+        if (queueId) {
+          await supabase
+            .from('ai_queue')
+            .update({ status: 'done', processed_at: new Date().toISOString() })
+            .eq('id', queueId)
+          queueId = null // prevent double-update below
+        }
+        return { plan: generatedPlan, planId }
       }
       case 'fitness_adaptation_check': {
         const { planId } = payload;
@@ -299,16 +313,119 @@ export async function executeAiTask(data: AiJobData) {
       }
 
       // ─── V3 Job Types ────────────────────────────
+
+      case 'skill_roadmap': {
+        const interviewData = payload.interviewData as SkillInterviewData;
+        const skillId = payload.skillId;
+        
+        let conflicts: string[] = [];
+        if (interviewData.preferred_time && interviewData.preferred_study_days.length > 0) {
+          const { conflicts: c } = await checkSkillAvailability(
+            userId, 
+            interviewData.preferred_study_days[0],
+            interviewData.preferred_time,
+            Math.round((interviewData.time_commitment_hours_per_week * 60) / interviewData.preferred_study_days.length),
+            supabase
+          );
+          conflicts = c.map(x => `${x.title} at ${x.time}`);
+        }
+
+        const roadmapData = await generateSkillRoadmap(userId, interviewData, supabase);
+        
+        const { roadmapId } = await saveRoadmapToDb(
+            userId, 
+            roadmapData, 
+            skillId, 
+            AICOIN_COSTS.skills_protocol, 
+            supabase
+        );
+
+        await injectSkillDailies(
+            userId, 
+            roadmapId, 
+            roadmapData, 
+            interviewData.preferred_study_days, 
+            interviewData.preferred_time, 
+            supabase
+        );
+
+        const gamification = new GamificationService(supabase);
+        await gamification.addCoins(userId, -AICOIN_COSTS.skills_protocol, 'Skill Roadmap Generation');
+
+        result = `Success: Generated skill roadmap ${roadmapData.title}.`;
+        break;
+      }
+
+      case 'skill_test_generate': {
+        const testId = payload.testId;
+        await generateTest(userId, testId, supabase);
+        result = `Success: Generated questions for test ${testId}.`;
+        break;
+      }
+
+      case 'skill_test_evaluate': {
+        const { testId, attemptId, questions, userAnswers } = payload;
+        await evaluateTest(userId, testId, attemptId, questions, userAnswers, supabase);
+        result = `Success: Evaluated test attempt ${attemptId}.`;
+        break;
+      }
+      
+      case 'evaluate_test_answer': {
+        const { testId, attemptId, questionId, student_answer, max_points } = payload;
+        // Wrap single question for the evaluator
+        const questions = [{
+          id: questionId,
+          question_text: payload.question,
+          type: payload.question_type,
+          points: max_points,
+          evaluation_rubric: payload.evaluation_criteria,
+          correct_answer: payload.expected_output
+        }] as any[];
+        
+        const userAnswers = { [questionId]: student_answer };
+        
+        await evaluateTest(userId, testId, attemptId, questions, userAnswers, supabase);
+        result = `Success: Evaluated answer for question ${questionId}.`;
+        break;
+      }
+
+      case 'proactive_alert_check': {
+        const { runProactiveChecks } = await import('./ai/proactive-alerts');
+        const alertResult = await runProactiveChecks(userId, supabase);
+        result = `Success: Ran proactive checks. Alerts triggered: ${alertResult.triggeredCount}`;
+        break;
+      }
+
       case 'weekly_summary_generate': {
-        const summaryPrompt = `Generate a weekly performance summary for a self-improvement app user.
-Period: ${payload.period_start} to ${payload.period_end}.
-Return a JSON object with these keys:
+        const { fetchWeeklyStats } = await import('./ai/summary-stats');
+        const stats = await fetchWeeklyStats(userId, supabase, payload.period_start, payload.period_end);
+
+        const summaryPrompt = `You are the Pathfinder AI. Generate a weekly performance narrative for the user.
+Stats for the week (${stats.period_start} to ${stats.period_end}):
+- XP Earned: ${stats.xp_earned}
+- Level: ${stats.level_reached}
+- Streak: ${stats.streak_current} days
+- Habit Completion: ${stats.completion_rate}%
+- Fitness: ${stats.fitness.sessions} sessions
+- Skills: ${stats.skills.hours_studied} hours studied
+- Quests Completed: ${stats.gamification.quests_completed}
+- AiCoins Earned: ${stats.gamification.coins_earned}
+
+Task:
+Generate a structured performance summary. 
+Include:
+1. Highlights: 3 bullet points of notable wins.
+2. AI Observation: A coaching note analyzing the stats (e.g. "Great consistency on habits, but skill study is lagging").
+3. Focus Recommendation: What the user should prioritize next week.
+
+Return strictly as a JSON object:
 {
-  "highlights": ["top win 1", "top win 2", "top win 3"],
-  "ai_observation": "2-3 sentence coaching note",
-  "focus_recommendation": "what to focus on next week"
+  "highlights": ["win 1", "win 2", "win 3"],
+  "ai_observation": "note text",
+  "focus_recommendation": "recommendation text",
+  "stats_snapshot": { ...stats... }
 }
-Strictly valid JSON. No markdown.`
+No markdown.`
 
         const rawResponse = await generateResponse(summaryPrompt, [], undefined, modelConfig.background_model, 'weekly_summary')
         if (!rawResponse) throw new Error('No response from AI')
@@ -318,13 +435,13 @@ Strictly valid JSON. No markdown.`
         try {
           summaryContent = JSON.parse(cleanJson)
         } catch {
-          summaryContent = { highlights: [], ai_observation: rawResponse, focus_recommendation: '' }
+          summaryContent = { highlights: [], ai_observation: rawResponse, focus_recommendation: '', stats_snapshot: stats }
         }
 
         await supabase.from('ai_weekly_summaries').insert({
           user_id: userId,
-          period_start: payload.period_start,
-          period_end: payload.period_end,
+          period_start: stats.period_start,
+          period_end: stats.period_end,
           content: summaryContent,
         })
 

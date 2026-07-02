@@ -180,8 +180,7 @@ export async function savePlanToDb(
       .single()
 
     if (dayError) {
-      console.error('[PlanGenerator] Day creation failed:', dayError)
-      continue
+      throw new Error(`Day ${day.day_number} creation failed: ${dayError.message}`)
     }
 
     if (day.is_rest_day || !day.exercises?.length) continue
@@ -295,22 +294,13 @@ async function saveDietPlan(
   return dietRow.id
 }
 
-// ── Exercise Upsert (conflict-free) ──
+// ── Exercise Upsert (race-safe) ──
 
 async function upsertExercise(
   exerciseData: { name: string; technique_note?: string; video_query?: string },
   supabase: SupabaseClient
 ): Promise<string | null> {
-  // Check if exercise already exists
-  const { data: existing } = await supabase
-    .from('exercises')
-    .select('id')
-    .ilike('name', exerciseData.name)
-    .maybeSingle()
-
-  if (existing) return existing.id
-
-  // Insert new exercise into global library
+  // Try insert first; on unique constraint violation fall back to select.
   const { data: newExercise, error } = await supabase
     .from('exercises')
     .insert({
@@ -319,15 +309,23 @@ async function upsertExercise(
       difficulty: 'intermediate',
       technique_note: exerciseData.technique_note || null,
     })
-    .select()
+    .select('id')
     .single()
 
-  if (error) {
-    console.error('[PlanGenerator] Exercise upsert failed:', exerciseData.name, error)
-    return null
+  if (!error) return newExercise.id
+
+  // 23505 = unique_violation — exercise already exists (concurrent insert or prior run)
+  if (error.code === '23505') {
+    const { data: existing } = await supabase
+      .from('exercises')
+      .select('id')
+      .ilike('name', exerciseData.name)
+      .maybeSingle()
+    return existing?.id ?? null
   }
 
-  return newExercise.id
+  console.error('[PlanGenerator] Exercise upsert failed:', exerciseData.name, error)
+  return null
 }
 
 // ── One-Active-Plan Rule ──

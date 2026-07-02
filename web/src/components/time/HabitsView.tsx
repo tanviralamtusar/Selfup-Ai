@@ -40,7 +40,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   skills:  'text-primary bg-primary/10 border-primary/20',
   time:    'text-secondary bg-secondary/10 border-secondary/20',
   style:   'text-pink-400 bg-pink-400/10 border-pink-400/20',
-  general: 'text-on-surface-variant/60 bg-surface-container-highest/30 border-outline-variant/10',
+  general: 'text-muted-foreground bg-muted border-border',
 }
 
 export function HabitsView() {
@@ -185,25 +185,20 @@ export function HabitsView() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto italic">
+    <div className="space-y-8 max-w-5xl mx-auto ">
       {/* Header Panel */}
-      <div className="relative overflow-hidden bg-slate-950/40 border border-blue-500/20 p-8 rounded-xl group">
-        {/* Decorative Corner */}
-        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-blue-500/20" />
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-blue-500/20" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+      <div className="relative overflow-hidden bg-card border border-border p-8 rounded-xl group">
 
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
           <div className="space-y-2 text-center md:text-left">
-            <h2 className="text-2xl font-black uppercase tracking-[0.4em] text-blue-50 flex items-center justify-center md:justify-start gap-3 system-text-glow">
-              <Zap className="text-blue-400 animate-pulse" size={24} /> Daily Habits
+            <h2 className="text-2xl   text-foreground flex items-center justify-center md:justify-start gap-3">
+              <Zap className="text-primary animate-pulse" size={24} /> Daily Habits
             </h2>
-            <p className="text-[10px] text-blue-500/60 font-black uppercase tracking-[0.2em]">Build consistency and level up your life.</p>
+            <p className="text-[10px] text-muted-foreground  ">Build consistency and level up your life.</p>
           </div>
           <button
             onClick={() => setIsAddingHabit(prev => !prev)}
-            className="flex items-center gap-3 px-8 py-3 rounded bg-blue-500/10 text-blue-400 text-xs font-black uppercase tracking-[0.3em] border border-blue-500/40 hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_20px_rgba(59,130,246,0.1)] active:scale-95 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]"
+            className="flex items-center gap-3 px-8 py-3 rounded bg-primary/10 text-primary text-xs   border border-border hover:bg-primary hover:text-foreground transition-all  active:scale-95 group-hover:"
           >
             <Plus size={18} /> New Habit
           </button>
@@ -224,15 +219,15 @@ export function HabitsView() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-slate-900/60 border border-blue-500/30 rounded-xl p-8 space-y-8 relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
+            <div className="bg-muted border border-border rounded-xl p-8 space-y-8 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-muted blur-[100px] pointer-events-none" />
                
               <div className="flex items-center justify-between relative z-10">
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/80">New Habit</h3>
+                <h3 className="text-xs   text-primary/80">New Habit</h3>
                 <button 
                   onClick={handleAiSuggest}
                   disabled={isSuggesting}
-                  className="flex items-center gap-2 px-4 py-2 rounded bg-blue-500/5 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] border border-blue-500/20 hover:bg-blue-500/10 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 rounded bg-muted text-primary text-[10px]   border border-border hover:bg-primary/10 transition-all disabled:opacity-50"
                 >
                   {isSuggesting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} 
                   {isSuggesting ? 'Analyzing Data...' : 'System Suggestion'}
@@ -242,39 +237,39 @@ export function HabitsView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Habit Name</label>
+                    <label className="text-[10px]   text-muted-foreground pl-1">Habit Name</label>
                     <input
                       autoFocus
                       placeholder="e.g. CORE STRENGTHENING"
                       value={newHabit.title}
                       onChange={e => setNewHabit(p => ({ ...p, title: e.target.value }))}
-                      className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 placeholder:text-blue-900/40 focus:outline-none focus:border-blue-500/60 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] font-black tracking-widest text-sm transition-all"
+                      className="w-full h-14 px-5 rounded bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border focus:  text-sm transition-all"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Description</label>
+                    <label className="text-[10px]   text-muted-foreground pl-1">Description</label>
                     <input
                       placeholder="Define the objective..."
                       value={newHabit.description}
                       onChange={e => setNewHabit(p => ({ ...p, description: e.target.value }))}
-                      className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-100 placeholder:text-blue-900/40 focus:outline-none focus:border-blue-500/40 text-sm font-bold transition-all"
+                      className="w-full h-14 px-5 rounded bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border text-sm font-medium transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Category</label>
-                    <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded border border-blue-500/10">
+                    <label className="text-[10px]   text-muted-foreground pl-1">Category</label>
+                    <div className="grid grid-cols-3 gap-2 bg-background p-1.5 rounded border border-border">
                       {['fitness', 'skills', 'time', 'style', 'general'].map(p => (
                         <button
                           key={p}
                           onClick={() => setNewHabit(h => ({ ...h, category: p }))}
                           className={cn(
-                            "px-3 py-2.5 rounded text-[9px] font-black uppercase tracking-[0.2em] transition-all border",
+                            "px-3 py-2.5 rounded text-[9px]   transition-all border",
                             newHabit.category === p 
-                              ? "bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
-                              : "text-blue-500/40 border-transparent hover:text-blue-400 hover:border-blue-500/20"
+                              ? "bg-primary text-primary-foreground border-primary/30 " 
+                              : "text-muted-foreground border-transparent hover:text-primary hover:border-border"
                           )}
                         >{p}</button>
                       ))}
@@ -283,11 +278,11 @@ export function HabitsView() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Repeat</label>
+                      <label className="text-[10px]   text-muted-foreground pl-1">Repeat</label>
                       <select 
                         value={newHabit.reset_type}
                         onChange={e => setNewHabit(h => ({ ...h, reset_type: e.target.value }))}
-                        className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 text-xs font-black uppercase tracking-widest focus:outline-none cursor-pointer appearance-none hover:border-blue-500/40 transition-all"
+                        className="w-full h-14 px-5 rounded bg-background border border-border text-foreground text-xs  focus:outline-none cursor-pointer appearance-none hover:border-border transition-all"
                       >
                         <option value="daily">Daily Loop</option>
                         <option value="weekly">Weekly Cycle</option>
@@ -295,12 +290,12 @@ export function HabitsView() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Reminder</label>
+                      <label className="text-[10px]   text-muted-foreground pl-1">Reminder</label>
                       <input
                         type="time"
                         value={newHabit.reminder_time}
                         onChange={e => setNewHabit(p => ({ ...p, reminder_time: e.target.value }))}
-                        className="w-full h-14 px-5 rounded bg-slate-950 border border-blue-500/20 text-blue-50 text-xs font-black focus:outline-none hover:border-blue-500/40 transition-all"
+                        className="w-full h-14 px-5 rounded bg-background border border-border text-foreground text-xs  focus:outline-none hover:border-border transition-all"
                       />
                     </div>
                   </div>
@@ -308,7 +303,7 @@ export function HabitsView() {
               </div>
 
               <div className="space-y-3 relative z-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/40 pl-1">Days</label>
+                <label className="text-[10px]   text-muted-foreground pl-1">Days</label>
                 <div className="flex justify-between gap-2">
                   {DAYS_OF_WEEK.map((day) => {
                     const isActive = newHabit.frequency_days.includes(day.id)
@@ -323,10 +318,10 @@ export function HabitsView() {
                           setNewHabit({ ...newHabit, frequency_days: newDays })
                         }}
                         className={cn(
-                          "flex-1 h-12 rounded border text-[11px] font-black uppercase tracking-widest transition-all",
+                          "flex-1 h-12 rounded border text-[11px]  transition-all",
                           isActive
-                            ? "bg-blue-500 text-white border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-                            : "bg-slate-950 border-blue-500/20 text-blue-500/40 hover:border-blue-500/60"
+                            ? "bg-primary text-primary-foreground border-primary/30 "
+                            : "bg-background border-border text-muted-foreground hover:border-border"
                         )}
                       >
                         {day.label}
@@ -336,9 +331,9 @@ export function HabitsView() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 pt-8 border-t border-blue-500/10 relative z-10">
-                <button onClick={() => setIsAddingHabit(false)} className="px-6 py-3 rounded text-blue-500/60 text-[10px] font-black uppercase tracking-[0.3em] hover:text-blue-300 transition-colors">Abort</button>
-                <button onClick={handleAddHabit} className="px-10 py-3 bg-blue-600 text-white rounded text-[10px] font-black uppercase tracking-[0.3em] hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all active:scale-95 border border-blue-400">Create Habit</button>
+              <div className="flex justify-end gap-4 pt-8 border-t border-border relative z-10">
+                <button onClick={() => setIsAddingHabit(false)} className="px-6 py-3 rounded text-muted-foreground text-[10px]   hover:text-primary/80 transition-colors">Abort</button>
+                <button onClick={handleAddHabit} className="px-10 py-3 bg-primary text-primary-foreground rounded text-[10px]   hover:bg-primary hover: transition-all active:scale-95 border border-primary/30">Create Habit</button>
               </div>
             </div>
           </motion.div>
@@ -348,16 +343,16 @@ export function HabitsView() {
       {/* Habits Grid */}
       {isLoading ? (
         <div className="py-24 flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-blue-500" size={40} />
-          <p className="text-[10px] font-black text-blue-500/40 uppercase tracking-[0.4em] animate-pulse">Syncing System Data...</p>
+          <Loader2 className="animate-spin text-primary" size={40} />
+          <p className="text-[10px]  text-muted-foreground  animate-pulse">Syncing System Data...</p>
         </div>
       ) : habits.length === 0 ? (
-        <div className="py-24 text-center space-y-6 bg-slate-950/40 border border-blue-500/10 rounded-xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-blue-500/[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-          <Sparkles size={48} className="text-blue-500/20 mx-auto" />
+        <div className="py-24 text-center space-y-6 bg-card border border-border rounded-xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
+          <Sparkles size={48} className="text-muted-foreground mx-auto" />
           <div className="space-y-2">
-            <h3 className="text-blue-500/40 font-black uppercase tracking-[0.4em] text-sm">No Habits Found</h3>
-            <p className="text-blue-500/40 text-[9px] uppercase tracking-widest max-w-xs mx-auto">Create your first daily habit to start growing.</p>
+            <h3 className="text-muted-foreground   text-sm">No Habits Found</h3>
+            <p className="text-muted-foreground text-[9px] max-w-xs mx-auto">Create your first daily habit to start growing.</p>
           </div>
         </div>
       ) : (
@@ -372,33 +367,33 @@ export function HabitsView() {
                 className={cn(
                   "relative p-8 rounded-xl transition-all duration-500 overflow-hidden border group",
                   habit.is_completed_this_cycle 
-                    ? "bg-blue-500/5 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                    : "bg-slate-950 border-blue-500/20 hover:border-blue-500/60 hover:shadow-[0_0_25px_rgba(59,130,246,0.05)]"
+                    ? "bg-muted border-border " 
+                    : "bg-background border-border hover:border-border hover:"
                 )}
               >
                 {/* Scanline Effect */}
                 <div className="scanline opacity-20 pointer-events-none" />
 
                 {/* Decoration */}
-                <div className="absolute top-0 right-0 w-2 h-16 bg-blue-500/10 group-hover:bg-blue-500/30 transition-colors" />
+                <div className="absolute top-0 right-0 w-2 h-16 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
 
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <span className={cn(
-                    "px-3 py-1 rounded text-[8px] font-black uppercase tracking-[0.2em] border",
-                    habit.category === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' :
-                    'text-blue-400 bg-blue-500/5 border-blue-500/20'
+                    "px-3 py-1 rounded text-[8px]   border",
+                    habit.category === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-destructive/20' :
+                    'text-primary bg-muted border-border'
                   )}>
                     {habit.category}
                   </span>
                   <div className="flex items-center gap-3">
                     {habit.current_streak > 2 && (
-                      <span className="flex items-center gap-1 text-[10px] font-black text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded border border-blue-400/40 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                      <span className="flex items-center gap-1 text-[10px]  text-primary/80 bg-primary/15 px-2.5 py-1 rounded border border-border ">
                         <Zap size={10} fill="currentColor" /> {habit.current_streak}
                       </span>
                     )}
                     <button 
                       onClick={() => handleDeleteHabit(habit.id)}
-                      className="p-1.5 rounded text-blue-500/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
+                      className="p-1.5 rounded text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-destructive/20"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -407,13 +402,13 @@ export function HabitsView() {
 
                 <div className="space-y-2 mb-8 relative z-10">
                   <h3 className={cn(
-                    "text-lg font-black uppercase tracking-widest transition-all",
-                    habit.is_completed_this_cycle ? "text-blue-400/40 line-through italic" : "text-blue-50 system-text-glow"
+                    "text-lg  transition-all",
+                    habit.is_completed_this_cycle ? "text-primary/40 line-through " : "text-foreground"
                   )}>
                     {habit.title}
                   </h3>
                   {habit.description && (
-                    <p className="text-[10px] text-blue-500/60 uppercase tracking-wide truncate">{habit.description}</p>
+                    <p className="text-[10px] text-muted-foreground tracking-wide truncate">{habit.description}</p>
                   )}
                   
                   {/* Calendar Grid */}
@@ -430,10 +425,10 @@ export function HabitsView() {
                   onClick={() => handleCompleteHabit(habit)}
                   disabled={habit.is_completed_this_cycle}
                   className={cn(
-                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative z-10 border shadow-inner",
+                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px]   transition-all relative z-10 border shadow-inner",
                     habit.is_completed_this_cycle
-                      ? "bg-blue-500/20 text-blue-400/60 border-blue-500/30 cursor-not-allowed opacity-50"
-                      : "bg-slate-900 text-blue-400 border-blue-500/40 hover:bg-blue-500 hover:text-white hover:border-blue-300 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] active:scale-95"
+                      ? "bg-primary/15 text-primary/60 border-border cursor-not-allowed opacity-50"
+                      : "bg-muted text-primary border-border hover:bg-primary hover:text-foreground hover:border-primary/30 hover: active:scale-95"
                   )}
                 >
                   {habit.is_completed_this_cycle ? (

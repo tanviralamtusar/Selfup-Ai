@@ -215,9 +215,9 @@ export default function OnboardingPage() {
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto transition-all duration-500 border-2 bg-background relative z-10
                   ${isCompleted 
-                      ? 'border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]' 
+                      ? 'border-green-500 text-green-500' 
                       : isActive 
-                        ? 'border-accent text-accent shadow-[0_0_15px_rgba(124,106,240,0.4)]' 
+                        ? 'border-accent text-accent' 
                         : 'border-border text-foreground-muted'}
                 `}>
                   {/* Tint overlay to keep line from passing behind */}
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
               {currentStep === 'about' && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold font-display mb-2">Tell us about yourself</h2>
+                    <h2 className="text-2xl font-medium font-display mb-2">Tell us about yourself</h2>
                     <p className="text-foreground-secondary">This helps System personalize your experience.</p>
                   </div>
                   
@@ -320,7 +320,7 @@ export default function OnboardingPage() {
               {currentStep === 'goals' && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold font-display mb-2">What are your main goals?</h2>
+                    <h2 className="text-2xl font-medium font-display mb-2">What are your main goals?</h2>
                     <p className="text-foreground-secondary">Select all that apply.</p>
                   </div>
                   
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
                           onClick={() => toggleGoal(goal.id)}
                           className={`p-4 rounded-sm border text-left transition-all ${
                             isSelected 
-                              ? 'border-green-500 bg-green-500/10 border-2 shadow-[0_0_15px_rgba(34,197,94,0.25)]' 
+                              ? 'border-green-500 bg-green-500/10 border-2' 
                               : 'border-border bg-input hover:border-border-strong hover:bg-elevated'
                           }`}
                         >
@@ -364,14 +364,14 @@ export default function OnboardingPage() {
                         <Brain className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-xl font-bold font-display">System is analyzing your goals...</h3>
+                        <h3 className="text-xl font-medium font-display">System is analyzing your goals...</h3>
                         <p className="text-sm text-foreground-secondary max-w-[280px]">Architecting your personalized follow-up experience.</p>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div>
-                        <h2 className="text-2xl font-bold font-display mb-2">Deep Dive</h2>
+                        <h2 className="text-2xl font-medium font-display mb-2">Deep Dive</h2>
                         <p className="text-foreground-secondary">System wants to understand your context better.</p>
                       </div>
                       
@@ -403,11 +403,11 @@ export default function OnboardingPage() {
               {currentStep === 'persona' && (
                 <>
                   <div>
-                    <h2 className="text-2xl font-bold font-display mb-2">Configure Your AI</h2>
+                    <h2 className="text-2xl font-medium font-display mb-2">Configure Your AI</h2>
                     <p className="text-foreground-secondary mb-6">Give your coach a name and choose their personality.</p>
                     
                     <div className="mb-8">
-                      <label className="block text-xs font-black uppercase tracking-widest text-foreground-secondary mb-2">Companion Name</label>
+                      <label className="block text-xs  text-foreground-secondary mb-2">Companion Name</label>
                       <input
                         type="text"
                         value={formData.personaName}
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
                   </div>
                   
                   <div className="space-y-3">
-                    <p className="text-xs font-black uppercase tracking-widest text-foreground-secondary mb-2">Interaction Style</p>
+                    <p className="text-xs  text-foreground-secondary mb-2">Interaction Style</p>
                     {[
                       { id: 'friendly', title: 'Balanced & Supportive', desc: 'Friendly, helpful, and logical. The standard coach.' },
                       { id: 'strict', title: 'Tough Love (Drill Sergeant)', desc: 'Direct, pushing you hard, no excuses accepted.' },
@@ -433,7 +433,7 @@ export default function OnboardingPage() {
                           onClick={() => setFormData({ ...formData, persona: persona.id })}
                           className={`w-full p-4 rounded-sm border text-left flex gap-4 transition-all duration-300 ${
                             isSelected 
-                              ? 'border-pink-500 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.35)] scale-[1.02]' 
+                              ? 'border-pink-500 bg-pink-500/10 scale-[1.02]' 
                               : 'border-border bg-input hover:border-border-strong hover:bg-elevated'
                           }`}
                         >
@@ -465,7 +465,7 @@ export default function OnboardingPage() {
                     <CheckCircle2 size={48} className="text-accent" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold font-display mb-2">All Set!</h2>
+                    <h2 className="text-3xl font-medium font-display mb-2">All Set!</h2>
                     <p className="text-foreground-secondary max-w-sm mx-auto">
                       System is analyzing your goals and preparing your first roadmap. Let's get to work!
                     </p>
@@ -491,7 +491,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleComplete}
                 disabled={isLoading}
-                className="px-8 py-2.5 rounded-sm font-semibold text-white transition-all btn-press disabled:opacity-50 flex items-center gap-2"
+                className="px-8 py-2.5 rounded-sm font-semibold text-primary-foreground transition-all btn-press disabled:opacity-50 flex items-center gap-2"
                 style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--xp-blue))' }}
               >
                 {isLoading ? (
@@ -503,7 +503,7 @@ export default function OnboardingPage() {
             ) : (
               <button
                 onClick={handleNext}
-                className="px-8 py-2.5 bg-white text-black rounded-sm font-semibold hover:bg-slate-200 transition-colors btn-press flex items-center gap-2"
+                className="px-8 py-2.5 bg-white text-black rounded-sm font-semibold hover:bg-muted transition-colors btn-press flex items-center gap-2"
               >
                 Next <ChevronRight size={18} />
               </button>

@@ -9,14 +9,14 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Dumbbell, 
-  Brain, 
-  Clock, 
-  Palette, 
-  Sword, 
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Dumbbell,
+  Brain,
+  Clock,
+  Palette,
+  Sword,
   Users,
   Bell,
   LogOut,
@@ -51,7 +51,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const getIsActive = (href: string) => {
     if (href.includes('?')) {
-      // Handle query params (like /time?tab=habits)
       const [path, query] = href.split('?')
       if (pathname !== path) return false
       const [paramKey, paramValue] = query.split('=')
@@ -71,139 +70,129 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const username = profile?.username || profile?.display_name || 'Warrior'
+  const username = profile?.username || profile?.display_name || 'User'
   const level = profile?.level || 1
   const xp = profile?.xp || 0
   const maxXP = level * 1000
   const progress = (xp / maxXP) * 100
 
   return (
-    <div className="bg-background text-on-surface min-h-screen">
+    <div className="bg-background text-foreground min-h-screen">
       {/* ─── Header ─── */}
-      <header className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 md:px-6 bg-slate-950/80 backdrop-blur-xl border-b border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+      <header className="fixed top-0 left-0 right-0 h-14 z-50 flex items-center justify-between px-4 md:px-6 bg-background border-b border-border">
         <div className="flex items-center gap-6">
-          <Link href={ROUTES.DASHBOARD} className="flex items-center gap-3 group relative">
-            {/* Holographic Logo Effect */}
-            <div className="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center border border-blue-500/50 group-hover:scale-105 transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] overflow-hidden">
-              <Sparkles className="text-blue-400 animate-pulse" size={16} />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent" />
+          <Link href={ROUTES.DASHBOARD} className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Sparkles className="text-primary" size={14} />
             </div>
-            <span className="text-xl font-black font-headline tracking-[-0.05em] text-blue-50 system-text-glow italic uppercase">Selfup AI</span>
+            <span className="text-base font-semibold text-foreground tracking-tight">Selfup AI</span>
           </Link>
 
           {/* Desktop Search */}
-          <div className="hidden md:flex items-center relative group">
-            <Search className="absolute left-3 text-blue-500/40 group-focus-within:text-blue-400 transition-colors" size={14} />
-            <input 
-              type="text" 
+          <div className="hidden md:flex items-center relative">
+            <Search className="absolute left-3 text-muted-foreground" size={14} />
+            <input
+              type="text"
               placeholder="Search..."
-              className="bg-blue-500/5 border border-blue-500/10 rounded h-8 pl-9 pr-4 w-56 text-[10px] font-black uppercase tracking-[0.2em] focus:outline-none focus:border-blue-500/30 focus:bg-blue-500/10 transition-all text-blue-100 placeholder:text-blue-500/30 italic"
+              className="bg-muted border border-border rounded-lg h-8 pl-9 pr-4 w-56 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-colors"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button 
+        <div className="flex items-center gap-1">
+          <button
             onClick={() => setShowSystemKnowledge(true)}
-            className="p-2 rounded bg-blue-500/5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all relative border border-blue-500/10 group/brain"
-            title="Cognitive Status"
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="AI Memory"
           >
-            <Brain size={18} className="group-hover/brain:scale-110 transition-transform" />
+            <Brain size={18} />
           </button>
 
-          <button className="p-2 rounded bg-blue-500/5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all relative border border-blue-500/10">
+          <button className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors relative">
             <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full border border-slate-950" />
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
           </button>
-          
+
           <BackgroundTasksWidget />
-          
-          <button 
+
+          <button
             onClick={() => router.push(ROUTES.SETTINGS)}
-            className="p-2 rounded bg-blue-500/5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all border border-blue-500/10"
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <Settings size={18} />
           </button>
 
-          <div className="h-6 w-px bg-blue-500/20 mx-1" />
+          <div className="h-5 w-px bg-border mx-2" />
 
-          <div className="relative group pl-1">
-            <div className="flex items-center gap-3 cursor-pointer">
+          {/* Profile */}
+          <div className="relative group">
+            <div className="flex items-center gap-2.5 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-muted transition-colors">
               <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-black text-blue-50 truncate max-w-[100px] uppercase tracking-wider italic">{username}</p>
-                <div className="flex items-center justify-end gap-1 mt-0.5">
-                  <span className="w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
-                  <p className="text-[8px] font-black uppercase text-cyan-400/80 tracking-[0.2em] italic">AWAKENED</p>
-                </div>
+                <p className="text-sm font-medium text-foreground truncate max-w-[100px]">{username}</p>
+                <p className="text-xs text-muted-foreground">Level {level}</p>
               </div>
-              <div className="w-8 h-8 rounded bg-slate-900 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black shadow-[inset_0_0_10px_rgba(59,130,246,0.2)] overflow-hidden text-xs">
+              <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover opacity-80" />
+                  <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
                 ) : (
-                  <User size={14} className="text-blue-400/80 system-text-glow" />
+                  <User size={14} className="text-muted-foreground" />
                 )}
               </div>
             </div>
 
             {/* ─── Profile Hover Card ─── */}
-            <div className="absolute top-full right-0 mt-2 w-64 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100]">
-              <div className="bg-slate-950/95 backdrop-blur-2xl border border-blue-500/20 rounded-xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_20px_rgba(59,130,246,0.1)] overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
-                
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 rounded bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-xl shadow-[inset_0_0_15px_rgba(59,130,246,0.2)]">
+            <div className="absolute top-full right-0 mt-1.5 w-64 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-[100]">
+              <div className="bg-popover border border-border rounded-xl p-4 shadow-md">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden text-sm font-semibold text-foreground">
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={username} className="w-full h-full object-cover" />
                     ) : (
-                      username[0].toUpperCase()
+                      username[0]?.toUpperCase()
                     )}
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-blue-50 uppercase tracking-tighter italic">{username}</h4>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[9px] font-black text-cyan-400 uppercase tracking-[0.2em] italic">LVL {level}</span>
-                      <div className="h-2 w-px bg-blue-500/20" />
-                      <span className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em] italic">AWAKENED</span>
-                    </div>
+                    <h4 className="text-sm font-semibold text-foreground">{username}</h4>
+                    <p className="text-xs text-muted-foreground">Level {level}</p>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-5">
+                <div className="space-y-3 mb-4">
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.3em] text-blue-500/40">
-                      <span>SYNC PROGRESS</span>
-                      <span className="text-blue-200">{xp} / {maxXP} XP</span>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>XP Progress</span>
+                      <span>{xp} / {maxXP}</span>
                     </div>
-                    <div className="h-1 bg-slate-900 rounded-full overflow-hidden border border-blue-500/5 shadow-inner">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.6)]" 
-                        style={{ width: `${progress}%` }} 
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-1000"
+                        style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10 group/coin hover:border-blue-500/30 transition-colors">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted border border-border">
                     <div className="flex items-center gap-2">
-                       <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain group-hover/coin:scale-110 transition-transform" />
-                       <span className="text-[9px] font-black text-blue-300 uppercase tracking-[0.2em] italic">AiCoins</span>
+                      <img src="/coin.png" alt="AiCoins" className="w-4 h-4 object-contain" />
+                      <span className="text-xs text-muted-foreground">AiCoins</span>
                     </div>
-                    <span className="text-sm font-black text-cyan-400 tabular-nums">{profile?.ai_coins || 0}</span>
+                    <span className="text-sm font-semibold text-foreground tabular-nums">{profile?.ai_coins || 0}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <button 
+                  <button
                     onClick={() => router.push(ROUTES.SETTINGS)}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-slate-900 border border-blue-500/10 text-[9px] font-black uppercase tracking-[0.2em] text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all italic"
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-muted border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
                   >
-                    <Settings size={12} />
-                    System
+                    <Settings size={13} />
+                    Settings
                   </button>
-                  <button 
+                  <button
                     onClick={handleSignOut}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-rose-500/5 border border-rose-500/10 text-[9px] font-black uppercase tracking-[0.2em] text-rose-500/60 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/30 transition-all italic"
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors"
                   >
-                    <LogOut size={12} />
+                    <LogOut size={13} />
                     Logout
                   </button>
                 </div>
@@ -214,12 +203,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ─── Sidebar ─── */}
-      <aside className="fixed left-0 top-14 bottom-0 w-56 bg-slate-950/40 backdrop-blur-md border-r border-blue-500/10 hidden lg:flex flex-col z-40">
-        <div className="flex-1 py-6 px-3 space-y-8 overflow-y-auto custom-scrollbar">
-          {/* Section: Main */}
+      <aside className="fixed left-0 top-14 bottom-0 w-56 bg-card border-r border-border hidden lg:flex flex-col z-40">
+        <div className="flex-1 py-4 px-2 space-y-6 overflow-y-auto">
+          {/* Section: Core */}
           <div>
-            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">CORE MODULES</p>
-            <div className="space-y-1">
+            <p className="px-3 text-xs font-medium text-muted-foreground mb-1">Core</p>
+            <div className="space-y-0.5">
               {navItems.slice(0, 4).map((item) => {
                 const isActive = getIsActive(item.href)
                 const Icon = item.icon
@@ -228,19 +217,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all group relative overflow-hidden italic",
-                      isActive 
-                        ? "bg-blue-500/20 text-blue-100 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
-                        : "text-blue-500/60 hover:text-blue-300 hover:bg-blue-500/5"
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group relative",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     {isActive && (
-                      <motion.div 
+                      <motion.div
                         layoutId="active-nav"
-                        className="absolute left-0 w-1 h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
                       />
                     )}
-                    <Icon size={16} className={cn(isActive ? "text-blue-400" : "text-blue-500/40 group-hover:text-blue-400")} />
+                    <Icon size={16} className={cn(isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                     {item.label}
                   </Link>
                 )
@@ -248,10 +237,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Section: Social */}
+          {/* Section: Social & Data */}
           <div>
-            <p className="px-3 text-[9px] font-black text-blue-500/40 uppercase tracking-[0.3em] mb-3 italic">SOCIAL & DATA</p>
-            <div className="space-y-1">
+            <p className="px-3 text-xs font-medium text-muted-foreground mb-1">Explore</p>
+            <div className="space-y-0.5">
               {navItems.slice(4).map((item) => {
                 const isActive = getIsActive(item.href)
                 const Icon = item.icon
@@ -260,19 +249,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] transition-all group relative overflow-hidden italic",
-                      isActive 
-                        ? "bg-blue-500/20 text-blue-100 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
-                        : "text-blue-500/60 hover:text-blue-300 hover:bg-blue-500/5"
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group relative",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     {isActive && (
-                      <motion.div 
+                      <motion.div
                         layoutId="active-nav"
-                        className="absolute left-0 w-1 h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
                       />
                     )}
-                    <Icon size={16} className={cn(isActive ? "text-blue-400" : "text-blue-500/40 group-hover:text-blue-400")} />
+                    <Icon size={16} className={cn(isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                     {item.label}
                   </Link>
                 )
@@ -281,23 +270,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-3 mt-auto border-t border-blue-500/10 bg-blue-500/5">
-          <div className="bg-slate-900/60 rounded-lg p-3 border border-blue-500/10">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-black uppercase text-blue-500/40 tracking-widest italic">XP PROGRESS</span>
-              <span className="text-[9px] font-black text-blue-400 tabular-nums">{progress.toFixed(0)}%</span>
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-border">
+          <div className="bg-muted rounded-lg p-3 border border-border mb-2">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium text-muted-foreground">XP Progress</span>
+              <span className="text-xs text-muted-foreground tabular-nums">{progress.toFixed(0)}%</span>
             </div>
-            <div className="h-1 bg-slate-950 rounded-full overflow-hidden shadow-inner">
-              <div 
-                className="h-full bg-blue-500 transition-all duration-1000 shadow-[0_0_8px_rgba(59,130,246,0.5)]" 
+            <div className="h-1.5 bg-background rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-1000"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 mt-3 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 hover:text-rose-400 hover:bg-rose-500/10 transition-all italic"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
           >
             <LogOut size={16} />
             Logout
@@ -314,10 +303,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
               className="h-full"
             >
               {children}
@@ -327,7 +316,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* ─── Mobile Bottom Nav ─── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-500/20 px-6 flex items-center justify-between z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border px-4 flex items-center justify-between z-50">
         {navItems.slice(0, 5).map((item) => {
           const isActive = getIsActive(item.href)
           const Icon = item.icon
@@ -336,23 +325,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 transition-all",
-                isActive ? "text-blue-400" : "text-blue-500/40"
+                "flex flex-col items-center gap-1 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
               <div className={cn(
-                "w-12 h-8 rounded-full flex items-center justify-center transition-all",
-                isActive ? "bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.2)]" : "bg-transparent"
+                "w-10 h-7 rounded-lg flex items-center justify-center transition-colors",
+                isActive ? "bg-primary/10" : "bg-transparent"
               )}>
-                <Icon size={20} />
+                <Icon size={18} />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest scale-90 italic">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           )
         })}
       </nav>
 
-      <SystemKnowledge 
+      <SystemKnowledge
         isOpen={showSystemKnowledge}
         onClose={() => setShowSystemKnowledge(false)}
       />

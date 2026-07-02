@@ -18,15 +18,15 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
   )
 
   return (
-    <div className="space-y-10 italic">
+    <div className="space-y-10 ">
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <Dumbbell size={24} className="text-blue-400" />
-          <h2 className="text-xs font-black uppercase tracking-[0.3em] text-blue-400/60 italic">Current Plan</h2>
+          <Dumbbell size={24} className="text-primary" />
+          <h2 className="text-xs   text-primary/60 ">Current Plan</h2>
         </div>
 
         {loading ? (
-          <div className="h-64 rounded-xl bg-slate-950/40 animate-pulse border border-blue-500/10 shadow-[inset_0_0_30px_rgba(59,130,246,0.05)]" />
+          <div className="h-64 rounded-xl bg-card animate-pulse border border-border " />
         ) : activePlan ? (
           <div className="space-y-6">
             <WorkoutCard plan={activePlan} isActive={true} currentDayId={currentDay?.id} />
@@ -46,28 +46,28 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
                   <Link 
                     key={day.id} 
                     href={`/fitness/session/${day.id}`}
-                    className={`p-4 bg-slate-950/60 border rounded-lg text-center group transition-all relative overflow-hidden flex flex-col items-center justify-center min-h-[100px] ${
+                    className={`p-4 bg-card border rounded-lg text-center group transition-all relative overflow-hidden flex flex-col items-center justify-center min-h-[100px] ${
                       isToday 
-                        ? 'border-primary-500/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.15)]' 
-                        : 'border-blue-500/10 hover:border-blue-500/40 hover:bg-blue-900/10'
+                        ? 'border-primary-500/50' 
+                        : 'border-border hover:border-border hover:bg-muted'
                     }`}
                   >
-                    <span className="block text-[10px] text-blue-400/40 uppercase font-black tracking-[0.2em] mb-2">Day {day.day_number}</span>
-                    <span className="block text-xs font-black text-blue-50 uppercase tracking-widest">{day.name}</span>
+                    <span className="block text-[10px] text-primary/40   mb-2">Day {day.day_number}</span>
+                    <span className="block text-xs  text-foreground">{day.name}</span>
                     
                     {isToday ? (
-                      <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-primary-400">
+                      <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-primary-400">
                         <Play size={12} fill="currentColor" /> Active Now
                       </div>
                     ) : (
-                      <div className="mt-3 text-[9px] uppercase tracking-widest font-black text-blue-500/20 group-hover:text-blue-400 transition-colors">
+                      <div className="mt-3 text-[9px]  text-muted-foreground group-hover:text-primary transition-colors">
                         View Details
                       </div>
                     )}
                     
                     <div className={cn(
                       "absolute bottom-0 left-0 right-0 h-0.5 transition-colors",
-                      isToday ? "bg-primary-500" : "bg-blue-500/0 group-hover:bg-blue-500/40"
+                      isToday ? "bg-primary-500" : "bg-primary/0 group-hover:bg-primary/40"
                     )} />
                   </Link>
                 );
@@ -75,14 +75,14 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-16 border border-dashed border-blue-500/20 rounded-xl bg-slate-950/20 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-blue-500/[0.02] group-hover:bg-blue-500/[0.05] transition-colors" />
-            <Dumbbell size={48} className="text-blue-500/10 mb-6 group-hover:text-blue-500/20 transition-colors" />
-            <h3 className="text-sm font-black text-blue-500/40 mb-2 uppercase tracking-[0.3em]">No Active Plan</h3>
-            <p className="text-[10px] text-blue-500/20 font-black uppercase tracking-[0.2em] mb-8">Create your first fitness plan.</p>
+          <div className="flex flex-col items-center justify-center p-16 border border-dashed border-border rounded-xl bg-background/20 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-primary/[0.02] group-hover:bg-primary/[0.05] transition-colors" />
+            <Dumbbell size={48} className="text-muted-foreground mb-6 group-hover:text-muted-foreground transition-colors" />
+            <h3 className="text-sm  text-muted-foreground mb-2 ">No Active Plan</h3>
+            <p className="text-[10px] text-muted-foreground   mb-8">Create your first fitness plan.</p>
             <button 
               onClick={handleGeneratePlan}
-              className="flex items-center gap-3 px-6 py-3 bg-blue-500/5 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500/10 transition-all shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]"
+              className="flex items-center gap-3 px-6 py-3 bg-muted text-primary border border-border rounded-lg text-[10px]   hover:bg-primary/10 transition-all "
             >
               Create Plan <ArrowRight size={14} />
             </button>
@@ -92,7 +92,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
 
       {!loading && plans.length > 1 && (
         <section>
-          <h2 className="text-xs font-black mb-6 text-blue-400/40 uppercase tracking-[0.3em] italic">Past Plans</h2>
+          <h2 className="text-xs  mb-6 text-primary/40  ">Past Plans</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {plans.filter(p => !p.is_active).map(plan => (
               <WorkoutCard key={plan.id} plan={plan} />

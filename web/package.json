@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "worker": "tsx watch src/worker-runner.ts"
+    "worker": "tsx watch src/worker-runner.ts",
+    "seed:exercises": "tsx scripts/seed-exercises.ts"
   },
   "dependencies": {
     "@google/genai": "^1.50.1",

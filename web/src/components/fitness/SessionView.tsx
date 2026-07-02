@@ -101,7 +101,7 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
       {/* Header */}
-      <header className="p-4 border-b border-white/10 flex items-center justify-between bg-dark-surface">
+      <header className="p-4 border-b border-white/10 flex items-center justify-between bg-card">
         <div className="flex items-center gap-4">
           <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
             <X size={24} className="text-gray-400" />
@@ -113,7 +113,7 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-primary-400 bg-primary-500/10 px-3 py-1.5 rounded-full font-mono font-medium">
+          <div className="flex items-center gap-2 text-primary bg-primary/10 px-3 py-1.5 rounded-full font-mono font-medium">
             <Clock size={16} />
             {formatTime(elapsedSeconds)}
           </div>

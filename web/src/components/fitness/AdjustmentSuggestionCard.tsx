@@ -42,8 +42,8 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={`border rounded-xl p-5 relative overflow-hidden ${
-        isPositive 
-          ? 'bg-primary-900/20 border-primary-500/30' 
+        isPositive
+          ? 'bg-primary/10 border-primary/30'
           : 'bg-orange-900/20 border-orange-500/30'
       }`}
     >
@@ -54,7 +54,7 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-xl  text-primary-foreground flex items-center gap-2 mb-2 tracking-wide">
-            <Sparkles size={22} className={isPositive ? "text-primary-400" : "text-orange-400"} />
+            <Sparkles size={22} className={isPositive ? "text-primary" : "text-orange-400"} />
             AI Plan Update
           </h3>
           <p className="text-base text-gray-300 font-medium ">
@@ -92,8 +92,8 @@ export function AdjustmentSuggestionCard({ adjustment, onResolve }: AdjustmentSu
             onClick={() => handleAction('approve')}
             disabled={isProcessing}
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
-              isPositive 
-                ? 'bg-primary-600 text-primary-foreground hover:bg-primary-500' 
+              isPositive
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-orange-600 text-primary-foreground hover:bg-orange-500'
             }`}
           >

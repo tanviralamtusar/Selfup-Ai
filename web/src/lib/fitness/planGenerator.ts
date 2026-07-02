@@ -111,11 +111,12 @@ Rules:
 
 export async function generateFitnessPlan(
   interviewData: FitnessInterviewData,
-  calendarConflicts: string[] = []
+  calendarConflicts: string[] = [],
+  model?: string
 ): Promise<GeneratedPlan> {
   const prompt = buildPlanPrompt(interviewData, calendarConflicts)
 
-  const rawResponse = await generateResponse(prompt)
+  const rawResponse = await generateResponse(prompt, [], undefined, model, 'plan_generation')
   if (!rawResponse) throw new Error('No response from AI for fitness plan generation')
 
   const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim()

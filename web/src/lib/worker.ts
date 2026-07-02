@@ -181,7 +181,7 @@ export async function executeAiTask(data: AiJobData) {
           conflicts = c.map(x => `${x.title} at ${x.time}`);
         }
 
-        const generatedPlan = await generateFitnessPlan(interviewData, conflicts);
+        const generatedPlan = await generateFitnessPlan(interviewData, conflicts, modelConfig.background_model);
         await deactivateExistingPlan(userId, interviewData.plan_type || 'ongoing', supabase);
         const { planId, dietPlanId } = await savePlanToDb(userId, generatedPlan, supabase);
 

@@ -5,6 +5,8 @@ import { TASK_PARAMS } from './model-config'
 const apiKey = process.env.GOOGLE_AI_API_KEY || ''
 const ai = new GoogleGenAI({ apiKey })
 
+const FALLBACK_MODEL = 'gemini-2.5-flash'
+
 /**
  * Generate an AI response with task-specific parameters.
  */
@@ -12,7 +14,7 @@ export async function generateResponse(
   prompt: string,
   history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
   systemInstruction?: string,
-  modelName: string = 'gemma-4-31b-it',
+  modelName: string = 'gemini-2.5-flash',
   taskType: TaskType = 'chat'
 ) {
   if (!apiKey) {
@@ -30,6 +32,8 @@ export async function generateResponse(
   ]
 
   const maxRetries = 3
+  let lastErr: any
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const response = await ai.models.generateContent({
@@ -45,11 +49,12 @@ export async function generateResponse(
 
       return response.text
     } catch (err: any) {
+      lastErr = err
       const statusCode = err?.status || err?.error?.code || err?.httpStatusCode || 0
       const statusText = err?.error?.status || err?.statusText || ''
-      const isRetryable = 
-        statusCode === 429 || 
-        statusCode === 500 || 
+      const isRetryable =
+        statusCode === 429 ||
+        statusCode === 500 ||
         statusCode === 503 ||
         statusText === 'INTERNAL' ||
         statusText === 'RESOURCE_EXHAUSTED' ||
@@ -63,9 +68,31 @@ export async function generateResponse(
       }
 
       console.error(`[Gemma] generateResponse failed after ${attempt} attempt(s):`, err?.message || err)
-      throw err
+      break
     }
   }
+
+  // Primary model failed — retry once with the stable fallback before giving up
+  if (modelName !== FALLBACK_MODEL) {
+    console.warn(`[Gemma] Primary model "${modelName}" failed — retrying with fallback "${FALLBACK_MODEL}"`)
+    try {
+      const response = await ai.models.generateContent({
+        model: FALLBACK_MODEL,
+        contents,
+        config: {
+          temperature: params.temperature,
+          topP: params.topP,
+          maxOutputTokens: params.maxOutputTokens,
+          ...(systemInstruction ? { systemInstruction } : {}),
+        },
+      })
+      return response.text
+    } catch (fallbackErr: any) {
+      console.error(`[Gemma] Fallback model "${FALLBACK_MODEL}" also failed:`, fallbackErr?.message || fallbackErr)
+    }
+  }
+
+  throw lastErr
 }
 
 /**

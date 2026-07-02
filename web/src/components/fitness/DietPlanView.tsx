@@ -24,7 +24,7 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
   return (
     <div className="space-y-6">
       {/* Header / Macros */}
-      <div className="bg-dark-surface/50 border border-white/5 rounded-xl p-6">
+      <div className="bg-card/50 border border-border rounded-xl p-6">
         <h2 className="text-xl font-medium text-primary-foreground mb-6 flex items-center gap-2">
           <Apple className="text-green-400" /> Daily Targets
         </h2>
@@ -36,7 +36,7 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
             <span className="text-xs text-gray-500">Calories</span>
           </div>
           <div className="bg-black/30 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center text-center">
-            <span className="text-primary-400 mb-2 font-medium">P</span>
+            <span className="text-primary mb-2 font-medium">P</span>
             <span className="text-2xl font-medium text-primary-foreground">{targets.protein_g || 150}g</span>
             <span className="text-xs text-gray-500">Protein</span>
           </div>
@@ -63,7 +63,7 @@ export function DietPlanView({ dietPlan }: DietPlanViewProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-dark-surface border border-white/10 rounded-xl p-5"
+              className="bg-card border border-border rounded-xl p-5"
             >
               <div className="flex justify-between items-start mb-4">
                 <h4 className="font-semibold text-primary-foreground text-lg capitalize">{meal.meal_type}</h4>

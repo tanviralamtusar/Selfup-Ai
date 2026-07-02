@@ -46,10 +46,10 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-dark-surface border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
-          <div className="p-6 border-b border-border bg-gradient-to-br from-primary/10 to-transparent relative overflow-hidden">
+          <div className="p-6 border-b border-border bg-linear-to-br from-primary/10 to-transparent relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Dumbbell size={120} />
             </div>
@@ -58,7 +58,7 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
               <X size={20} />
             </button>
             
-            <div className="flex items-center gap-2 text-primary-400 font-medium mb-2 text-sm">
+            <div className="flex items-center gap-2 text-primary font-medium mb-2 text-sm">
               <Flame size={16} /> New Protocol Ready
             </div>
             <h2 className="text-3xl font-medium text-primary-foreground mb-2">{previewData.plan_meta?.name || 'Your Fitness Plan'}</h2>
@@ -85,13 +85,13 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-black/20">
             <div>
               <h3 className="text-lg font-semibold text-primary-foreground mb-4 flex items-center gap-2">
-                <Calendar size={20} className="text-primary-400" /> Schedule Summary
+                <Calendar size={20} className="text-primary" /> Schedule Summary
               </h3>
               <div className="space-y-3">
                 {previewData.schedule_summary?.map((day: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-dark-bg rounded-lg flex flex-col items-center justify-center border border-border">
+                      <div className="w-12 h-12 bg-background rounded-lg flex flex-col items-center justify-center border border-border">
                         <span className="text-xs text-gray-500">{day.day.substring(0,3)}</span>
                         <span className="text-sm font-medium text-primary-foreground">{day.time || 'Any'}</span>
                       </div>
@@ -116,7 +116,7 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-border flex justify-end gap-3 bg-dark-surface">
+          <div className="p-6 border-t border-border flex justify-end gap-3 bg-card">
             <button 
               onClick={onClose}
               className="px-6 py-2.5 rounded-xl font-medium text-gray-400 hover:text-foreground hover:bg-muted transition-colors"
@@ -126,7 +126,7 @@ export function PlanPreviewModal({ isOpen, onClose, previewData }: PlanPreviewMo
             <button 
               onClick={handleActivate}
               disabled={isActivating}
-              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-primary-foreground bg-primary-600 hover:bg-primary-500 transition-colors shadow-lg shadow-primary-500/20 disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-2.5 rounded-xl font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-50"
             >
               {isActivating ? 'Activating...' : (
                 <>Accept & Inject <ChevronRight size={18} /></>

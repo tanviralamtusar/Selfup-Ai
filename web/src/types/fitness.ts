@@ -162,7 +162,7 @@ export interface WorkoutSessionLogRow {
   plan_id: string
   logged_date: string
   status: SessionStatus
-  sets_done: Record<string, { sets_completed: number; weights_used: number[] }>
+  sets_done: Record<string, { sets_completed: number; weights_used: number[]; reps_done?: number[] }>
   total_xp_earned: number
   session_bonus_xp: number
   duration_minutes: number | null

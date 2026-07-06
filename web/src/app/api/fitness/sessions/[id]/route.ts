@@ -13,7 +13,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
 
   const body = await request.json();
-  const { action, exercise_id, set_number, weight_used } = body;
+  const { action, exercise_id, set_number, weight_used, reps_done } = body;
   const resolvedParams = await params;
 
   try {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!exercise_id || set_number === undefined) {
         return NextResponse.json({ error: 'Missing exercise_id or set_number' }, { status: 400 });
       }
-      const result = await logSetComplete(user.id, resolvedParams.id, exercise_id, set_number, weight_used ?? null, supabase);
+      const result = await logSetComplete(user.id, resolvedParams.id, exercise_id, set_number, weight_used ?? null, reps_done ?? null, supabase);
       return NextResponse.json({ success: true, data: result });
     } 
     else if (action === 'complete_session') {

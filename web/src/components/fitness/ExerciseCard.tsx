@@ -15,13 +15,21 @@ function getYoutubeId(url: string) {
 interface ExerciseCardProps {
   exercise: WorkoutDayExerciseRow;
   completedSets: number;
-  onLogSet: (setNum: number, weight: number | null) => void;
+  logEntry?: { sets_completed: number; weights_used: number[]; reps_done?: number[] };
+  onLogSet: (setNum: number, weight: number | null, reps: number | null) => void;
   isActive: boolean;
 }
 
-export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: ExerciseCardProps) {
+// Pull a sensible default rep count out of a target like "10-12" or "8".
+function defaultReps(reps: string): string {
+  const first = reps?.match(/\d+/)?.[0];
+  return first ?? '';
+}
+
+export function ExerciseCard({ exercise, completedSets, logEntry, onLogSet, isActive }: ExerciseCardProps) {
   const [isExpanded, setIsExpanded] = useState(isActive);
   const [weightInput, setWeightInput] = useState<string>('');
+  const [repsInput, setRepsInput] = useState<string>(defaultReps(exercise.reps));
   const [showSuggestions, setShowSuggestions] = useState(false);
   
   const exerciseName = exercise.exercises?.name || 'Exercise';
@@ -192,13 +200,33 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                       <span className="text-sm  text-foreground/60 ">Set {setNum}</span>
                       
                       {isSetDone ? (
-                        <div className="flex items-center text-green-400 text-xs  gap-2">
+                        <div className="flex items-center text-green-400 text-xs gap-2">
+                          {(() => {
+                            const reps = logEntry?.reps_done?.[idx];
+                            const weight = logEntry?.weights_used?.[idx];
+                            const detail = [
+                              reps != null ? `${reps} reps` : null,
+                              weight != null ? `${weight}kg` : null,
+                            ].filter(Boolean).join(' · ');
+                            return detail ? <span className="text-foreground/70 not-italic">{detail}</span> : null;
+                          })()}
                           <Check size={18} /> Recorded
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <input 
+                            <input
+                              type="number"
+                              placeholder="REPS"
+                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-16 text-primary-foreground focus:outline-none focus:border-primary/50 transition-all tracking-tighter"
+                              value={isCurrentSet ? repsInput : ''}
+                              onChange={(e) => setRepsInput(e.target.value)}
+                              disabled={!isCurrentSet}
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px]  text-muted-foreground">REPS</span>
+                          </div>
+                          <div className="relative">
+                            <input
                               type="number"
                               placeholder="WEIGHT"
                               className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-primary-foreground focus:outline-none focus:border-primary/50 transition-all  tracking-tighter"
@@ -210,8 +238,13 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                           </div>
                           <button
                             onClick={() => {
-                              onLogSet(setNum, weightInput ? parseFloat(weightInput) : null);
+                              onLogSet(
+                                setNum,
+                                weightInput ? parseFloat(weightInput) : null,
+                                repsInput ? parseInt(repsInput, 10) : null
+                              );
                               setWeightInput('');
+                              setRepsInput(defaultReps(exercise.reps));
                             }}
                             disabled={!isCurrentSet}
                             className={`px-5 py-2 rounded-lg text-xs  transition-all ${

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Clock, X, CheckCircle } from 'lucide-react';
 import { ExerciseCard } from './ExerciseCard';
+import { RestTimer } from './RestTimer';
 import type { WorkoutDayRow, WorkoutDayExerciseRow } from '@/types/fitness';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
@@ -11,7 +12,7 @@ import { useAuthStore } from '@/store/authStore';
 interface SessionViewProps {
   sessionId: string;
   workoutDay: WorkoutDayRow & { workout_day_exercises: (WorkoutDayExerciseRow & { exercises: any })[] };
-  initialSetsDone: Record<string, { sets_completed: number; weights_used: number[] }>;
+  initialSetsDone: Record<string, { sets_completed: number; weights_used: number[]; reps_done?: number[] }>;
   onClose: () => void;
   onComplete: () => void;
 }
@@ -21,6 +22,9 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
   const [activeExerciseIdx, setActiveExerciseIdx] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
+  // Rest-timer state: bump `restTrigger` each logged set to (re)start the countdown.
+  const [restSeconds, setRestSeconds] = useState(60);
+  const [restTrigger, setRestTrigger] = useState(0);
   const { session } = useAuthStore();
 
   // Timer
@@ -35,30 +39,48 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleLogSet = async (exerciseId: string, setNum: number, weight: number | null) => {
+  const handleLogSet = async (
+    exerciseId: string,
+    setNum: number,
+    weight: number | null,
+    reps: number | null
+  ) => {
     try {
       const res = await fetch(`/api/fitness/sessions/${sessionId}`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify({ action: 'log_set', exercise_id: exerciseId, set_number: setNum, weight_used: weight })
+        body: JSON.stringify({ action: 'log_set', exercise_id: exerciseId, set_number: setNum, weight_used: weight, reps_done: reps })
       });
       const json = await res.json();
-      
+
       if (!res.ok) throw new Error(json.error);
 
       const newSetsDone = { ...setsDone };
-      if (!newSetsDone[exerciseId]) newSetsDone[exerciseId] = { sets_completed: 0, weights_used: [] };
+      if (!newSetsDone[exerciseId]) newSetsDone[exerciseId] = { sets_completed: 0, weights_used: [], reps_done: [] };
       newSetsDone[exerciseId].sets_completed = setNum;
       if (weight !== null) newSetsDone[exerciseId].weights_used.push(weight);
-      
+      if (reps !== null) {
+        if (!newSetsDone[exerciseId].reps_done) newSetsDone[exerciseId].reps_done = [];
+        newSetsDone[exerciseId].reps_done!.push(reps);
+      }
+
       setSetsDone(newSetsDone);
       toast.success(`Set ${setNum} logged! +3 XP`, { icon: '🔥' });
 
-      // Auto-advance if exercise is fully complete
       const exercise = workoutDay.workout_day_exercises.find(e => e.exercise_id === exerciseId);
+
+      // Start the rest countdown (unless this was the last set of the last exercise)
+      const isLastSet = exercise ? setNum >= exercise.sets : false;
+      const isLastExercise = activeExerciseIdx >= workoutDay.workout_day_exercises.length - 1;
+      if (!(isLastSet && isLastExercise)) {
+        setRestSeconds(exercise?.rest_seconds || 60);
+        setRestTrigger(t => t + 1);
+      }
+
+      // Auto-advance if exercise is fully complete
       if (exercise && setNum >= exercise.sets) {
         if (activeExerciseIdx < workoutDay.workout_day_exercises.length - 1) {
           setActiveExerciseIdx(activeExerciseIdx + 1);
@@ -136,12 +158,15 @@ export function SessionView({ sessionId, workoutDay, initialSetsDone, onClose, o
               key={ex.id}
               exercise={ex}
               completedSets={setsDone[ex.exercise_id]?.sets_completed || 0}
+              logEntry={setsDone[ex.exercise_id]}
               isActive={activeExerciseIdx === idx}
-              onLogSet={(setNum, weight) => handleLogSet(ex.exercise_id, setNum, weight)}
+              onLogSet={(setNum, weight, reps) => handleLogSet(ex.exercise_id, setNum, weight, reps)}
             />
           ))}
         </div>
       </div>
+
+      <RestTimer seconds={restSeconds} triggerKey={restTrigger} />
     </div>
   );
 }

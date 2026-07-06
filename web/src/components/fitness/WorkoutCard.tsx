@@ -78,7 +78,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ plan, isActive, currentDayId,
         </div>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-primary/40 " />
-          <span className="text-primary/80/80">{plan.goal.replace('_', ' ')}</span>
+          <span className="text-primary/80">{plan.goal.replace('_', ' ')}</span>
         </div>
       </div>
 

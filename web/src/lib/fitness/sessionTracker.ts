@@ -53,6 +53,7 @@ export async function logSetComplete(
   exerciseId: string,
   setNumber: number,
   weightUsed: number | null,
+  repsUsed: number | null,
   supabase: SupabaseClient
 ): Promise<{ xpAwarded: number; totalSetsForExercise: number }> {
   // Fetch current session
@@ -64,14 +65,21 @@ export async function logSetComplete(
 
   if (error || !session) throw new Error('Session not found')
 
-  const setsDone = (session.sets_done || {}) as Record<string, { sets_completed: number; weights_used: number[] }>
+  const setsDone = (session.sets_done || {}) as Record<
+    string,
+    { sets_completed: number; weights_used: number[]; reps_done?: number[] }
+  >
   if (!setsDone[exerciseId]) {
-    setsDone[exerciseId] = { sets_completed: 0, weights_used: [] }
+    setsDone[exerciseId] = { sets_completed: 0, weights_used: [], reps_done: [] }
   }
 
   setsDone[exerciseId].sets_completed = setNumber
   if (weightUsed !== null) {
     setsDone[exerciseId].weights_used.push(weightUsed)
+  }
+  if (repsUsed !== null) {
+    if (!setsDone[exerciseId].reps_done) setsDone[exerciseId].reps_done = []
+    setsDone[exerciseId].reps_done!.push(repsUsed)
   }
 
   const xpPerSet = 3

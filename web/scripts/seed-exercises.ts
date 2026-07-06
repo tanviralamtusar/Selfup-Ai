@@ -88,12 +88,27 @@ function mapExercise(ex: DatasetExercise) {
     technique_note: ex.mechanic
       ? `${ex.mechanic}${ex.force ? ` · ${ex.force}` : ''} · ${ex.category}`
       : ex.category,
-    // Only used when the optional media columns exist (see migration):
+    // Only used when the optional attribute/media columns exist (see migrations):
     primary_muscle: primary || null,
     secondary_muscles: ex.secondaryMuscles,
     image_urls: ex.images.map((img) => `${IMAGE_BASE_URL}${img}`),
+    // Structured attributes (workout-cool concepts): TYPE / MECHANICS_TYPE / force
+    exercise_type: ex.category || null,
+    mechanics_type: ex.mechanic || null,
+    force_type: ex.force || null,
   };
 }
+
+// Columns added by the optional migrations — stripped out when the DB
+// doesn't have them yet so the core seed still works.
+const OPTIONAL_COLUMNS = [
+  'primary_muscle',
+  'secondary_muscles',
+  'image_urls',
+  'exercise_type',
+  'mechanics_type',
+  'force_type',
+] as const;
 
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -117,23 +132,31 @@ async function main() {
     console.log(`Fetched ${dataset.length} exercises from free-exercise-db`);
   }
 
-  // Detect whether the optional media columns exist
-  const { error: probeError } = await supabase.from('exercises').select('image_urls').limit(1);
-  const hasMediaColumns = !probeError;
+  // Detect which optional columns exist (media + attributes migrations)
+  const hasColumn: Record<string, boolean> = {};
+  for (const col of OPTIONAL_COLUMNS) {
+    const { error } = await supabase.from('exercises').select(col).limit(1);
+    hasColumn[col] = !error;
+  }
+  const hasMediaColumns = hasColumn.image_urls;
+  const hasAttributeColumns = hasColumn.exercise_type;
   console.log(
-    hasMediaColumns
-      ? 'Media columns detected — seeding with images + granular muscles.'
-      : 'Media columns not found — seeding core fields only. (Run scripts/migrations/add_exercise_media_columns.sql to enable images.)'
+    `Optional columns → media: ${hasMediaColumns ? 'yes' : 'no'}, attributes: ${hasAttributeColumns ? 'yes' : 'no'}` +
+      (hasMediaColumns && hasAttributeColumns
+        ? ''
+        : ' (run scripts/migrations/*.sql to enable the missing ones)')
   );
 
-  const rows = dataset.map((ex) => {
-    const mapped = mapExercise(ex);
-    if (!hasMediaColumns) {
-      const { primary_muscle, secondary_muscles, image_urls, ...core } = mapped;
-      return core;
+  // Strip any columns the DB doesn't have yet
+  const stripUnsupported = (mapped: ReturnType<typeof mapExercise>) => {
+    const row: Record<string, unknown> = { ...mapped };
+    for (const col of OPTIONAL_COLUMNS) {
+      if (!hasColumn[col]) delete row[col];
     }
-    return mapped;
-  });
+    return row;
+  };
+
+  const rows = dataset.map((ex) => stripUnsupported(mapExercise(ex)));
 
   // Insert in chunks; skip rows whose name already exists
   const CHUNK = 200;
@@ -152,28 +175,29 @@ async function main() {
     console.log(`  chunk ${i / CHUNK + 1}/${Math.ceil(rows.length / CHUNK)} → ${data?.length ?? 0} inserted`);
   }
 
-  // Enrichment pass: fill media columns on rows that were inserted before
-  // the migration existed (insert-on-conflict skips them).
-  if (hasMediaColumns) {
+  // Enrichment pass: fill optional columns on rows that were inserted before
+  // the migrations existed (insert-on-conflict skips updating them).
+  if (hasMediaColumns || hasAttributeColumns) {
     const byName = new Map(dataset.map((ex) => [ex.name, mapExercise(ex)]));
-    const { data: bare } = await supabase
-      .from('exercises')
-      .select('id, name')
-      .or('image_urls.is.null,image_urls.eq.{}');
+    // Rows still missing images (media) or a type (attributes) → candidates
+    const orFilters = [
+      hasMediaColumns ? 'image_urls.is.null,image_urls.eq.{}' : '',
+      hasAttributeColumns ? 'exercise_type.is.null' : '',
+    ]
+      .filter(Boolean)
+      .join(',');
+    const { data: bare } = await supabase.from('exercises').select('id, name').or(orFilters);
     const toEnrich = (bare ?? []).filter((row) => byName.has(row.name));
-    console.log(`Enriching ${toEnrich.length} existing rows with media data...`);
+    console.log(`Enriching ${toEnrich.length} existing rows with attribute/media data...`);
     for (let i = 0; i < toEnrich.length; i += 50) {
       await Promise.all(
         toEnrich.slice(i, i + 50).map((row) => {
           const m = byName.get(row.name)!;
-          return supabase
-            .from('exercises')
-            .update({
-              primary_muscle: m.primary_muscle,
-              secondary_muscles: m.secondary_muscles,
-              image_urls: m.image_urls,
-            })
-            .eq('id', row.id);
+          const patch: Record<string, unknown> = {};
+          for (const col of OPTIONAL_COLUMNS) {
+            if (hasColumn[col]) patch[col] = (m as Record<string, unknown>)[col];
+          }
+          return supabase.from('exercises').update(patch).eq('id', row.id);
         })
       );
     }

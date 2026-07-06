@@ -43,20 +43,20 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
                 const isRestDay = day.name?.toLowerCase().includes('rest');
                 
                 return (
-                  <Link 
-                    key={day.id} 
+                  <Link
+                    key={day.id}
                     href={`/fitness/session/${day.id}`}
                     className={`p-4 bg-card border rounded-lg text-center group transition-all relative overflow-hidden flex flex-col items-center justify-center min-h-[100px] ${
-                      isToday 
-                        ? 'border-primary-500/50' 
+                      isToday
+                        ? 'border-primary/50'
                         : 'border-border hover:border-border hover:bg-muted'
                     }`}
                   >
                     <span className="block text-[10px] text-primary/40   mb-2">Day {day.day_number}</span>
                     <span className="block text-xs  text-foreground">{day.name}</span>
-                    
+
                     {isToday ? (
-                      <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-primary-400">
+                      <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-primary">
                         <Play size={12} fill="currentColor" /> Active Now
                       </div>
                     ) : (
@@ -67,7 +67,7 @@ export default function WorkoutView({ plans, loading, handleGeneratePlan }: Work
                     
                     <div className={cn(
                       "absolute bottom-0 left-0 right-0 h-0.5 transition-colors",
-                      isToday ? "bg-primary-500" : "bg-primary/0 group-hover:bg-primary/40"
+                      isToday ? "bg-primary" : "bg-primary/0 group-hover:bg-primary/40"
                     )} />
                   </Link>
                 );

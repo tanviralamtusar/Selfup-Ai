@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "worker": "tsx watch src/worker-runner.ts",
-    "seed:exercises": "tsx scripts/seed-exercises.ts"
+    "seed:exercises": "tsx scripts/seed-exercises.ts",
+    "seed:programs": "tsx scripts/seed-programs.ts"
   },
   "dependencies": {
     "@google/genai": "^1.50.1",

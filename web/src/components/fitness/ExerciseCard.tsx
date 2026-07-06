@@ -15,13 +15,21 @@ function getYoutubeId(url: string) {
 interface ExerciseCardProps {
   exercise: WorkoutDayExerciseRow;
   completedSets: number;
-  onLogSet: (setNum: number, weight: number | null) => void;
+  logEntry?: { sets_completed: number; weights_used: number[]; reps_done?: number[] };
+  onLogSet: (setNum: number, weight: number | null, reps: number | null) => void;
   isActive: boolean;
 }
 
-export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: ExerciseCardProps) {
+// Pull a sensible default rep count out of a target like "10-12" or "8".
+function defaultReps(reps: string): string {
+  const first = reps?.match(/\d+/)?.[0];
+  return first ?? '';
+}
+
+export function ExerciseCard({ exercise, completedSets, logEntry, onLogSet, isActive }: ExerciseCardProps) {
   const [isExpanded, setIsExpanded] = useState(isActive);
   const [weightInput, setWeightInput] = useState<string>('');
+  const [repsInput, setRepsInput] = useState<string>(defaultReps(exercise.reps));
   const [showSuggestions, setShowSuggestions] = useState(false);
   
   const exerciseName = exercise.exercises?.name || 'Exercise';
@@ -31,19 +39,19 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
   const isFullyComplete = completedSets >= targetSets;
 
   return (
-    <motion.div 
+    <motion.div
       layout
       className={`bg-muted  rounded-xl border transition-all duration-300 ${
-        isActive ? 'border-primary-500/50' : 'border-white/5'
+        isActive ? 'border-primary/50' : 'border-white/5'
       } ${isFullyComplete ? 'opacity-60' : 'opacity-100'}`}
     >
-      <div 
+      <div
         className="p-5 flex items-center justify-between cursor-pointer group"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-5">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-            isFullyComplete ? 'bg-green-500/20 text-green-400' : 'bg-primary-500/20 text-primary-400 group-hover:bg-primary-500/30'
+            isFullyComplete ? 'bg-green-500/20 text-green-400' : 'bg-primary/20 text-primary group-hover:bg-primary/30'
           }`}>
             {isFullyComplete ? <Check size={24} /> : <Play size={24} className="ml-1" />}
           </div>
@@ -78,9 +86,9 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                 <div className="flex items-center justify-between">
                   <h4 className="text-[10px]   text-muted-foreground ">Form Reference</h4>
                   {!exercise.exercises?.video_url && !showSuggestions && (
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); setShowSuggestions(true); }}
-                      className="text-[10px]  text-primary-400 hover:text-primary-300 flex items-center gap-2 bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20 transition-all"
+                      className="text-[10px]  text-primary hover:text-primary/80 flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full border border-primary/20 transition-all"
                     >
                       <Video size={12} /> Suggest Videos
                     </button>
@@ -105,7 +113,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                     }
                     return (
                       <a href={exercise.exercises.video_url} target="_blank" rel="noopener noreferrer" className="block">
-                        <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary-500/30 transition-all shadow-lg">
+                        <div className="aspect-video rounded-xl overflow-hidden bg-black/50 relative group cursor-pointer border border-white/5 hover:border-primary/30 transition-all shadow-lg">
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 group-hover:bg-black/40 transition-colors">
                             <ExternalLink size={48} className="text-white/70 group-hover:scale-110 transition-transform mb-4" />
                             <span className="text-xs font-medium text-primary-foreground/50">Open External Video</span>
@@ -118,7 +126,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                   <div className="space-y-3">
                     {isLoadingVideos ? (
                       <div className="h-24 flex items-center justify-center bg-white/5 rounded-xl border border-dashed border-white/10">
-                        <Loader2 size={24} className="text-primary-500 animate-spin" />
+                        <Loader2 size={24} className="text-primary animate-spin" />
                       </div>
                     ) : suggestions && suggestions.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -128,7 +136,7 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                             href={video.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-white/5 rounded-lg overflow-hidden border border-white/5 hover:border-primary-500/30 transition-all group/video"
+                            className="bg-white/5 rounded-lg overflow-hidden border border-white/5 hover:border-primary/30 transition-all group/video"
                           >
                             <div className="aspect-video relative overflow-hidden">
                               <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover group-hover/video:scale-110 transition-transform duration-500" />
@@ -159,10 +167,10 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
               {(exercise.technique_note || exercise.weight_note) && (
                 <div className="space-y-3">
                   <h4 className="text-[10px]   text-muted-foreground ">Instructions</h4>
-                  <div className="text-[13px] text-primary/80/80 bg-muted p-4 rounded-xl border border-border  font-medium leading-relaxed space-y-2">
+                  <div className="text-[13px] text-primary/80 bg-muted p-4 rounded-xl border border-border  font-medium leading-relaxed space-y-2">
                     {exercise.technique_note && (
                       <p>
-                        <span className="text-primary-400  not-italic mr-2">TECHNIQUE:</span>
+                        <span className="text-primary  not-italic mr-2">TECHNIQUE:</span>
                         {exercise.technique_note}
                       </p>
                     )}
@@ -185,23 +193,43 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
 
                   return (
                     <div key={setNum} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                      isCurrentSet 
-                        ? 'border-primary-500/40 bg-primary-500/10 shadow-[inset_0_0_15px_rgba(var(--primary-rgb),0.1)]' 
+                      isCurrentSet
+                        ? 'border-primary/40 bg-primary/10'
                         : 'border-white/5 bg-white/[0.02]'
                     }`}>
                       <span className="text-sm  text-foreground/60 ">Set {setNum}</span>
                       
                       {isSetDone ? (
-                        <div className="flex items-center text-green-400 text-xs  gap-2">
+                        <div className="flex items-center text-green-400 text-xs gap-2">
+                          {(() => {
+                            const reps = logEntry?.reps_done?.[idx];
+                            const weight = logEntry?.weights_used?.[idx];
+                            const detail = [
+                              reps != null ? `${reps} reps` : null,
+                              weight != null ? `${weight}kg` : null,
+                            ].filter(Boolean).join(' · ');
+                            return detail ? <span className="text-foreground/70 not-italic">{detail}</span> : null;
+                          })()}
                           <Check size={18} /> Recorded
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <input 
+                            <input
+                              type="number"
+                              placeholder="REPS"
+                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-16 text-primary-foreground focus:outline-none focus:border-primary/50 transition-all tracking-tighter"
+                              value={isCurrentSet ? repsInput : ''}
+                              onChange={(e) => setRepsInput(e.target.value)}
+                              disabled={!isCurrentSet}
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px]  text-muted-foreground">REPS</span>
+                          </div>
+                          <div className="relative">
+                            <input
                               type="number"
                               placeholder="WEIGHT"
-                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-primary-foreground focus:outline-none focus:border-primary-500/50 transition-all  tracking-tighter"
+                              className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs w-24 text-primary-foreground focus:outline-none focus:border-primary/50 transition-all  tracking-tighter"
                               value={weightInput}
                               onChange={(e) => setWeightInput(e.target.value)}
                               disabled={!isCurrentSet}
@@ -210,13 +238,18 @@ export function ExerciseCard({ exercise, completedSets, onLogSet, isActive }: Ex
                           </div>
                           <button
                             onClick={() => {
-                              onLogSet(setNum, weightInput ? parseFloat(weightInput) : null);
+                              onLogSet(
+                                setNum,
+                                weightInput ? parseFloat(weightInput) : null,
+                                repsInput ? parseInt(repsInput, 10) : null
+                              );
                               setWeightInput('');
+                              setRepsInput(defaultReps(exercise.reps));
                             }}
                             disabled={!isCurrentSet}
                             className={`px-5 py-2 rounded-lg text-xs  transition-all ${
-                              isCurrentSet 
-                                ? 'bg-primary-600 text-primary-foreground shadow-lg shadow-primary-900/20 hover:bg-primary-500 hover:scale-105 active:scale-95' 
+                              isCurrentSet
+                                ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95'
                                 : 'bg-white/5 text-gray-600 cursor-not-allowed opacity-50'
                             }`}
                           >

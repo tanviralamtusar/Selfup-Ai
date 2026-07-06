@@ -263,3 +263,96 @@ export interface PlanPreview {
   total_xp_per_week: number
   coin_cost: number
 }
+
+// ═══════════════════════════════════════════════════════════
+// Structured Programs (workout-cool port)
+// ═══════════════════════════════════════════════════════════
+
+export interface ProgramSuggestedSet {
+  set_index: number
+  type?: 'reps' | 'weight' | 'time' | 'bodyweight'
+  reps?: number
+  weight?: number
+  unit?: 'kg' | 'lbs'
+  seconds?: number
+}
+
+export interface ProgramRow {
+  id: string
+  slug: string | null
+  title: string
+  description: string | null
+  category: string | null
+  image_url: string | null
+  level: Difficulty
+  program_type: string | null
+  duration_weeks: number
+  sessions_per_week: number
+  session_duration_min: number
+  equipment: string[]
+  is_premium: boolean
+  is_active: boolean
+  visibility: 'draft' | 'published'
+  participant_count: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  // Relations
+  program_weeks?: ProgramWeekRow[]
+  // Injected server-side for the current user
+  enrollment?: ProgramEnrollmentRow | null
+}
+
+export interface ProgramWeekRow {
+  id: string
+  program_id: string
+  week_number: number
+  title: string | null
+  description: string | null
+  program_sessions?: ProgramSessionRow[]
+}
+
+export interface ProgramSessionRow {
+  id: string
+  week_id: string
+  session_number: number
+  title: string | null
+  description: string | null
+  equipment: string[]
+  estimated_minutes: number
+  program_session_exercises?: ProgramSessionExerciseRow[]
+}
+
+export interface ProgramSessionExerciseRow {
+  id: string
+  session_id: string
+  exercise_id: string
+  order_index: number
+  instructions: string | null
+  suggested_sets: ProgramSuggestedSet[]
+  // Relation
+  exercises?: ExerciseRow
+}
+
+export interface ProgramEnrollmentRow {
+  id: string
+  user_id: string
+  program_id: string
+  enrolled_at: string
+  current_week: number
+  current_session: number
+  completed_sessions: number
+  is_active: boolean
+  completed_at: string | null
+  // Relation
+  user_session_progress?: SessionProgressRow[]
+}
+
+export interface SessionProgressRow {
+  id: string
+  enrollment_id: string
+  session_id: string
+  started_at: string
+  completed_at: string | null
+  workout_session_id: string | null
+}

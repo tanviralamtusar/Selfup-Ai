@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import WorkoutView from '@/components/fitness/WorkoutView';
 import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
+import MuscleMapPicker from '@/components/fitness/MuscleMapPicker';
 import { LevelUpModal } from '@/components/gamification/LevelUpModal';
 import { AiPlanGeneratorModal } from '@/components/fitness/AiPlanGeneratorModal';
 import { PlanPreviewModal } from '@/components/fitness/PlanPreviewModal';
@@ -21,7 +22,7 @@ export default function FitnessPage() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'body'>('workout');
+  const [activeTab, setActiveTab] = useState<'workout' | 'exercises' | 'nutrition' | 'body'>('workout');
 
   // Level up state
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -154,7 +155,7 @@ export default function FitnessPage() {
 
       {/* ── Tabs Menu ── */}
       <div className="flex bg-card border border-border rounded-xl p-1 mb-10 overflow-x-auto scrollbar-hide">
-        {(['workout', 'nutrition', 'body'] as const).map(tab => (
+        {(['workout', 'exercises', 'nutrition', 'body'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -216,6 +217,12 @@ export default function FitnessPage() {
                   </div>
                 </section>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'exercises' && (
+            <div className="min-h-130">
+              <MuscleMapPicker />
             </div>
           )}
 

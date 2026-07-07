@@ -25,6 +25,7 @@ import {
   Settings,
   User,
   Activity,
+  Wallet,
 } from 'lucide-react'
 
 import { SystemKnowledge } from '@/components/dashboard/SystemKnowledge'
@@ -36,6 +37,7 @@ const navItems = [
   { icon: Dumbbell, label: 'Fitness', href: ROUTES.FITNESS },
   { icon: Brain, label: 'Skills', href: ROUTES.SKILLS },
   { icon: Clock, label: 'Time', href: ROUTES.TIME },
+  { icon: Wallet, label: 'Money', href: ROUTES.MONEY },
   { icon: Palette, label: 'Style', href: ROUTES.STYLE },
   { icon: Sword, label: 'Quests', href: ROUTES.QUESTS },
   { icon: Activity, label: 'Analysis', href: ROUTES.ANALYSIS },

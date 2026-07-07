@@ -20,6 +20,7 @@ export const ROUTES = {
   TIME: '/time',
   TIME_CALENDAR: '/time/calendar',
   STYLE: '/style',
+  MONEY: '/money',
   ANALYSIS: '/analysis',
 
   // Gamification

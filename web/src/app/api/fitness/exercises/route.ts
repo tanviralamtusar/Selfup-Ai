@@ -18,15 +18,24 @@ export async function GET(request: NextRequest) {
   // filter works whether or not the attributes migration has been applied.
   const muscleGroup = searchParams.get('muscle_group');
   const primaryMuscle = searchParams.get('primary_muscle');
+  const equipment = searchParams.get('equipment'); // comma-separated list
 
   let dbQuery = supabase
     .from('exercises')
     .select('*')
     .order('name', { ascending: true })
-    .limit(300);
+    .limit(500);
 
   if (query) {
     dbQuery = dbQuery.ilike('name', `%${query}%`);
+  }
+
+  if (equipment) {
+    const eq = equipment
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    if (eq.length) dbQuery = dbQuery.in('equipment', eq);
   }
 
   // Quote values so entries with spaces (e.g. "middle back") parse in a PostgREST in-list.

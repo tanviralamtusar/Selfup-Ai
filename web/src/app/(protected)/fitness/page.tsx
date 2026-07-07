@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabase';
 import WorkoutView from '@/components/fitness/WorkoutView';
 import NutritionView from '@/components/fitness/NutritionView';
 import BodyView from '@/components/fitness/BodyView';
-import MuscleMapPicker from '@/components/fitness/MuscleMapPicker';
+import WorkoutBuilder from '@/components/fitness/workout-builder/WorkoutBuilder';
 import ProgramsView from '@/components/fitness/ProgramsView';
 import { LevelUpModal } from '@/components/gamification/LevelUpModal';
 import { AiPlanGeneratorModal } from '@/components/fitness/AiPlanGeneratorModal';
@@ -225,7 +225,7 @@ export default function FitnessPage() {
 
           {activeTab === 'exercises' && (
             <div className="min-h-130">
-              <MuscleMapPicker />
+              <WorkoutBuilder />
             </div>
           )}
 

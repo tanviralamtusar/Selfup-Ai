@@ -9,6 +9,9 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 export const metadata: Metadata = {
   title: "SelfUp | Level Up Your Life",
   description: "Manage your life using AI",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

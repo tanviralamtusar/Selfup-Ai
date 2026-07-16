@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Flame, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Flame, Loader2, Plus, Sparkles, Trophy, MoreVertical, Edit2, Trash2, Zap as ZapIcon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -207,7 +207,7 @@ export function HabitsView() {
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between relative z-10">
           <div className="space-y-2 text-center md:text-left">
             <h2 className="text-2xl   text-foreground flex items-center justify-center md:justify-start gap-3">
-              <Zap className="text-primary animate-pulse" size={24} /> Daily Habits
+              <ZapIcon className="text-primary animate-pulse" size={24} /> Daily Habits
             </h2>
             <p className="text-[10px] text-muted-foreground  ">Build consistency and level up your life.</p>
           </div>

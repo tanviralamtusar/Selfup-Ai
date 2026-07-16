@@ -1,0 +1,143 @@
+﻿node.exe : npm warn Unknown cli config "--turbopack". This will stop working in the next major version of npm.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\alamt\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...version of npm.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+> Selfup-AI@1.1.0 build
+> next build --turbopack
+
+Γû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 8.0s
+  Running TypeScript ...
+  Finished TypeScript in 10.8s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/81) ...
+  Generating static pages using 11 workers (20/81) 
+  Generating static pages using 11 workers (40/81) 
+  Generating static pages using 11 workers (60/81) 
+Γ£ô Generating static pages using 11 workers (81/81) in 794ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /analysis
+Γö£ ╞Æ /api/ai
+Γö£ ╞Æ /api/ai/chat
+Γö£ ╞Æ /api/ai/chat/confirm
+Γö£ ╞Æ /api/ai/habits/suggest
+Γö£ ╞Æ /api/ai/memory
+Γö£ ╞Æ /api/ai/queue
+Γö£ ╞Æ /api/ai/settings
+Γö£ ╞Æ /api/ai/summary
+Γö£ ╞Æ /api/auth
+Γö£ ╞Æ /api/calendar/availability
+Γö£ ╞Æ /api/dailies
+Γö£ ╞Æ /api/dailies/[id]
+Γö£ ╞Æ /api/dailies/[id]/complete
+Γö£ ╞Æ /api/fitness
+Γö£ ╞Æ /api/fitness/body
+Γö£ ╞Æ /api/fitness/diet/plan
+Γö£ ╞Æ /api/fitness/exercises
+Γö£ ╞Æ /api/fitness/logs
+Γö£ ╞Æ /api/fitness/nutrition
+Γö£ ╞Æ /api/fitness/plans
+Γö£ ╞Æ /api/fitness/plans/[id]
+Γö£ ╞Æ /api/fitness/plans/[id]/adjustments
+Γö£ ╞Æ /api/fitness/plans/[id]/days
+Γö£ ╞Æ /api/fitness/programs
+Γö£ ╞Æ /api/fitness/programs/[id]
+Γö£ ╞Æ /api/fitness/programs/[id]/enroll
+Γö£ ╞Æ /api/fitness/programs/[id]/progress
+Γö£ ╞Æ /api/fitness/sessions
+Γö£ ╞Æ /api/fitness/sessions/[id]
+Γö£ ╞Æ /api/fitness/water
+Γö£ ╞Æ /api/gamification
+Γö£ ╞Æ /api/gamification/badges
+Γö£ ╞Æ /api/habits
+Γö£ ╞Æ /api/habits/[id]
+Γö£ ╞Æ /api/habits/[id]/log
+Γö£ ╞Æ /api/milestones/[id]
+Γö£ ╞Æ /api/money/accounts
+Γö£ ╞Æ /api/money/accounts/[id]
+Γö£ ╞Æ /api/money/budgets
+Γö£ ╞Æ /api/money/categories
+Γö£ ╞Æ /api/money/categories/[id]
+Γö£ ╞Æ /api/money/goals
+Γö£ ╞Æ /api/money/goals/[id]
+Γö£ ╞Æ /api/money/insights
+Γö£ ╞Æ /api/money/recurring
+Γö£ ╞Æ /api/money/recurring/[id]
+Γö£ ╞Æ /api/money/recurring/[id]/post
+Γö£ ╞Æ /api/money/summary
+Γö£ ╞Æ /api/money/transactions
+Γö£ ╞Æ /api/money/transactions/[id]
+Γö£ ╞Æ /api/notifications
+Γö£ ╞Æ /api/onboarding
+Γö£ ╞Æ /api/onboarding/questions
+Γö£ ╞Æ /api/pomodoro
+Γö£ ╞Æ /api/quests
+Γö£ ╞Æ /api/quests/[id]/abandon
+Γö£ ╞Æ /api/quests/[id]/accept
+Γö£ ╞Æ /api/quests/[id]/complete
+Γö£ ╞Æ /api/quests/[id]/progress
+Γö£ ╞Æ /api/quests/generate
+Γö£ ╞Æ /api/settings/profile
+Γö£ ╞Æ /api/skills
+Γö£ ╞Æ /api/skills/[id]/milestones
+Γö£ ╞Æ /api/skills/[id]/roadmap
+Γö£ ╞Æ /api/skills/[id]/sessions
+Γö£ ╞Æ /api/skills/[id]/topics
+Γö£ ╞Æ /api/skills/resources/library
+Γö£ ╞Æ /api/skills/tests
+Γö£ ╞Æ /api/skills/tests/[testId]/attempt
+Γö£ ╞Æ /api/social
+Γö£ ╞Æ /api/social/activities
+Γö£ ╞Æ /api/social/friends
+Γö£ ╞Æ /api/social/leaderboard
+Γö£ ╞Æ /api/style
+Γö£ ╞Æ /api/style/moodboard
+Γö£ ╞Æ /api/style/outfits
+Γö£ ╞Æ /api/style/recommendations
+Γö£ ╞Æ /api/tasks
+Γö£ ╞Æ /api/tasks/[id]
+Γö£ ╞Æ /api/tasks/batch
+Γö£ ╞Æ /api/time
+Γö£ ╞Æ /api/time/auto-schedule
+Γö£ ╞Æ /api/todos
+Γö£ ╞Æ /api/todos/[id]
+Γö£ ╞Æ /api/todos/[id]/complete
+Γö£ ╞Æ /api/todos/batch
+Γö£ ╞Æ /api/user
+Γö£ ╞Æ /api/user/activities
+Γö£ ╞Æ /api/user/badges
+Γö£ ╞Æ /api/user/streak-freeze
+Γö£ ╞Æ /api/user/transactions
+Γö£ ╞Æ /api/youtube/search
+Γö£ Γùï /chat
+Γö£ Γùï /dashboard
+Γö£ Γùï /fitness
+Γö£ ╞Æ /fitness/session/[dayId]
+Γö£ Γùï /forgot-password
+Γö£ Γùï /login
+Γö£ Γùï /money
+Γö£ Γùï /onboarding
+Γö£ Γùï /quests
+Γö£ Γùï /settings
+Γö£ Γùï /signup
+Γö£ Γùï /skills
+Γö£ Γùï /social/friends
+Γö£ Γùï /social/leaderboard
+Γö£ Γùï /style
+Γöö Γùï /time
+
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

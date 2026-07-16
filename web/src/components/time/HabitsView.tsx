@@ -7,7 +7,6 @@ import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { HabitHeatmap } from './HabitHeatmap'
-import { HabitCalendarGrid } from './HabitCalendarGrid'
 
 interface Habit {
   id: string
@@ -49,6 +48,8 @@ export function HabitsView() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSuggesting, setIsSuggesting] = useState(false)
   const [isAddingHabit, setIsAddingHabit] = useState(false)
+  const [checkingInId, setCheckingInId] = useState<string | null>(null)
+  const [checkInNote, setCheckInNote] = useState('')
   const [newHabit, setNewHabit] = useState<{
     title: string;
     description: string;
@@ -103,28 +104,42 @@ export function HabitsView() {
     } catch { toast.error('Failed to create habit') }
   }
 
-  const handleCompleteHabit = async (habit: Habit) => {
-    if (habit.is_completed_this_cycle) return // already done
+  const handleCompleteHabit = async (habit: Habit, notes?: string) => {
+    if (habit.is_completed_this_cycle) return
     try {
       const res = await fetch(`/api/habits/${habit.id}/log`, {
         method: 'POST',
         headers: headers(),
+        body: JSON.stringify({ notes: notes?.trim() || undefined }),
       })
       if (res.ok) {
         const data = await res.json()
         const xp = data.data?.xp_awarded || 10
         toast.success(`+${xp} XP!`)
-        // Optimistic update
-        setHabits(prev => prev.map(h => 
-          h.id === habit.id ? { 
-            ...h, 
-            is_completed_this_cycle: true, 
+        setCheckingInId(null)
+        setCheckInNote('')
+        setHabits(prev => prev.map(h =>
+          h.id === habit.id ? {
+            ...h,
+            is_completed_this_cycle: true,
             current_streak: h.current_streak + 1,
             habit_logs: [...(h.habit_logs || []), { completed_at: new Date().toISOString().split('T')[0] }]
           } : h
         ))
       }
     } catch { toast.error('Failed to update habit') }
+  }
+
+  const handleCheckIn = (habit: Habit) => {
+    if (habit.is_completed_this_cycle) return
+    if (checkingInId === habit.id) {
+      // Already open — cancel
+      setCheckingInId(null)
+      setCheckInNote('')
+    } else {
+      setCheckingInId(habit.id)
+      setCheckInNote('')
+    }
   }
 
   const handleDeleteHabit = async (id: string) => {
@@ -340,108 +355,124 @@ export function HabitsView() {
         )}
       </AnimatePresence>
 
-      {/* Habits Grid */}
+      {/* Habits List */}
       {isLoading ? (
         <div className="py-24 flex flex-col items-center gap-4">
           <Loader2 className="animate-spin text-primary" size={40} />
-          <p className="text-[10px]  text-muted-foreground  animate-pulse">Syncing System Data...</p>
+          <p className="text-[10px] text-muted-foreground animate-pulse">Syncing System Data...</p>
         </div>
       ) : habits.length === 0 ? (
-        <div className="py-24 text-center space-y-6 bg-card border border-border rounded-xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary/[0.02] pointer-events-none" />
+        <div className="py-24 text-center space-y-6 bg-card border border-border rounded-xl">
           <Sparkles size={48} className="text-muted-foreground mx-auto" />
           <div className="space-y-2">
-            <h3 className="text-muted-foreground   text-sm">No Habits Found</h3>
+            <h3 className="text-muted-foreground text-sm">No Habits Found</h3>
             <p className="text-muted-foreground text-[9px] max-w-xs mx-auto">Create your first daily habit to start growing.</p>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
+        <div className="space-y-2">
+          <AnimatePresence initial={false}>
             {habits.map(habit => (
               <motion.div
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
                 key={habit.id}
-                className={cn(
-                  "relative p-8 rounded-xl transition-all duration-500 overflow-hidden border group",
-                  habit.is_completed_this_cycle 
-                    ? "bg-muted border-border " 
-                    : "bg-background border-border hover:border-border hover:"
-                )}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
               >
-                {/* Scanline Effect */}
-                <div className="scanline opacity-20 pointer-events-none" />
-
-                {/* Decoration */}
-                <div className="absolute top-0 right-0 w-2 h-16 bg-primary/10 group-hover:bg-primary/20 transition-colors" />
-
-                <div className="flex justify-between items-start mb-6 relative z-10">
-                  <span className={cn(
-                    "px-3 py-1 rounded text-[8px]   border",
-                    habit.category === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-destructive/20' :
-                    'text-primary bg-muted border-border'
-                  )}>
-                    {habit.category}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    {habit.current_streak > 2 && (
-                      <span className="flex items-center gap-1 text-[10px]  text-primary/80 bg-primary/15 px-2.5 py-1 rounded border border-border ">
-                        <Zap size={10} fill="currentColor" /> {habit.current_streak}
-                      </span>
+                {/* Row */}
+                <div className={cn(
+                  "flex items-center gap-4 p-4 rounded-xl border transition-all group",
+                  habit.is_completed_this_cycle
+                    ? "bg-card border-border opacity-60"
+                    : checkingInId === habit.id
+                    ? "bg-card border-primary/30"
+                    : "bg-card border-border hover:border-primary/20"
+                )}>
+                  {/* Habitica-style + button */}
+                  <button
+                    onClick={() => handleCheckIn(habit)}
+                    disabled={habit.is_completed_this_cycle}
+                    className={cn(
+                      "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                      habit.is_completed_this_cycle
+                        ? "bg-primary/20 text-primary cursor-default"
+                        : "bg-primary text-primary-foreground hover:scale-110 active:scale-95 shadow-md hover:shadow-primary/40"
                     )}
-                    <button 
+                  >
+                    {habit.is_completed_this_cycle
+                      ? <CheckCircle2 size={22} />
+                      : <Plus size={22} strokeWidth={2.5} />
+                    }
+                  </button>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn(
+                        "text-sm font-medium truncate",
+                        habit.is_completed_this_cycle ? "line-through text-muted-foreground" : "text-foreground"
+                      )}>
+                        {habit.title}
+                      </span>
+                      {habit.current_streak > 0 && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-orange-400 flex-shrink-0">
+                          <Flame size={10} fill="currentColor" /> {habit.current_streak}
+                        </span>
+                      )}
+                    </div>
+                    {habit.description && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{habit.description}</p>
+                    )}
+                  </div>
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={cn(
+                      "px-2 py-0.5 rounded text-[9px] border",
+                      habit.category === 'fitness' ? 'text-rose-400 bg-rose-500/5 border-rose-500/20' : 'text-primary bg-primary/5 border-primary/20'
+                    )}>
+                      {habit.category}
+                    </span>
+                    <span className="text-[10px] text-amber-400/70 font-mono hidden sm:block">+{habit.xp_reward} XP</span>
+                    <button
                       onClick={() => handleDeleteHabit(habit.id)}
-                      className="p-1.5 rounded text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-transparent hover:border-destructive/20"
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-8 relative z-10">
-                  <h3 className={cn(
-                    "text-lg  transition-all",
-                    habit.is_completed_this_cycle ? "text-primary/40 line-through " : "text-foreground"
-                  )}>
-                    {habit.title}
-                  </h3>
-                  {habit.description && (
-                    <p className="text-[10px] text-muted-foreground tracking-wide truncate">{habit.description}</p>
+                {/* Inline check-in panel */}
+                <AnimatePresence>
+                  {checkingInId === habit.id && !habit.is_completed_this_cycle && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mx-3 mb-1 p-3 bg-muted rounded-b-xl border-x border-b border-primary/20 space-y-2">
+                        <textarea
+                          autoFocus
+                          rows={2}
+                          placeholder="How did it go? (optional note)"
+                          value={checkInNote}
+                          onChange={e => setCheckInNote(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleCompleteHabit(habit, checkInNote) }}
+                          className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none transition-all"
+                        />
+                        <button
+                          onClick={() => handleCompleteHabit(habit, checkInNote)}
+                          className="w-full py-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] transition-all"
+                        >
+                          Confirm Check In
+                        </button>
+                      </div>
+                    </motion.div>
                   )}
-                  
-                  {/* Calendar Grid */}
-                  <div className="pt-4 opacity-60 group-hover:opacity-100 transition-opacity">
-                    <HabitCalendarGrid 
-                      logs={habit.habit_logs || []} 
-                      pillar={habit.category} 
-                    />
-                  </div>
-                </div>
-
-                {/* Check-in button */}
-                <button
-                  onClick={() => handleCompleteHabit(habit)}
-                  disabled={habit.is_completed_this_cycle}
-                  className={cn(
-                    "w-full py-4 rounded flex items-center justify-center gap-3 text-[10px]   transition-all relative z-10 border shadow-inner",
-                    habit.is_completed_this_cycle
-                      ? "bg-primary/15 text-primary/60 border-border cursor-not-allowed opacity-50"
-                      : "bg-muted text-primary border-border hover:bg-primary hover:text-foreground hover:border-primary/30 hover: active:scale-95"
-                  )}
-                >
-                  {habit.is_completed_this_cycle ? (
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 size={16} /> Completed
-                    </div>
-                  ) : (
-                    <>
-                      <Plus size={16} /> Complete
-                    </>
-                  )
-                }
-                </button>
+                </AnimatePresence>
               </motion.div>
             ))}
           </AnimatePresence>

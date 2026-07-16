@@ -9,9 +9,13 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 export const metadata: Metadata = {
   title: "SelfUp | Level Up Your Life",
   description: "Manage your life using AI",
-  icons: {
-    icon: "/icon.png",
-  },
+  icons: [
+    {
+      rel: "icon",
+      type: "image/png",
+      url: "/icon.png",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -22,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("dark", "font-sans", geist.variable)}>
       <head>
+        <link rel="icon" type="image/png" href="/icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 

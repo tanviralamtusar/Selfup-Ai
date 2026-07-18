@@ -1,17 +1,20 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import {
   xpToNextLevel,
+  clampLevel,
   getRank,
   getRankLetter,
   calculateMaxHp,
   calculateHpDamageReduction,
   getHpState,
   getXpModifier,
+  applyAttributeXpBonus,
   AICOIN_EARN,
   STREAK_MILESTONES,
   HP_DAMAGE,
   HP_RECOVERY,
   STREAK_FREEZE,
+  MAX_LEVEL,
   type Rank,
   type HpState,
   type AttributeKey,
@@ -62,18 +65,20 @@ export class GamificationService {
     userId: string,
     baseXpAmount: number,
     options?: { actionType?: string; skipModifier?: boolean }
-  ): Promise<{ leveledUp: boolean; details?: LevelUpInfo }> {
-    if (baseXpAmount <= 0) return { leveledUp: false }
+  ): Promise<{ leveledUp: boolean; xpAwarded: number; details?: LevelUpInfo }> {
+    if (baseXpAmount <= 0) return { leveledUp: false, xpAwarded: 0 }
 
     const { data: profile, error } = await this.supabase
       .from('user_profiles')
-      .select('level, xp, total_xp, ai_coins, hp_state, attr_str, attr_int, stat_points, rank')
+      .select(
+        'level, xp, total_xp, ai_coins, hp_state, attr_str, attr_int, attr_agi, attr_vit, attr_cha, stat_points, rank'
+      )
       .eq('id', userId)
       .single()
 
     if (error || !profile) {
       console.error('Failed to fetch profile for XP addition:', error)
-      return { leveledUp: false }
+      return { leveledUp: false, xpAwarded: 0 }
     }
 
     // Apply HP-state XP modifier (weakened = -15%, critical = -30%, collapse = -50%)
@@ -83,14 +88,20 @@ export class GamificationService {
       xpAmount = Math.floor(baseXpAmount * modifier)
     }
 
-    // Apply attribute bonuses (STR for physical, INT for learning)
-    if (options?.actionType === 'workout' || options?.actionType === 'fitness') {
-      xpAmount = Math.floor(xpAmount * (1 + profile.attr_str * 0.02))
-    } else if (options?.actionType === 'skill' || options?.actionType === 'learning') {
-      xpAmount = Math.floor(xpAmount * (1 + profile.attr_int * 0.02))
-    }
+    // Apply attribute bonus (STR for physical, INT for learning)
+    xpAmount = applyAttributeXpBonus(xpAmount, options?.actionType, {
+      str: profile.attr_str,
+      int: profile.attr_int,
+      agi: profile.attr_agi,
+      vit: profile.attr_vit,
+      cha: profile.attr_cha,
+    })
 
-    let { level, xp, total_xp, ai_coins, stat_points } = profile
+    // Modifiers can round a small award down to 0 — never let an award vanish.
+    if (xpAmount <= 0) xpAmount = 1
+
+    let { xp, total_xp, ai_coins, stat_points } = profile
+    let level = clampLevel(profile.level ?? 1)
     const oldRank = profile.rank as Rank
 
     total_xp += xpAmount
@@ -99,8 +110,8 @@ export class GamificationService {
     let coinsRewarded = 0
     let statPointsAwarded = 0
 
-    // Handle multiple level ups
-    while (xp >= xpToNextLevel(level)) {
+    // Handle multiple level ups, stopping at MAX_LEVEL
+    while (level < MAX_LEVEL && xp >= xpToNextLevel(level)) {
       leveledUp = true
       xp -= xpToNextLevel(level)
       level += 1
@@ -112,6 +123,12 @@ export class GamificationService {
       // +1 stat point per level up
       statPointsAwarded += 1
       stat_points += 1
+    }
+
+    // At max level XP still accrues into total_xp, but the progress bar pins full
+    // instead of growing without bound.
+    if (level >= MAX_LEVEL) {
+      xp = Math.min(xp, xpToNextLevel(MAX_LEVEL))
     }
 
     // Check rank change
@@ -134,7 +151,7 @@ export class GamificationService {
 
     if (updateError) {
       console.error('Failed to update profile XP:', updateError)
-      return { leveledUp: false }
+      return { leveledUp: false, xpAwarded: 0 }
     }
 
     // Log coin transaction if leveled up
@@ -171,6 +188,7 @@ export class GamificationService {
 
     return {
       leveledUp,
+      xpAwarded: xpAmount,
       details: leveledUp
         ? {
             newLevel: level,
@@ -183,6 +201,80 @@ export class GamificationService {
           }
         : undefined,
     }
+  }
+
+  /**
+   * Removes XP from a user (missed dailies, overdue todos).
+   * Unlike a raw `xp` decrement this cascades down through levels, keeps
+   * total_xp consistent, and re-derives rank. Level 1 is the floor — a
+   * penalty can never drop a user below it, and XP never goes negative.
+   */
+  async removeXp(userId: string, amount: number): Promise<{ leveledDown: boolean; level: number; xp: number }> {
+    const { data: profile, error } = await this.supabase
+      .from('user_profiles')
+      .select('level, xp, total_xp, rank')
+      .eq('id', userId)
+      .single()
+
+    if (error || !profile) {
+      console.error('Failed to fetch profile for XP removal:', error)
+      return { leveledDown: false, level: 1, xp: 0 }
+    }
+
+    const startingLevel = clampLevel(profile.level ?? 1)
+    let level = startingLevel
+    let xp = profile.xp ?? 0
+
+    // Normalize first. Profiles written by the old TaskEconomy fallback (which
+    // seeded its threshold from a possibly-stale xp_to_next_level column) and by
+    // the old level regression (which dropped level but kept xp) can hold xp
+    // above the current level's threshold. Settle that before subtracting.
+    while (level < MAX_LEVEL && xp >= xpToNextLevel(level)) {
+      xp -= xpToNextLevel(level)
+      level += 1
+    }
+
+    xp -= Math.abs(amount)
+
+    // Cascade downward through levels while the deficit remains
+    while (xp < 0 && level > 1) {
+      level -= 1
+      xp += xpToNextLevel(level)
+    }
+    if (xp < 0) xp = 0 // floored at level 1
+
+    const total_xp = Math.max(0, (profile.total_xp ?? 0) - Math.abs(amount))
+    const newRank = getRankLetter(level)
+
+    const { error: updateError } = await this.supabase
+      .from('user_profiles')
+      .update({
+        level,
+        xp,
+        xp_to_next_level: xpToNextLevel(level),
+        total_xp,
+        rank: newRank,
+      })
+      .eq('id', userId)
+
+    if (updateError) {
+      console.error('Failed to update profile after XP removal:', updateError)
+      return { leveledDown: false, level: startingLevel, xp: profile.xp ?? 0 }
+    }
+
+    const leveledDown = level < startingLevel
+
+    if (leveledDown) {
+      await this.supabase.from('notifications').insert({
+        user_id: userId,
+        type: 'level_down',
+        title: `Level Down: ${startingLevel} → ${level}`,
+        body: 'Neglected obligations have eroded your progress. The System does not forget.',
+        data: { oldLevel: startingLevel, newLevel: level },
+      })
+    }
+
+    return { leveledDown, level, xp }
   }
 
   // ─── Stat Allocation ──────────────────────────
@@ -258,13 +350,17 @@ export class GamificationService {
 
     // Level regression at HP 0
     if (newHp <= 0 && (profile.level ?? 1) > 1) {
-      const oldLevel = profile.level ?? 1
+      const oldLevel = clampLevel(profile.level ?? 1)
       const newLevel = oldLevel - 1
 
       await this.supabase
         .from('user_profiles')
         .update({
           level: newLevel,
+          // Reset progress into the level too. Without this the retained `xp`
+          // still exceeds the (lower) new threshold, so the very next award
+          // re-levels the user and the regression is a no-op.
+          xp: 0,
           hp: 30, // Reset HP to 30 after regression
           hp_state: 'critical',
           rank: getRankLetter(newLevel),

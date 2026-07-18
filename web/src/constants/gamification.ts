@@ -8,6 +8,14 @@ export function xpToNextLevel(level: number): number {
 }
 
 /**
+ * Clamp a level into the valid [1, MAX_LEVEL] range.
+ */
+export function clampLevel(level: number): number {
+  if (!Number.isFinite(level)) return 1
+  return Math.min(MAX_LEVEL, Math.max(1, Math.floor(level)))
+}
+
+/**
  * Get the title for a given level
  */
 export function getLevelTitle(level: number): string {
@@ -149,12 +157,54 @@ export interface AttributeInfo {
 }
 
 export const ATTRIBUTES: AttributeInfo[] = [
-  { key: 'str', name: 'Strength',     domain: 'Physical development',       primaryBonus: '+5% XP from physical actions per point', color: 'text-red-400' },
-  { key: 'int', name: 'Intelligence', domain: 'Mental development',         primaryBonus: '+10 max AiCoin daily pool per point',    color: 'text-cyan-400' },
+  { key: 'str', name: 'Strength',     domain: 'Physical development',       primaryBonus: '+2% XP from physical actions per point', color: 'text-red-400' },
+  { key: 'int', name: 'Intelligence', domain: 'Mental development',         primaryBonus: '+2% XP from learning actions per point', color: 'text-cyan-400' },
   { key: 'agi', name: 'Agility',      domain: 'Discipline & consistency',   primaryBonus: '+1 AiCoin passive regen/day per point',  color: 'text-blue-300' },
   { key: 'vit', name: 'Vitality',     domain: 'Health & recovery',          primaryBonus: '+15 max HP per point',                   color: 'text-green-400' },
   { key: 'cha', name: 'Charisma',     domain: 'Social influence & style',   primaryBonus: '+5% bonus Guild XP per point',           color: 'text-purple-400' },
 ]
+
+// ─── Attribute XP Bonus ─────────────────────────
+//
+// Single source of truth. Previously GamificationService used 2%,
+// TaskEconomyService used 0.5%, and the docs above claimed 5% — so the
+// same action was worth different XP depending on which code path ran.
+
+export const XP_ATTRIBUTE_BONUS_PER_POINT = 0.02
+
+/**
+ * Maps an action/category label to the attribute that boosts its XP.
+ * Accepts both the `actionType` vocabulary used by GamificationService
+ * ('workout', 'skill', 'learning') and the task `category` vocabulary
+ * used by TaskEconomyService ('fitness', 'skills').
+ */
+const XP_ACTION_ATTRIBUTE: Record<string, AttributeKey> = {
+  workout: 'str',
+  fitness: 'str',
+  skill: 'int',
+  skills: 'int',
+  learning: 'int',
+}
+
+export function getAttributeForAction(actionType?: string | null): AttributeKey | null {
+  if (!actionType) return null
+  return XP_ACTION_ATTRIBUTE[actionType.toLowerCase()] ?? null
+}
+
+/**
+ * Apply the attribute multiplier to a base XP amount.
+ * Returns baseXp unchanged when the action maps to no attribute.
+ */
+export function applyAttributeXpBonus(
+  baseXp: number,
+  actionType: string | null | undefined,
+  attributes: Partial<Record<AttributeKey, number>>
+): number {
+  const key = getAttributeForAction(actionType)
+  if (!key) return baseXp
+  const points = attributes[key] ?? 0
+  return Math.floor(baseXp * (1 + points * XP_ATTRIBUTE_BONUS_PER_POINT))
+}
 
 /** Attribute auto-gain thresholds */
 export const ATTRIBUTE_GAIN_THRESHOLDS = {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
 import AppShell from '@/components/layout/AppShell'
+import { DayStartModal } from '@/components/gamification/DayStartModal'
 
 function LoadingScreen() {
   return (
@@ -76,5 +77,10 @@ export default function ProtectedLayout({
     return <LoadingScreen />
   }
 
-  return <AppShell>{children}</AppShell>
+  return (
+    <AppShell>
+      <DayStartModal />
+      {children}
+    </AppShell>
+  )
 }

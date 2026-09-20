@@ -44,6 +44,18 @@ const navItems = [
   { icon: Users, label: 'Social', href: ROUTES.LEADERBOARD },
 ]
 
+// Keep deferred modules implemented but out of navigation until they are ready to revisit.
+const temporarilyHiddenNavItems = new Set([
+  'AI Chat',
+  'Fitness',
+  'Skills',
+  'Style',
+  'Quests',
+  'Social',
+])
+
+const showDeferredHeaderControls = false
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -77,6 +89,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const xp = profile?.xp || 0
   const maxXP = level * 1000
   const progress = (xp / maxXP) * 100
+  const coreNavItems = navItems.slice(0, 4).filter((item) => !temporarilyHiddenNavItems.has(item.label))
+  const exploreNavItems = navItems.slice(4).filter((item) => !temporarilyHiddenNavItems.has(item.label))
+  const mobileNavItems = [...coreNavItems, ...exploreNavItems]
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -102,20 +117,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowSystemKnowledge(true)}
-            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title="AI Memory"
-          >
-            <Brain size={18} />
-          </button>
+          {showDeferredHeaderControls && (
+            <>
+              <button
+                onClick={() => setShowSystemKnowledge(true)}
+                className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title="AI Memory"
+              >
+                <Brain size={18} />
+              </button>
 
-          <button className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors relative">
-            <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
-          </button>
+              <button className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors relative">
+                <Bell size={18} />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
+              </button>
 
-          <BackgroundTasksWidget />
+              <BackgroundTasksWidget />
+            </>
+          )}
 
           <button
             onClick={() => router.push(ROUTES.SETTINGS)}
@@ -211,7 +230,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div>
             <p className="px-3 text-xs font-medium text-muted-foreground mb-1">Core</p>
             <div className="space-y-0.5">
-              {navItems.slice(0, 4).map((item) => {
+              {coreNavItems.map((item) => {
                 const isActive = getIsActive(item.href)
                 const Icon = item.icon
                 return (
@@ -243,7 +262,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div>
             <p className="px-3 text-xs font-medium text-muted-foreground mb-1">Explore</p>
             <div className="space-y-0.5">
-              {navItems.slice(4).map((item) => {
+              {exploreNavItems.map((item) => {
                 const isActive = getIsActive(item.href)
                 const Icon = item.icon
                 return (
@@ -319,7 +338,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* ─── Mobile Bottom Nav ─── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-background border-t border-border px-4 flex items-center justify-between z-50">
-        {navItems.slice(0, 5).map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = getIsActive(item.href)
           const Icon = item.icon
           return (

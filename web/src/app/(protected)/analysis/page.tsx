@@ -37,6 +37,41 @@ import {
   Bar
 } from 'recharts'
 import { cn, formatNumber } from '@/lib/utils'
+import { toast } from 'sonner'
+import { ATTRIBUTES, type AttributeKey } from '@/constants/gamification'
+import { ActivityFeed } from '@/components/gamification/ActivityFeed'
+import { StatAllocationModal } from '@/components/gamification/StatAllocationModal'
+
+function Gauge({ percent, colorClass, label, title }: { percent: number, colorClass: string, label: string, title: string }) {
+  const dasharray = 364.4
+  const dashoffset = dasharray - (dasharray * percent) / 100
+
+  return (
+    <div className="flex flex-col items-center gap-2 group">
+      <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128" preserveAspectRatio="xMidYMid meet">
+          <circle className="text-muted" cx="64" cy="64" r="58" fill="transparent" stroke="currentColor" strokeWidth="6" />
+          <motion.circle
+            className={cn('transition-all duration-1000', colorClass)}
+            cx="64" cy="64" r="58"
+            fill="transparent"
+            stroke="currentColor"
+            strokeDasharray={dasharray}
+            initial={{ strokeDashoffset: dasharray }}
+            animate={{ strokeDashoffset: dashoffset }}
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+        </svg>
+        <div className="absolute flex flex-col items-center justify-center text-center">
+          <span className="text-base font-semibold text-foreground leading-none">{Math.round(percent)}%</span>
+          <span className="text-[9px] font-medium text-muted-foreground mt-0.5">{label}</span>
+        </div>
+      </div>
+      <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{title}</p>
+    </div>
+  )
+}
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -58,7 +93,8 @@ interface ActivityData {
 }
 
 export default function AnalysisPage() {
-  const { profile, session } = useAuthStore()
+  const { profile, session, setProfile } = useAuthStore()
+  const [showStatAllocationModal, setShowStatAllocationModal] = useState(false)
   const [activities, setActivities] = useState<ActivityData[]>([])
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
@@ -145,6 +181,43 @@ export default function AnalysisPage() {
     })
     return Object.entries(types).map(([name, value]) => ({ name, value }))
   }, [activities])
+
+  const attrs = useMemo(() => ({
+    str: profile?.attr_str ?? 0,
+    int: profile?.attr_int ?? 0,
+    agi: profile?.attr_agi ?? 0,
+    vit: profile?.attr_vit ?? 0,
+    cha: profile?.attr_cha ?? 0,
+  }), [profile])
+  const statPoints = profile?.stat_points ?? 0
+
+  const handleAllocateStat = async (attribute: AttributeKey): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ action: 'allocate_stat', attribute })
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success(`${attribute.toUpperCase()} enhanced!`)
+        if (profile) {
+          setProfile({
+            ...profile,
+            stat_points: data.data.remainingPoints,
+            [`attr_${attribute}`]: data.data.newValue,
+            max_hp: attribute === 'vit' ? data.data.newValue * 15 + 100 : profile.max_hp
+          })
+        }
+        return true
+      }
+      toast.error(data.error || 'Failed to allocate point')
+      return false
+    } catch {
+      toast.error('Network error')
+      return false
+    }
+  }
 
   const COLORS = ['#9c7ef0', '#5db8a0', '#10b981', '#f43f5e', '#d4a84b', '#60a5fa']
 
@@ -401,6 +474,45 @@ export default function AnalysisPage() {
         </motion.div>
 
       </div>
+
+      {/* Attributes + Activity Feed */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <motion.section variants={itemAnim} className="xl:col-span-3 bg-card border border-border rounded-xl p-6">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-foreground">Attributes</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Your core stats and growth progress</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+            {ATTRIBUTES.map((attr) => (
+              <Gauge
+                key={attr.key}
+                percent={Math.min(100, (attrs[attr.key] / 50) * 100)}
+                colorClass={attr.key === 'str' ? 'text-rose-400' : attr.key === 'int' ? 'text-[#5db8a0]' : 'text-primary'}
+                label={attr.key.toUpperCase()}
+                title={attr.name}
+              />
+            ))}
+            {statPoints > 0 && (
+              <div className="flex flex-col items-center justify-center gap-2">
+                <button
+                  onClick={() => setShowStatAllocationModal(true)}
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
+                >
+                  <span className="text-lg font-medium text-amber-400">+{statPoints}</span>
+                </button>
+                <p className="text-xs font-medium text-amber-400">Allocate</p>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
+        <motion.div variants={itemAnim} className="bg-card border border-border rounded-xl p-4 max-h-[520px] overflow-y-auto">
+          <p className="text-sm font-semibold text-foreground mb-3 sticky top-0 bg-card pb-2 border-b border-border -mx-4 px-4">Activity</p>
+          <ActivityFeed />
+        </motion.div>
+      </div>
+
+      <StatAllocationModal isOpen={showStatAllocationModal} onClose={() => setShowStatAllocationModal(false)} statPoints={statPoints} attributes={attrs} onAllocate={handleAllocateStat} />
 
       {/* Activity Timeline Simplified */}
       <motion.section variants={itemAnim} className="bg-card  border border-border rounded-xl p-6">

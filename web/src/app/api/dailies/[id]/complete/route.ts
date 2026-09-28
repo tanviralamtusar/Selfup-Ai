@@ -65,23 +65,11 @@ export async function POST(
     return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 })
   }
 
-  // Award XP with attribute multiplier
+  // Award XP — idempotent via xp_transactions.
+  // Use daily.id + today's date as source_id so it can be re-awarded tomorrow.
+  // The attribute multiplier is applied inside awardXp via the category, so it
+  // must NOT be pre-applied here or the bonus would compound.
   const economy = new TaskEconomyService(db)
-
-  // Fetch user attributes for multiplier calculation
-  const { data: profile } = await db
-    .from('user_profiles')
-    .select('attr_str, attr_int, attr_agi, attr_vit, attr_cha')
-    .eq('id', user.id)
-    .single()
-
-  let xpAmount = daily.xp_reward
-  if (profile) {
-    xpAmount = economy.applyAttributeMultiplier(xpAmount, daily.category, profile)
-  }
-
-  // Award XP — idempotent via xp_transactions
-  // Use daily.id + today's date as source_id so it can be re-awarded tomorrow
   const today = new Date().toISOString().split('T')[0]
   const sourceId = `${daily.id}:${today}`
 
@@ -89,16 +77,18 @@ export async function POST(
     user.id,
     'daily',
     sourceId,
-    xpAmount,
-    `Completed daily: ${daily.title}`
+    daily.xp_reward,
+    `Completed daily: ${daily.title}`,
+    daily.category
   )
 
   return NextResponse.json({
     success: true,
     data: {
       daily_id: daily.id,
-      xp_awarded: xpResult.alreadyAwarded ? 0 : xpAmount,
+      xp_awarded: xpResult.amount,
       already_awarded: xpResult.alreadyAwarded,
+      leveled_up: xpResult.leveledUp,
     }
   })
 }

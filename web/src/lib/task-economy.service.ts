@@ -1,4 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import { GamificationService } from './gamification.service'
+import { applyAttributeXpBonus } from '@/constants/gamification'
 
 // ── XP Reward Tables (from §5.1) ──
 
@@ -40,15 +42,6 @@ const HABIT_HP_PENALTY: Record<string, number> = {
   monthly: 15,
 }
 
-// ── Attribute Multiplier (from §5.3) ──
-
-const ATTRIBUTE_BONUS_PER_POINT = 0.005 // +0.5% per point
-
-const CATEGORY_ATTRIBUTE_MAP: Record<string, string> = {
-  fitness: 'attr_str',
-  skills: 'attr_int',
-}
-
 // ── Types ──
 
 type TaskType = 'daily' | 'habit' | 'todo'
@@ -68,9 +61,11 @@ interface UserAttributes {
 
 export class TaskEconomyService {
   private db: SupabaseClient
+  private gamification: GamificationService
 
   constructor(db: SupabaseClient) {
     this.db = db
+    this.gamification = new GamificationService(db)
   }
 
   /**
@@ -101,37 +96,49 @@ export class TaskEconomyService {
   }
 
   /**
-   * Apply attribute multiplier to base XP
-   * fitness tasks get STR bonus, skills tasks get INT bonus
+   * Apply attribute multiplier to base XP.
+   *
+   * @deprecated Pass `category` to `awardXp` instead — it applies the bonus via
+   * GamificationService. Kept so existing callers keep type-checking; it now
+   * uses the shared constant rather than a second, smaller rate.
    */
   applyAttributeMultiplier(
     baseXp: number,
     category: string,
     attributes: UserAttributes
   ): number {
-    const attrKey = CATEGORY_ATTRIBUTE_MAP[category]
-    if (!attrKey) return baseXp
-
-    const attrValue = (attributes as unknown as Record<string, number>)[attrKey] || 0
-    const multiplier = 1 + ATTRIBUTE_BONUS_PER_POINT * attrValue
-    return Math.floor(baseXp * multiplier)
+    return applyAttributeXpBonus(baseXp, category, {
+      str: attributes.attr_str,
+      int: attributes.attr_int,
+      agi: attributes.attr_agi,
+      vit: attributes.attr_vit,
+      cha: attributes.attr_cha,
+    })
   }
 
   /**
-   * Award XP for a task completion — idempotent via xp_transactions UNIQUE constraint.
-   * Returns { success, alreadyAwarded, amount }
+   * Award XP for a task completion — idempotent via the xp_transactions
+   * UNIQUE (user_id, source_type, source_id) constraint.
+   *
+   * The actual XP application is delegated to GamificationService.addXp so that
+   * level-ups grant AiCoins, stat points, rank changes and notifications. The
+   * previous inline implementation wrote only `xp`/`level`, so leveling up from
+   * a daily silently awarded nothing and left `rank` permanently stale.
+   *
+   * Pass `category` to get the STR/INT attribute bonus applied.
    */
   async awardXp(
     userId: string,
     sourceType: SourceType,
     sourceId: string,
     amount: number,
-    reason?: string
-  ): Promise<{ success: boolean; alreadyAwarded: boolean; amount: number }> {
-    if (amount <= 0) return { success: true, alreadyAwarded: false, amount: 0 }
+    reason?: string,
+    category?: string
+  ): Promise<{ success: boolean; alreadyAwarded: boolean; amount: number; leveledUp: boolean }> {
+    if (amount <= 0) return { success: true, alreadyAwarded: false, amount: 0, leveledUp: false }
 
-    // Try to insert — UNIQUE constraint prevents duplicates
-    const { error: txError } = await this.db
+    // Claim the idempotency key first so concurrent double-submits collapse.
+    const { data: txRow, error: txError } = await this.db
       .from('xp_transactions')
       .insert({
         user_id: userId,
@@ -140,55 +147,39 @@ export class TaskEconomyService {
         amount,
         reason: reason || `${sourceType} completion`,
       })
+      .select('id')
+      .single()
 
     if (txError) {
       // 23505 = unique_violation (already awarded)
       if (txError.code === '23505') {
-        return { success: true, alreadyAwarded: true, amount: 0 }
+        return { success: true, alreadyAwarded: true, amount: 0, leveledUp: false }
       }
       throw new Error(`XP award failed: ${txError.message}`)
     }
 
-    // Update user XP
-    await this.db.rpc('increment_user_xp', {
-      p_user_id: userId,
-      p_amount: amount,
-    }).then(async (result) => {
-      // If RPC doesn't exist, fall back to manual update
-      if (result.error) {
-        const { data: profile } = await this.db
-          .from('user_profiles')
-          .select('xp, total_xp, xp_to_next_level, level')
-          .eq('id', userId)
-          .single()
+    const result = await this.gamification.addXp(userId, amount, { actionType: category })
 
-        if (profile) {
-          let newXp = (profile.xp || 0) + amount
-          let newTotalXp = (profile.total_xp || 0) + amount
-          let level = profile.level || 1
-          let xpToNext = profile.xp_to_next_level || 100
+    // The profile update failed — release the idempotency key so the award is
+    // not permanently lost. Previously the key stayed claimed and the XP was
+    // unrecoverable.
+    if (result.xpAwarded <= 0) {
+      if (txRow?.id) await this.db.from('xp_transactions').delete().eq('id', txRow.id)
+      return { success: false, alreadyAwarded: false, amount: 0, leveledUp: false }
+    }
 
-          // Check for level up
-          while (newXp >= xpToNext) {
-            newXp -= xpToNext
-            level += 1
-            xpToNext = Math.floor(100 * Math.pow(level, 1.5))
-          }
+    // Record what was actually granted (post HP-state modifier and attribute
+    // bonus) rather than the requested base amount.
+    if (txRow?.id && result.xpAwarded !== amount) {
+      await this.db.from('xp_transactions').update({ amount: result.xpAwarded }).eq('id', txRow.id)
+    }
 
-          await this.db
-            .from('user_profiles')
-            .update({
-              xp: newXp,
-              total_xp: newTotalXp,
-              level,
-              xp_to_next_level: xpToNext,
-            })
-            .eq('id', userId)
-        }
-      }
-    })
-
-    return { success: true, alreadyAwarded: false, amount }
+    return {
+      success: true,
+      alreadyAwarded: false,
+      amount: result.xpAwarded,
+      leveledUp: result.leveledUp,
+    }
   }
 
   /**
@@ -221,20 +212,10 @@ export class TaskEconomyService {
       throw new Error(`XP penalty failed: ${txError.message}`)
     }
 
-    // Reduce user XP (but not below 0 for current level)
-    const { data: profile } = await this.db
-      .from('user_profiles')
-      .select('xp')
-      .eq('id', userId)
-      .single()
-
-    if (profile) {
-      const newXp = Math.max(0, (profile.xp || 0) - Math.abs(amount))
-      await this.db
-        .from('user_profiles')
-        .update({ xp: newXp })
-        .eq('id', userId)
-    }
+    // Delegate so the penalty cascades through levels and keeps total_xp and
+    // rank consistent. The old inline version only clamped `xp` at 0 within the
+    // current level, so a large penalty at low XP was silently absorbed.
+    await this.gamification.removeXp(userId, Math.abs(amount))
 
     return { success: true, alreadyApplied: false }
   }
@@ -245,34 +226,28 @@ export class TaskEconomyService {
    */
   async applyHpDamage(
     userId: string,
-    baseDamage: number
+    baseDamage: number,
+    reason = 'Missed obligation'
   ): Promise<{ success: boolean; actualDamage: number; newHp: number }> {
-    const { data: profile } = await this.db
+    // Delegated. The old inline version derived hp_state from ABSOLUTE hp
+    // (60/30/10) rather than a percentage of max_hp, so any user who invested
+    // in VIT (max_hp 100 + 15/point) got a wrong state — e.g. 70/250 HP read as
+    // "healthy" here while GamificationService correctly called it "weakened".
+    const before = await this.db
       .from('user_profiles')
-      .select('hp, max_hp, attr_vit')
+      .select('hp')
       .eq('id', userId)
       .single()
 
-    if (!profile) throw new Error('User not found')
+    if (!before.data) throw new Error('User not found')
 
-    // VIT mitigation: every 3 VIT = 10% reduction
-    const vitReduction = Math.floor((profile.attr_vit || 0) / 3) * 0.1
-    const actualDamage = Math.max(1, Math.floor(baseDamage * (1 - vitReduction)))
-    const newHp = Math.max(0, (profile.hp || 100) - actualDamage)
+    const result = await this.gamification.damageHp(userId, baseDamage, reason)
 
-    // Determine HP state
-    let hpState = 'healthy'
-    if (newHp <= 60 && newHp > 30) hpState = 'weakened'
-    else if (newHp <= 30 && newHp > 10) hpState = 'critical'
-    else if (newHp <= 10 && newHp > 0) hpState = 'collapse'
-    else if (newHp === 0) hpState = 'collapse' // Level regression handled separately
-
-    await this.db
-      .from('user_profiles')
-      .update({ hp: newHp, hp_state: hpState })
-      .eq('id', userId)
-
-    return { success: true, actualDamage, newHp }
+    return {
+      success: true,
+      actualDamage: Math.max(0, (before.data.hp ?? 0) - result.hp),
+      newHp: result.hp,
+    }
   }
 
   /**
@@ -280,29 +255,11 @@ export class TaskEconomyService {
    */
   async recoverHp(
     userId: string,
-    amount: number
+    amount: number,
+    reason = 'Recovery'
   ): Promise<{ success: boolean; newHp: number }> {
-    const { data: profile } = await this.db
-      .from('user_profiles')
-      .select('hp, max_hp')
-      .eq('id', userId)
-      .single()
-
-    if (!profile) throw new Error('User not found')
-
-    const newHp = Math.min(profile.max_hp || 100, (profile.hp || 100) + amount)
-
-    let hpState = 'healthy'
-    if (newHp <= 60 && newHp > 30) hpState = 'weakened'
-    else if (newHp <= 30 && newHp > 10) hpState = 'critical'
-    else if (newHp <= 10) hpState = 'collapse'
-
-    await this.db
-      .from('user_profiles')
-      .update({ hp: newHp, hp_state: hpState })
-      .eq('id', userId)
-
-    return { success: true, newHp }
+    const result = await this.gamification.healHp(userId, amount, reason)
+    return { success: true, newHp: result.hp }
   }
 }
 

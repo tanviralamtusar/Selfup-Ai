@@ -65,35 +65,27 @@ export async function POST(
     return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 })
   }
 
-  // Award XP with attribute multiplier
+  // Award XP — idempotent (todo completion is one-time).
+  // The attribute multiplier is applied inside awardXp via the category, so it
+  // must NOT be pre-applied here or the bonus would compound.
   const economy = new TaskEconomyService(db)
 
-  const { data: profile } = await db
-    .from('user_profiles')
-    .select('attr_str, attr_int, attr_agi, attr_vit, attr_cha')
-    .eq('id', user.id)
-    .single()
-
-  let xpAmount = todo.xp_reward
-  if (profile) {
-    xpAmount = economy.applyAttributeMultiplier(xpAmount, todo.category, profile)
-  }
-
-  // Award XP — idempotent (todo completion is one-time)
   const xpResult = await economy.awardXp(
     user.id,
     'todo',
     todo.id,
-    xpAmount,
-    `Completed todo: ${todo.title}`
+    todo.xp_reward,
+    `Completed todo: ${todo.title}`,
+    todo.category
   )
 
   return NextResponse.json({
     success: true,
     data: {
       todo_id: todo.id,
-      xp_awarded: xpResult.alreadyAwarded ? 0 : xpAmount,
+      xp_awarded: xpResult.amount,
       already_awarded: xpResult.alreadyAwarded,
+      leveled_up: xpResult.leveledUp,
     }
   })
 }

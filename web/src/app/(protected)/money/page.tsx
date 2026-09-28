@@ -7,6 +7,7 @@ import { monthKey, monthLabel } from '@/lib/money/format'
 import type { MoneyAccount, MoneyCategory, MoneySummary } from '@/types/money'
 import { cn } from '@/lib/utils'
 import { MoneyOverview } from '@/components/money/MoneyOverview'
+import { MoneyDashboard } from '@/components/money/MoneyDashboard'
 import { TransactionsView } from '@/components/money/TransactionsView'
 import { BudgetsView } from '@/components/money/BudgetsView'
 import { RecurringView } from '@/components/money/RecurringView'
@@ -15,9 +16,10 @@ import { TransactionModal } from '@/components/money/TransactionModal'
 import { AccountModal } from '@/components/money/AccountModal'
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 
-type Tab = 'overview' | 'transactions' | 'budgets' | 'recurring' | 'goals'
+type Tab = 'overview' | 'dashboard' | 'transactions' | 'budgets' | 'recurring' | 'goals'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'transactions', label: 'Transactions' },
   { id: 'budgets', label: 'Budgets' },
   { id: 'recurring', label: 'Recurring' },
@@ -143,6 +145,9 @@ export default function MoneyPage() {
               onEditAccount={(a) => { setEditAcct(a); setAcctModal(true) }}
               onGoToTab={(t) => setTab(t as Tab)}
             />
+          )}
+          {tab === 'dashboard' && (
+            <MoneyDashboard key={bump} accounts={accounts} categories={categories} />
           )}
           {tab === 'transactions' && (
             <TransactionsView key={bump} accounts={accounts} categories={categories} month={month} currency={currency} onChanged={loadSummary} onXp={handleXp} />

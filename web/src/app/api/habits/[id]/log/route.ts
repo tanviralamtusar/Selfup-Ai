@@ -87,7 +87,8 @@ export async function POST(
     'habit',
     sourceId,
     habit.xp_reward || 10,
-    `Completed habit: ${habit.title}`
+    `Completed habit: ${habit.title}`,
+    habit.category
   )
 
   return NextResponse.json({
@@ -96,8 +97,9 @@ export async function POST(
       habit_id: habitId,
       current_streak: newStreak,
       longest_streak: longestStreak,
-      xp_awarded: xpResult.alreadyAwarded ? 0 : (habit.xp_reward || 10),
+      xp_awarded: xpResult.amount,
       already_awarded: xpResult.alreadyAwarded,
+      leveled_up: xpResult.leveledUp,
     }
   })
 }

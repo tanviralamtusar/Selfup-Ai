@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
 import { cn, formatNumber } from '@/lib/utils'
-import { xpToNextLevel, getRank, getRankLetter, getHpState, ATTRIBUTES, type HpState, type AttributeKey } from '@/constants/gamification'
+import { xpToNextLevel, getRank, getRankLetter, getHpState, type HpState } from '@/constants/gamification'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -25,13 +25,11 @@ import {
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 import { StreakCard } from '@/components/gamification/StreakCard'
 import { BadgeShowcase } from '@/components/gamification/BadgeShowcase'
-import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { AiCoinWalletModal } from '@/components/gamification/AiCoinWalletModal'
 import { StreakHistory } from '@/components/gamification/StreakHistory'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
 import { TodoModal } from '@/components/dashboard/TodoModal'
-import { StatAllocationModal } from '@/components/gamification/StatAllocationModal'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -41,47 +39,6 @@ const containerAnim = {
 const itemAnim = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as any } },
-}
-
-function Gauge({ percent, colorClass, label, title }: { percent: number, colorClass: string, label: string, title: string }) {
-  const dasharray = 364.4
-  const dashoffset = dasharray - (dasharray * percent) / 100
-
-  return (
-    <div className="flex flex-col items-center gap-2 group">
-      <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
-        <svg
-          className="w-full h-full -rotate-90"
-          viewBox="0 0 128 128"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <circle
-            className="text-muted"
-            cx="64" cy="64" r="58"
-            fill="transparent"
-            stroke="currentColor"
-            strokeWidth="6"
-          />
-          <motion.circle
-            className={cn('transition-all duration-1000', colorClass)}
-            cx="64" cy="64" r="58"
-            fill="transparent"
-            stroke="currentColor"
-            strokeDasharray={dasharray}
-            initial={{ strokeDashoffset: dasharray }}
-            animate={{ strokeDashoffset: dashoffset }}
-            strokeWidth="6"
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className="text-base font-semibold text-foreground leading-none">{Math.round(percent)}%</span>
-          <span className="text-[9px] font-medium text-muted-foreground mt-0.5">{label}</span>
-        </div>
-      </div>
-      <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{title}</p>
-    </div>
-  )
 }
 
 interface Habit {
@@ -149,19 +106,8 @@ export default function DashboardPage() {
   const rankInfo = useMemo(() => getRank(level), [level])
   const rankLetter = profile?.rank ?? getRankLetter(level)
 
-  const attrs = useMemo(() => ({
-    str: profile?.attr_str ?? 0,
-    int: profile?.attr_int ?? 0,
-    agi: profile?.attr_agi ?? 0,
-    vit: profile?.attr_vit ?? 0,
-    cha: profile?.attr_cha ?? 0,
-  }), [profile])
-  const statPoints = profile?.stat_points ?? 0
-
   const [habits, setHabits] = useState<Habit[]>([])
   const [loggingHabit, setLoggingHabit] = useState<string | null>(null)
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [activitiesLoading, setActivitiesLoading] = useState(true)
   const [badges, setBadges] = useState<BadgeItem[]>([])
   const [badgesLoading, setBadgesLoading] = useState(true)
   const [dailies, setDailies] = useState<any[]>([])
@@ -181,7 +127,6 @@ export default function DashboardPage() {
   const [activeDungeons, setActiveDungeons] = useState<ActiveDungeon[]>([])
   const [dungeonCountdown, setDungeonCountdown] = useState<string>('')
   const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showStatAllocationModal, setShowStatAllocationModal] = useState(false)
   const [weeklyActivity, setWeeklyActivity] = useState<boolean[]>([false, false, false, false, false, false, false])
   const [showStreakHistory, setShowStreakHistory] = useState(false)
 
@@ -193,7 +138,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (session?.access_token) {
       fetchHabits()
-      fetchActivities()
       fetchBadges()
       fetchStreakStats()
       fetchDungeons()
@@ -226,15 +170,6 @@ export default function DashboardPage() {
         setHabits(json.data || [])
       }
     } catch {}
-  }
-
-  const fetchActivities = async () => {
-    setActivitiesLoading(true)
-    try {
-      const res = await fetch('/api/user/activities', { headers: headers() })
-      if (res.ok) setActivities(await res.json())
-    } catch {}
-    finally { setActivitiesLoading(false) }
   }
 
   const fetchBadges = async () => {
@@ -427,7 +362,6 @@ export default function DashboardPage() {
         const earned = data.data?.xp_awarded || 10
         toast.success(`+${earned} XP — Habit logged!`)
         fetchHabits()
-        fetchActivities()
       } else if (res.status === 409) {
         toast.info('Already logged this cycle!')
       }
@@ -452,35 +386,6 @@ export default function DashboardPage() {
         toast.error('Not enough AiCoins')
       }
     } catch { toast.error('Failed to purchase freeze') }
-  }
-
-  const handleAllocateStat = async (attribute: AttributeKey): Promise<boolean> => {
-    try {
-      const res = await fetch('/api/gamification', {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ action: 'allocate_stat', attribute })
-      })
-      const data = await res.json()
-      if (res.ok && data.success) {
-        toast.success(`${attribute.toUpperCase()} enhanced!`)
-        if (profile) {
-          setProfile({
-            ...profile,
-            stat_points: data.data.remainingPoints,
-            [`attr_${attribute}`]: data.data.newValue,
-            max_hp: attribute === 'vit' ? data.data.newValue * 15 + 100 : profile.max_hp
-          })
-        }
-        return true
-      } else {
-        toast.error(data.error || 'Failed to allocate point')
-        return false
-      }
-    } catch {
-      toast.error('Network error')
-      return false
-    }
   }
 
   const hpColor = hpState === 'healthy' ? 'bg-emerald-500' : hpState === 'weakened' ? 'bg-amber-500' : 'bg-rose-500'
@@ -632,7 +537,7 @@ export default function DashboardPage() {
 
       {/* ─── Main Content + Activity Feed ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-        <div className="xl:col-span-3">
+        <div className="xl:col-span-4">
           {/* Mobile tab switcher */}
           <div className="flex lg:hidden bg-muted p-1 rounded-lg border border-border mb-4 gap-1">
             {[
@@ -775,47 +680,7 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* Activity Feed */}
-        <motion.div variants={itemAnim} className="bg-card border border-border rounded-xl p-4 max-h-[520px] overflow-y-auto">
-          <p className="text-sm font-semibold text-foreground mb-3 sticky top-0 bg-card pb-2 border-b border-border -mx-4 px-4">Activity</p>
-          <ActivityFeed />
-        </motion.div>
       </div>
-
-      {/* ─── Attributes Section ─── */}
-      <motion.section variants={itemAnim} className="bg-card border border-border rounded-xl p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Attributes</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Your core stats and growth progress</p>
-          </div>
-          <Link href={ROUTES.ANALYSIS} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
-            Analysis <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-          {ATTRIBUTES.map((attr) => (
-            <Gauge
-              key={attr.key}
-              percent={Math.min(100, (attrs[attr.key] / 50) * 100)}
-              colorClass={attr.key === 'str' ? 'text-rose-400' : attr.key === 'int' ? 'text-[#5db8a0]' : 'text-primary'}
-              label={attr.key.toUpperCase()}
-              title={attr.name}
-            />
-          ))}
-          {statPoints > 0 && (
-            <div className="flex flex-col items-center justify-center gap-2">
-              <button
-                onClick={() => setShowStatAllocationModal(true)}
-                className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
-              >
-                <span className="text-lg font-medium text-amber-400">+{statPoints}</span>
-              </button>
-              <p className="text-xs font-medium text-amber-400">Allocate</p>
-            </div>
-          )}
-        </div>
-      </motion.section>
 
       {/* ─── Dungeon Section ─── */}
       {activeDungeons.length > 0 && (
@@ -858,7 +723,6 @@ export default function DashboardPage() {
       <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} />
       <HabitModal isOpen={isHabitModalOpen} onClose={() => { setIsHabitModalOpen(false); setEditingHabit(null); }} habit={editingHabit} onSave={handleSaveHabit} onDelete={editingHabit ? handleDeleteHabit : undefined} />
       <TodoModal isOpen={isTodoModalOpen} onClose={() => { setIsTodoModalOpen(false); setEditingTodo(null); }} todo={editingTodo} onSave={handleSaveTask} onDelete={editingTodo ? handleDeleteTask : undefined} />
-      <StatAllocationModal isOpen={showStatAllocationModal} onClose={() => setShowStatAllocationModal(false)} statPoints={statPoints} attributes={attrs} onAllocate={handleAllocateStat} />
     </motion.div>
   )
 }

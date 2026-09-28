@@ -98,6 +98,28 @@ export interface MoneyGoal {
   updated_at: string
 }
 
+export interface MoneyAnalyticsTxn {
+  id: string
+  occurred_at: string // YYYY-MM-DD
+  type: TransactionType
+  amount: number
+  note: string | null
+  account_id: string | null
+  category_id: string | null
+  category_name: string | null
+  category_color: string | null
+  category_icon: string | null
+  balanceDelta: number // signed effect on the (wallet-filtered) balance
+}
+
+export interface MoneyAnalytics {
+  currency: string
+  start: string
+  end: string
+  openingBalance: number
+  transactions: MoneyAnalyticsTxn[]
+}
+
 export interface MoneySummary {
   currency: string
   netWorth: number

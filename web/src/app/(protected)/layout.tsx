@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
 import AppShell from '@/components/layout/AppShell'
 import { DayStartModal } from '@/components/gamification/DayStartModal'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 
 function LoadingScreen() {
   return (
@@ -48,6 +49,14 @@ export default function ProtectedLayout({
       syncProfile()
     }
   }, [isAuthenticated, isLoading, session, setProfile])
+
+  // XP, HP, level and coins change server-side (here, on another device, or
+  // when the Android app syncs), so keep the profile live everywhere.
+  useRealtimeRefresh(['user_profiles'], async () => {
+    if (!session?.access_token) return
+    const res = await fetch('/api/user', { headers: { Authorization: `Bearer ${session.access_token}` } })
+    if (res.ok) setProfile(await res.json())
+  })
 
   useEffect(() => {
     if (!isLoading) {

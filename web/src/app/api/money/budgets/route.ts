@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
 import { monthKey } from '@/lib/money/format'
+import { idempotent } from '@/lib/idempotency'
 
 /**
  * GET /api/money/budgets?month=YYYY-MM-01
@@ -47,7 +48,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/money/budgets — upsert a category budget for a month. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const body = await req.json()
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
 }
 
 /** DELETE /api/money/budgets?id=... */
-export async function DELETE(req: NextRequest) {
+async function handleDELETE(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const id = req.nextUrl.searchParams.get('id')
@@ -82,3 +83,6 @@ export async function DELETE(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+export const POST = idempotent(handlePOST)
+export const DELETE = idempotent(handleDELETE)

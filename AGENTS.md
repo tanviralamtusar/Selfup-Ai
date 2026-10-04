@@ -4,6 +4,8 @@
 
 The application is a single Next.js 16 app in `web/`; run Node commands from that directory. Route pages, layouts, and API handlers are in `web/src/app/` (including `(auth)`, `(protected)`, and `api/`). Reusable UI is in `web/src/components/<module>/`, domain and infrastructure code in `web/src/lib/`, global client state in `web/src/store/`, and shared types/constants in `web/src/types/` and `web/src/constants/`. Use `@/` for imports from `src/`. Static files belong in `web/public/`; operational scripts, seed data, and SQL migrations live in `web/scripts/`.
 
+The Android app is an Expo / React Native project in `mobile/` (run its commands from that directory; see `mobile/README.md`). It is offline-first: it keeps a local SQLite copy of the user's data, queues every change in an outbox, and replays the queue through the website's `/api` routes when online. It never writes to Supabase directly.
+
 Read the applicable rules in `.agents/rules/` before changing frontend, backend, security-sensitive, or Git-related code. Design specs and reference docs are in `Project-details-md/` — check its `README.md` index first, since many of those files describe planned designs rather than the current code. `docker-compose.yml` and `web/Dockerfile` describe the production container deployed by Coolify.
 
 ### Module map
@@ -29,6 +31,8 @@ Navigation lives in `web/src/components/layout/AppShell.tsx`. Chat, Fitness, Ski
 - **XP**: route every XP, coin, HP and level change through `GamificationService`; never write `user_profiles.xp`/`level` directly. `TaskEconomyService` delegates to it. Pass a task `category` to `awardXp` instead of pre-multiplying attribute bonuses. Idempotency relies on the unique index on `xp_transactions (user_id, source_type, source_id)`. Do not reintroduce the `increment_user_xp` RPC; it never existed in the database.
 - **Daily reset**: `GET/POST /api/dailies/cron`, driven by `DayStartModal`, rolls the day per user using `user_profiles.last_cron_date`. The reset only runs when the user next opens the app; there is no scheduled server job for it.
 - **Money**: amounts are always positive and `type` gives the sign. Account balances are computed (opening balance + Σ transactions), never stored.
+- **Mobile sync contract** (don't break it when editing these routes): mutation routes the app replays are wrapped in `idempotent()` (`lib/idempotency.ts`), so a repeated `Idempotency-Key` returns the stored response instead of re-running. Create routes accept a client-generated `id` (`clientId()` / `existingOnDuplicate()`). `dailies/[id]/complete` and `habits/[id]/log` accept a `date` so offline completions score on the day they happened. When you add a mutation the app uses, wrap it the same way.
+- **Realtime**: synced tables are in the `supabase_realtime` publication (`add_mobile_sync.sql`). Website pages refresh through `useRealtimeRefresh()` (`lib/hooks/useRealtimeRefresh.ts`); the protected layout keeps the profile (XP/HP) live.
 
 ## Build, Test, and Development Commands
 
@@ -40,6 +44,8 @@ From `web/`:
 - `npm run build` creates a production build and performs TypeScript checks.
 - `npm run seed:exercises` and `npm run seed:programs` populate fitness data when required.
 - `npm run worker` starts the BullMQ worker. It won't start while Redis is disabled.
+
+From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (bundle check), `eas build -p android --profile preview` (APK).
 
 There is no configured unit-test command yet. At minimum, run `npm run lint` and `npm run build` for code changes; manually exercise the affected route or API flow. Keep exploratory scripts in `web/scratch/` rather than application directories.
 

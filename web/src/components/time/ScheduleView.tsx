@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
@@ -96,8 +97,10 @@ export function ScheduleView() {
     )
   )
 
+  // Spinner on first load only; live refreshes keep the current view on screen.
+  const loadedOnce = useRef(false)
   const fetchData = useCallback(async () => {
-    setIsLoading(true)
+    if (!loadedOnce.current) setIsLoading(true)
     try {
       const [todosRes, habitsRes] = await Promise.all([
         fetch('/api/todos', { headers: { Authorization: `Bearer ${session?.access_token}` } }),
@@ -115,9 +118,13 @@ export function ScheduleView() {
     } catch {
       toast.error('Failed to load schedule data')
     } finally {
+      loadedOnce.current = true
       setIsLoading(false)
     }
   }, [session])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['todos', 'habits'], () => { fetchData() })
 
   useEffect(() => {
     if (session?.access_token) fetchData()

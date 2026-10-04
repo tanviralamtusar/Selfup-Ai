@@ -20,6 +20,16 @@
 
 `NODE_ENV` and `NEXT_RUNTIME` are set by Node/Next.
 
+## Android app (`mobile/.env`)
+
+| Variable | Value |
+| --- | --- |
+| `EXPO_PUBLIC_SUPABASE_URL` | Same as `NEXT_PUBLIC_SUPABASE_URL` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Same as `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| `EXPO_PUBLIC_API_URL` | Website origin the app syncs through, no trailing slash (HTTPS for release builds) |
+
+All three are inlined into the app bundle at build time. Template: `mobile/.env.example`.
+
 ## Build-time vs runtime
 
 `NEXT_PUBLIC_*` values are inlined into the client bundle at **build time**. The Dockerfile takes `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as build args (wired in `docker-compose.yml`), so changing them requires a rebuild, not just a restart.

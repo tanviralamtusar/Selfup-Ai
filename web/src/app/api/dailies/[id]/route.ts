@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
+import { idempotent } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -16,7 +17,7 @@ function getDb(req: NextRequest) {
 /**
  * PATCH /api/dailies/[id] — update a daily
  */
-export async function PATCH(
+async function handlePATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -65,7 +66,7 @@ export async function PATCH(
 /**
  * DELETE /api/dailies/[id] — delete a daily
  */
-export async function DELETE(
+async function handleDELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -84,3 +85,6 @@ export async function DELETE(
   if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+export const PATCH = idempotent(handlePATCH)
+export const DELETE = idempotent(handleDELETE)

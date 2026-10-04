@@ -17,7 +17,15 @@ npm run build        # production build; this is the only TypeScript check
 npm run seed:exercises && npm run seed:programs   # fitness seed data (tsx scripts)
 ```
 
-There is no test runner, so there is no way to run a single test. Validate with `lint` + `build`, then exercise the route or page by hand. Exploratory scripts go in `web/scratch/` (gitignored).
+Android app, from `mobile/`:
+
+```bash
+npx expo start                        # dev server; open in Expo Go
+npm run typecheck && npx expo lint
+npx expo export --platform android    # full Metro/Hermes bundle — catches bad imports without a device
+```
+
+There is no test runner in either project, so there is no way to run a single test. Validate with `lint` + `build`, then exercise the route or page by hand. Exploratory scripts go in `web/scratch/` (gitignored).
 
 ## Architecture: how a request flows
 
@@ -36,6 +44,17 @@ There is no test runner, so there is no way to run a single test. Validate with 
 - **Three task types:** dailies, habits and to-dos (`api/dailies`, `api/habits`, `api/todos`). `TaskEconomyService` (`lib/task-economy.service.ts`) prices completions and penalties and delegates every XP/HP/coin change to `GamificationService`. All tuning numbers (XP rewards, HP damage, ranks, AiCoin earn/spend, streak freeze) are in `constants/gamification.ts`.
 - **Cross-module injection:** fitness plans and skill roadmaps turn into dailies and habits. `lib/fitness/dailyInjector.ts` and `lib/skills/dailyInjector.ts` go through `TaskInjectionService` (`lib/task-injection.service.ts`), which deduplicates on title + category + source. `cleanupPlanTasks` removes them when a plan is updated or deleted (`api/fitness/plans/[id]`).
 - **Day rollover:** handled client-side by `DayStartModal` → `/api/dailies/cron` (see AGENTS.md).
+
+## Architecture: Android app offline sync
+
+`mobile/` (Expo SDK 57, expo-router) is local-first.
+
+- **Writes:** every action in `src/domain/actions.ts` calls `commitLocal()`, which writes the optimistic row (SQLite `records` table, JSON per row) and an `outbox` op in one transaction.
+- **Flush:** `src/sync/engine.ts` replays the outbox FIFO against the website's `/api` with `Idempotency-Key: op_id`. Transient failures stop the flush and back off; 4xx rejections drop the op and land in `sync_failures`.
+- **Pull:** reads the user's rows straight from Supabase (RLS) and replaces the cache, skipping rows that still have queued ops.
+- **Realtime:** `postgres_changes` applies other devices' edits.
+- **Day-scored ops:** daily completes and habit logs carry `action_date`. They are sent only when it equals the server's open day (`GET /api/dailies/cron` → `lastCronDate`); later days wait for the in-app check-in, and closed days are reported as failures.
+- **Adding a synced table or action:** server route (wrapped, accepting a client `id`), realtime publication, `SYNCED_TABLES` + `pullAll()` in the engine, an action in `actions.ts`, and an `onSuccess` case if the response should replace the local row.
 
 ## Other docs
 

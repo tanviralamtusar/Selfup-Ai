@@ -15,6 +15,7 @@ import { GoalsView } from '@/components/money/GoalsView'
 import { TransactionModal } from '@/components/money/TransactionModal'
 import { AccountModal } from '@/components/money/AccountModal'
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 
 type Tab = 'overview' | 'dashboard' | 'transactions' | 'budgets' | 'recurring' | 'goals'
 const TABS: { id: Tab; label: string }[] = [
@@ -81,6 +82,13 @@ export default function MoneyPage() {
   const refreshShared = useCallback(() => {
     loadCore(); loadSummary(); setBump((b) => b + 1)
   }, [loadCore, loadSummary])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(
+    ['money_accounts', 'money_categories', 'money_transactions', 'money_budgets', 'money_recurring', 'money_goals'],
+    () => refreshShared(),
+    600
+  )
 
   const handleXp = useCallback((r: { leveledUp?: boolean; levelUpDetails?: any }) => {
     if (r?.leveledUp && r.levelUpDetails) {

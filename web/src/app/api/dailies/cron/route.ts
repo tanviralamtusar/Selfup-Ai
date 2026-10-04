@@ -4,6 +4,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { GamificationService } from '@/lib/gamification.service'
 import { HP_DAMAGE, HP_RECOVERY } from '@/constants/gamification'
+import { idempotent } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -113,7 +114,7 @@ export async function GET(req: NextRequest) {
  * the day it was earned), applies XP penalty + HP damage for the rest, rolls
  * streaks, then clears completion flags for the new day.
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, error } = await verifyAuth(req)
   if (error || !user) return NextResponse.json({ success: false, error }, { status: 401 })
 
@@ -267,3 +268,5 @@ export async function POST(req: NextRequest) {
     },
   })
 }
+
+export const POST = idempotent(handlePOST)

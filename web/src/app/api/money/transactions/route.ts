@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
 import { GamificationService } from '@/lib/gamification.service'
+import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 const XP_PER_LOG = 5
 
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/money/transactions — log a transaction and award XP. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const body = await req.json()
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await db
     .from('money_transactions')
     .insert({
+      ...clientId(body.id),
       user_id: user.id,
       account_id,
       to_account_id: type === 'transfer' ? to_account_id : null,
@@ -84,7 +86,11 @@ export async function POST(req: NextRequest) {
     .select('*, category:money_categories(id,name,kind,icon,color)')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    const existing = await existingOnDuplicate(db, 'money_transactions', error, body.id, user.id)
+    if (existing) return NextResponse.json({ success: true, data: { ...existing, amount: num(existing.amount) }, xpAwarded: 0 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
   // Award XP for logging (not for internal transfers).
   let leveledUp = false
@@ -99,3 +105,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true, data: { ...data, amount: amt }, xpAwarded: data.xp_earned, leveledUp, levelUpDetails })
 }
+
+export const POST = idempotent(handlePOST)

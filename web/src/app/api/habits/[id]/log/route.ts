@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
+import { idempotent, actionDate } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -17,7 +18,7 @@ function getDb(req: NextRequest) {
  * POST /api/habits/[id]/log — mark habit as completed this cycle
  * Awards 10 XP, increments streak, updates longest_streak
  */
-export async function POST(
+async function handlePOST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -69,8 +70,9 @@ export async function POST(
     return NextResponse.json({ success: false, error: updateErr.message }, { status: 500 })
   }
 
-  // Also log in habit_logs for historical tracking
-  const today = new Date().toISOString().split('T')[0]
+  // Also log in habit_logs for historical tracking. Offline clients replay
+  // with the day the user actually logged it.
+  const today = actionDate(body.date)
   const logRow: Record<string, unknown> = { habit_id: habitId, user_id: user.id, completed_at: today }
   if (notes) logRow.notes = notes
   await db
@@ -103,3 +105,5 @@ export async function POST(
     }
   })
 }
+
+export const POST = idempotent(handlePOST)

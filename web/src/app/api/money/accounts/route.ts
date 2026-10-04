@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
+import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 /** GET /api/money/accounts — accounts with computed current balance. */
 export async function GET(req: NextRequest) {
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/money/accounts — create an account. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
 
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await db
     .from('money_accounts')
     .insert({
+      ...clientId(body.id),
       user_id: user.id,
       name: name.trim(),
       type,
@@ -62,6 +64,12 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    const existing = await existingOnDuplicate(db, 'money_accounts', error, body.id, user.id)
+    if (existing) return NextResponse.json({ success: true, data: { ...existing, balance: num(existing.opening_balance) } })
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
   return NextResponse.json({ success: true, data: { ...data, balance: num(data.opening_balance) } })
 }
+
+export const POST = idempotent(handlePOST)

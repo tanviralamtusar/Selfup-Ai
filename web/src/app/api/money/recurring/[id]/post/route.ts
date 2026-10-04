@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
+import { idempotent } from '@/lib/idempotency'
 
 /** Advance a date by one cadence step. */
 function advance(dateIso: string, cadence: string): string {
@@ -14,7 +15,7 @@ function advance(dateIso: string, cadence: string): string {
  * POST /api/money/recurring/[id]/post
  * Posts the recurring rule as a transaction now and advances next_due.
  */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePOST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const { id } = await params
@@ -57,3 +58,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   return NextResponse.json({ success: true, data: { transaction: { ...txn, amount: num(txn.amount) }, recurring: { ...updated, amount: num(updated.amount) } } })
 }
+
+export const POST = idempotent(handlePOST)

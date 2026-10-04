@@ -1,4 +1,5 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 
@@ -54,10 +55,12 @@ export const useHabits = () => {
   }), [session])
 
   // Fetch habits
+  // Spinner on first load only; live refreshes keep the current list on screen.
+  const loadedOnce = useRef(false)
   const fetchHabits = useCallback(async () => {
     if (!session?.access_token) return
 
-    setLoading(true)
+    if (!loadedOnce.current) setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/habits', { headers: headers() })
@@ -70,6 +73,7 @@ export const useHabits = () => {
       console.error('[useHabits] fetch error:', err)
       setError(err.message)
     } finally {
+      loadedOnce.current = true
       setLoading(false)
     }
   }, [session, headers])
@@ -193,6 +197,9 @@ export const useHabits = () => {
   useEffect(() => {
     fetchHabits()
   }, [fetchHabits])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['habits'], () => { fetchHabits() })
 
   // Computed values
   const safeHabits = Array.isArray(habits) ? habits : []

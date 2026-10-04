@@ -9,6 +9,12 @@
 
 There is no `/api/health` endpoint; the Docker healthcheck hits `/`.
 
+### Offline-sync contract (used by the Android app)
+
+- **`Idempotency-Key` header.** Mutation routes the app replays (dailies, habits, todos, pomodoro, all `money/*` writes, `dailies/cron` POST) are wrapped in `idempotent()` (`web/src/lib/idempotency.ts`). The first request with a key stores its response in `sync_idempotency`; a repeat gets that response back with `Idempotent-Replay: true` and does not run again. `503 { retry: true }` means the same key is still in flight. Requests without the header behave as before.
+- **Client ids.** `POST` creates accept an optional `id` (UUID). Re-sending the same id returns the existing row instead of an error.
+- **Action day.** `POST /api/dailies/[id]/complete` and `POST /api/habits/[id]/log` accept `{ date: 'YYYY-MM-DD' }` (UTC, within the last 7 days) so XP keys and logs land on the day the user acted. `POST /api/pomodoro` accepts `id` + `started_at`; `PATCH` accepts `completed_at`.
+
 ---
 
 ## AI

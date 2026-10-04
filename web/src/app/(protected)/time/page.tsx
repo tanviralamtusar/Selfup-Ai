@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Timer, Play, Pause, RotateCcw, CheckCircle2, Coffee,
@@ -143,6 +144,9 @@ export default function TimePage() {
     }
   }, [session])
 
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['todos', 'pomodoro_sessions'], () => { fetchAll(true) })
+
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get('tab')
     if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus' || tabParam === 'board') {
@@ -150,8 +154,8 @@ export default function TimePage() {
     }
   }, [])
 
-  const fetchAll = async () => {
-    setIsLoading(true)
+  const fetchAll = async (quiet = false) => {
+    if (!quiet) setIsLoading(true)
     try {
       const [todosRes, histRes] = await Promise.all([
         fetch('/api/todos', { headers: headers() }),

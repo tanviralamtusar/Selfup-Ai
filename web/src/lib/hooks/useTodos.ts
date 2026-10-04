@@ -1,4 +1,5 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 
@@ -50,10 +51,14 @@ export const useTodos = () => {
   }), [session])
 
   // Fetch todos (incomplete by default)
+  // Spinner on first load only; live refreshes keep the current list on screen.
+  const loadedOnce = useRef(false)
+  const lastShowCompleted = useRef(false)
   const fetchTodos = useCallback(async (showCompleted = false) => {
     if (!session?.access_token) return
 
-    setLoading(true)
+    lastShowCompleted.current = showCompleted
+    if (!loadedOnce.current) setLoading(true)
     setError(null)
     try {
       const url = showCompleted ? '/api/todos?completed=true' : '/api/todos'
@@ -67,6 +72,7 @@ export const useTodos = () => {
       console.error('[useTodos] fetch error:', err)
       setError(err.message)
     } finally {
+      loadedOnce.current = true
       setLoading(false)
     }
   }, [session, headers])
@@ -177,6 +183,9 @@ export const useTodos = () => {
   useEffect(() => {
     fetchTodos()
   }, [fetchTodos])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['todos'], () => { fetchTodos(lastShowCompleted.current) })
 
   // Computed values
   const safeTodos = Array.isArray(todos) ? todos : []

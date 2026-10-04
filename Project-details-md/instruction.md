@@ -33,7 +33,7 @@ Fill in the values; see [environment.md](environment.md).
 
 1. The base schema already exists in the Supabase project (see [database_structure.md](database_structure.md)).
 2. Run each file in `web/scripts/migrations/` in the Supabase **SQL editor**. They are idempotent, so re-running is safe:
-   `add_exercise_media_columns.sql`, `add_exercise_attributes.sql`, `create_programs.sql`, `create_money.sql`, `add_day_cron.sql`.
+   `add_exercise_media_columns.sql`, `add_exercise_attributes.sql`, `create_programs.sql`, `create_money.sql`, `add_day_cron.sql`, `add_mobile_sync.sql`.
 3. Because they are applied through the editor, they will **not** appear in Supabase's migration history. Check `information_schema.columns` / `tables` to confirm they ran.
 4. Seed fitness data as needed:
 

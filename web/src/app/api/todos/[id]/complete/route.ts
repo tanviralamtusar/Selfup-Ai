@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
+import { idempotent } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -17,7 +18,7 @@ function getDb(req: NextRequest) {
  * POST /api/todos/[id]/complete — mark a todo as completed
  * Awards XP (with attribute multiplier), one-time only
  */
-export async function POST(
+async function handlePOST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -89,3 +90,5 @@ export async function POST(
     }
   })
 }
+
+export const POST = idempotent(handlePOST)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
+import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 /** GET /api/money/recurring — active recurring rules, soonest due first. */
 export async function GET(req: NextRequest) {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/money/recurring — create a recurring bill/income. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const body = await req.json()
@@ -33,10 +34,16 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await db
     .from('money_recurring')
-    .insert({ user_id: user.id, name: name.trim(), type, amount: amt, cadence, next_due, account_id, category_id, currency, auto_post })
+    .insert({ ...clientId(body.id), user_id: user.id, name: name.trim(), type, amount: amt, cadence, next_due, account_id, category_id, currency, auto_post })
     .select('*, category:money_categories(id,name,icon,color)')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    const existing = await existingOnDuplicate(db, 'money_recurring', error, body.id, user.id)
+    if (existing) return NextResponse.json({ success: true, data: { ...existing, amount: num(existing.amount) } })
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
   return NextResponse.json({ success: true, data: { ...data, amount: amt } })
 }
+
+export const POST = idempotent(handlePOST)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
+import { idempotent, actionDate } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -17,7 +18,7 @@ function getDb(req: NextRequest) {
  * POST /api/dailies/[id]/complete — mark a daily as completed
  * Awards XP (with attribute multiplier), fires quest completion event
  */
-export async function POST(
+async function handlePOST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -69,9 +70,11 @@ export async function POST(
   // Use daily.id + today's date as source_id so it can be re-awarded tomorrow.
   // The attribute multiplier is applied inside awardXp via the category, so it
   // must NOT be pre-applied here or the bonus would compound.
+  // Offline clients replay with the day the user actually ticked it.
   const economy = new TaskEconomyService(db)
-  const today = new Date().toISOString().split('T')[0]
-  const sourceId = `${daily.id}:${today}`
+  const body = await req.json().catch(() => ({}))
+  const day = actionDate(body.date)
+  const sourceId = `${daily.id}:${day}`
 
   const xpResult = await economy.awardXp(
     user.id,
@@ -92,3 +95,5 @@ export async function POST(
     }
   })
 }
+
+export const POST = idempotent(handlePOST)

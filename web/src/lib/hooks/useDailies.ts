@@ -1,4 +1,5 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 
@@ -52,10 +53,12 @@ export const useDailies = () => {
   }), [session])
 
   // Fetch dailies
+  // Spinner on first load only; live refreshes keep the current list on screen.
+  const loadedOnce = useRef(false)
   const fetchDailies = useCallback(async () => {
     if (!session?.access_token) return
 
-    setLoading(true)
+    if (!loadedOnce.current) setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/dailies', { headers: headers() })
@@ -68,6 +71,7 @@ export const useDailies = () => {
       console.error('[useDailies] fetch error:', err)
       setError(err.message)
     } finally {
+      loadedOnce.current = true
       setLoading(false)
     }
   }, [session, headers])
@@ -178,6 +182,9 @@ export const useDailies = () => {
   useEffect(() => {
     fetchDailies()
   }, [fetchDailies])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['dailies'], () => { fetchDailies() })
 
   // Computed values
   const safeDailies = Array.isArray(dailies) ? dailies : []

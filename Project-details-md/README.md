@@ -14,6 +14,7 @@ For the current repo map and gotchas, start with [`../AGENTS.md`](../AGENTS.md).
 | [environment.md](environment.md) | ✅ 2026-10-04 | Every env var the code reads |
 | [instruction.md](instruction.md) | ✅ 2026-10-04 | Local setup, migrations, Coolify deploy, common issues |
 | [money.md](money.md) | ✅ 2026-10-04 | Money module: data rules, API, XP |
+| [../mobile/README.md](../mobile/README.md) | ✅ 2026-10-04 | Android app: setup, build, offline-sync design |
 | [database_structure.md](database_structure.md) | ✅ partial, 2026-10-04 | §14–17 come from migrations; §1–13 are the V1 design. Lists undocumented tables |
 | [FEATURE_STATUS_REPORT.md](FEATURE_STATUS_REPORT.md) | ✅ 2026-10-04 update on top | April snapshot kept below it |
 | [onboarding.md](onboarding.md) | 📐 | Written against `web/src/app/onboarding/page.tsx` (May 2026); not re-verified |

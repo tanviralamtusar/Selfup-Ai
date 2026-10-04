@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed } from '@/lib/money/server'
+import { idempotent } from '@/lib/idempotency'
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const { id } = await params
@@ -25,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   return NextResponse.json({ success: true, data })
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleDELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const { id } = await params
@@ -34,3 +35,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+export const PATCH = idempotent(handlePATCH)
+export const DELETE = idempotent(handleDELETE)

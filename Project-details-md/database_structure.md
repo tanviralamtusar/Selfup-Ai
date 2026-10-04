@@ -767,6 +767,24 @@ CREATE INDEX xp_transactions_user_created_idx   ON xp_transactions (user_id, cre
 
 There is **no** `increment_user_xp` RPC. All XP writes go through `GamificationService` (`web/src/lib/gamification.service.ts`).
 
+### 18. Mobile Sync (`add_mobile_sync.sql`)
+
+```sql
+CREATE TABLE sync_idempotency (
+  user_id         UUID NOT NULL DEFAULT auth.uid() REFERENCES user_profiles(id) ON DELETE CASCADE,
+  key             TEXT NOT NULL,          -- Idempotency-Key header (the app's outbox op id)
+  method          TEXT NOT NULL,
+  path            TEXT NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','done')),
+  response_status INT,
+  response_body   JSONB,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, key)
+);  -- RLS: owner-only. Rows older than 30 days can be pruned.
+```
+
+The migration also adds `user_profiles`, `dailies`, `habits`, `todos`, `pomodoro_sessions` and all six `money_*` tables to the `supabase_realtime` publication.
+
 ### Tables in use but not yet documented here
 
 These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:

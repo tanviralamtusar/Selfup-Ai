@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
+import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 /** GET /api/money/goals — savings goals. */
 export async function GET(req: NextRequest) {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
 }
 
 /** POST /api/money/goals — create a savings goal. */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const body = await req.json()
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await db
     .from('money_goals')
     .insert({
+      ...clientId(body.id),
       user_id: user.id,
       name: name.trim(),
       target_amount: target,
@@ -48,6 +50,12 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    const existing = await existingOnDuplicate(db, 'money_goals', error, body.id, user.id)
+    if (existing) return NextResponse.json({ success: true, data: { ...existing, target_amount: num(existing.target_amount), current_amount: num(existing.current_amount) } })
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
   return NextResponse.json({ success: true, data: { ...data, target_amount: num(data.target_amount), current_amount: num(data.current_amount) } })
 }
+
+export const POST = idempotent(handlePOST)

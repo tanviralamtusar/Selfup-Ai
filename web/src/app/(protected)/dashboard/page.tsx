@@ -30,6 +30,7 @@ import { StreakHistory } from '@/components/gamification/StreakHistory'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
 import { TodoModal } from '@/components/dashboard/TodoModal'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -145,6 +146,13 @@ export default function DashboardPage() {
       fetchTasks()
     }
   }, [session])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['habits', 'dailies', 'todos'], (table) => {
+    if (table === 'habits') fetchHabits()
+    else if (table === 'dailies') fetchDailies()
+    else fetchTasks()
+  })
 
   useEffect(() => {
     const activeDungeon = activeDungeons.find(d => d.status === 'active')
@@ -318,11 +326,8 @@ export default function DashboardPage() {
         const result = await res.json()
         toast.success(`Daily complete! +${result.data.xp_awarded} XP`)
         setDailies(prev => prev.map(d => d.id === daily.id ? { ...d, is_completed: true } : d))
-        const profileRes = await fetch('/api/user/profile', { headers: headers() })
-        if (profileRes.ok) {
-          const profileData = await profileRes.json()
-          setProfile(profileData.data)
-        }
+        const profileRes = await fetch('/api/user', { headers: headers() })
+        if (profileRes.ok) setProfile(await profileRes.json())
       } else {
         const err = await res.json()
         toast.error(err.error || 'Failed to complete daily')
@@ -340,11 +345,8 @@ export default function DashboardPage() {
         const result = await res.json()
         toast.success(`Task complete! +${result.data.xp_awarded} XP`)
         setTasks(prev => prev.map(t => t.id === task.id ? { ...t, is_completed: true } : t))
-        const profileRes = await fetch('/api/user/profile', { headers: headers() })
-        if (profileRes.ok) {
-          const profileData = await profileRes.json()
-          setProfile(profileData.data)
-        }
+        const profileRes = await fetch('/api/user', { headers: headers() })
+        if (profileRes.ok) setProfile(await profileRes.json())
       } else {
         const err = await res.json()
         toast.error(err.error || 'Failed to complete task')

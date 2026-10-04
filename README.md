@@ -18,6 +18,7 @@ SelfUp is an AI-powered, gamified personal development platform. It tracks the p
 | **🧠 Skills** | `/skills` | Hidden from nav | AI roadmaps, topics/milestones, YouTube resources, AI-generated tests. |
 | **👗 Style** | `/style` | Hidden from nav | Outfit log, moodboard, AI recommendations. |
 | **⚔️ Quests / 👥 Social / 💬 AI Chat** | `/quests`, `/social/*`, `/chat` | Hidden from nav | Quests, leaderboard/friends, conversational AI with memory. |
+| **📱 Android app** | `mobile/` | New | Dashboard, Money, Time and Analysis on your phone. Works fully offline and syncs with the website in real time when connected. See [mobile/README.md](mobile/README.md). |
 
 "Hidden from nav" modules are implemented and routable, but are deliberately left out of the sidebar (`temporarilyHiddenNavItems` in `web/src/components/layout/AppShell.tsx`) until they are revisited.
 
@@ -82,6 +83,7 @@ Base schema lives in Supabase. Incremental migrations are in `web/scripts/migrat
 | `create_programs.sql` | Multi-week fitness programs + enrollments/progress |
 | `create_money.sql` | Money module tables + RLS |
 | `add_day_cron.sql` | `last_cron_date`, daily streaks, XP idempotency index |
+| `add_mobile_sync.sql` | `sync_idempotency` table + realtime publication for the Android app and live website updates |
 
 Then seed fitness data if needed: `npm run seed:exercises` and `npm run seed:programs`.
 
@@ -115,7 +117,8 @@ There is no unit-test suite yet. Validate changes with `npm run lint`, `npm run 
 - [x] Fitness v2 (exercise library, programs, session tracker)
 - [ ] Re-enable Fitness, Skills, Style, Quests, Social and Chat in navigation
 - [ ] Re-enable Redis/BullMQ for true background processing
-- [ ] Mobile (Android/iOS) and desktop apps
+- [x] Android app with offline sync (`mobile/`)
+- [ ] iOS build and desktop app
 - [ ] Deep analytics & parental controls
 
 ---

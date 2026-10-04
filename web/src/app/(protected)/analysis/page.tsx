@@ -41,6 +41,7 @@ import { toast } from 'sonner'
 import { ATTRIBUTES, type AttributeKey } from '@/constants/gamification'
 import { ActivityFeed } from '@/components/gamification/ActivityFeed'
 import { StatAllocationModal } from '@/components/gamification/StatAllocationModal'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 
 function Gauge({ percent, colorClass, label, title }: { percent: number, colorClass: string, label: string, title: string }) {
   const dasharray = 364.4
@@ -105,6 +106,10 @@ export default function AnalysisPage() {
       fetchActivities()
     }
   }, [session])
+
+  // XP lands on the profile whenever anything is scored (here, another device,
+  // or the Android app syncing), so refresh the activity feed with it.
+  useRealtimeRefresh(['user_profiles'], () => { fetchActivities() })
 
   const fetchActivities = async () => {
     try {

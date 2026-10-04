@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateHpPenalty } from '@/lib/task-economy.service'
+import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
  * POST /api/habits — create a new habit
  * Auto-sets hp_penalty from reset_type, xp_reward is always 10
  */
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const { user, error } = await verifyAuth(req)
   if (error || !user) return NextResponse.json({ success: false, error }, { status: 401 })
 
@@ -81,6 +82,7 @@ export async function POST(req: NextRequest) {
   const { data, error: dbErr } = await db
     .from('habits')
     .insert({
+      ...clientId(body.id),
       user_id: user.id,
       title: title.trim(),
       description: description || null,
@@ -98,6 +100,12 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
+  if (dbErr) {
+    const existing = await existingOnDuplicate(db, 'habits', dbErr, body.id, user.id)
+    if (existing) return NextResponse.json({ success: true, data: existing })
+    return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
+  }
   return NextResponse.json({ success: true, data })
 }
+
+export const POST = idempotent(handlePOST)

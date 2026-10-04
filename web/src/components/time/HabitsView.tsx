@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronRight, Flame, Loader2, Plus, Sparkles, Trophy, MoreVertical, Edit2, Trash2, Zap as ZapIcon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
@@ -71,8 +72,10 @@ export function HabitsView() {
     Authorization: `Bearer ${session?.access_token}`
   }), [session])
 
+  // Spinner on first load only; live refreshes keep the current list on screen.
+  const loadedOnce = useRef(false)
   const fetchHabits = useCallback(async () => {
-    setIsLoading(true)
+    if (!loadedOnce.current) setIsLoading(true)
     try {
       const res = await fetch('/api/habits', { headers: headers() })
       if (res.ok) {
@@ -80,12 +83,15 @@ export function HabitsView() {
         setHabits(json.data || [])
       }
     } catch { toast.error('Failed to load habits') }
-    finally { setIsLoading(false) }
+    finally { loadedOnce.current = true; setIsLoading(false) }
   }, [headers])
 
   useEffect(() => {
     if (session?.access_token) fetchHabits()
   }, [session, fetchHabits])
+
+  // Live updates from other tabs/devices and the Android app's offline sync.
+  useRealtimeRefresh(['habits'], () => { fetchHabits() })
 
   const handleAddHabit = async () => {
     if (!newHabit.title.trim()) return

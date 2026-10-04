@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
 import { GamificationService } from '@/lib/gamification.service'
+import { idempotent } from '@/lib/idempotency'
 
 const XP_PER_CONTRIBUTION = 8
 
@@ -8,7 +9,7 @@ const XP_PER_CONTRIBUTION = 8
  * PATCH /api/money/goals/[id]
  * Edit fields, or pass { contribute: <amount> } to add to current_amount (awards XP).
  */
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const { id } = await params
@@ -70,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   })
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleDELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
   if (res) return res
   const { id } = await params
@@ -79,3 +80,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+export const PATCH = idempotent(handlePATCH)
+export const DELETE = idempotent(handleDELETE)

@@ -16,6 +16,14 @@ What changed since the April snapshot below (branch `fitness-v2`):
 - ✅ **Platform:** Next.js / eslint-config-next 16.3.6.
 - ✅ All migrations in `web/scripts/migrations/` applied to the Supabase project (verified 2026-09-29).
 
+### Added 2026-10-04
+
+- ✅ **Android app** (`mobile/`, Expo SDK 57): Dashboard, Money, Time (focus timer), Analysis. Offline-first with a SQLite store and an outbox replayed through `/api` with idempotency keys; new-day check-in in the app.
+- ✅ **Realtime sync:** website pages (dashboard, time, money, analysis, profile) update live via Supabase Realtime when anything changes on another device.
+- ✅ **Fix:** the dashboard refreshed the profile from the nonexistent `/api/user/profile` after completions, so XP didn't update until reload.
+- ✅ `add_mobile_sync.sql` applied in Supabase (2026-10-05).
+- ⏳ Needs an EAS build pointed at the production URL.
+
 ### Current state worth knowing
 
 - 🙈 **Hidden from nav:** AI Chat, Fitness, Skills, Style, Quests and Social are implemented but deliberately hidden from the sidebar (`temporarilyHiddenNavItems` in `AppShell.tsx`). Visible: Dashboard, Time, Money, Analysis.

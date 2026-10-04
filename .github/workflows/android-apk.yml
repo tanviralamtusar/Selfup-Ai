@@ -1,0 +1,145 @@
+# Builds the SelfUp Android app (mobile/) into an installable APK on GitHub's
+# runners: no Expo/EAS account needed. The APK is uploaded as a workflow
+# artifact; pushing a `mobile-v*` tag also attaches it to a GitHub Release.
+#
+# Repository settings → Secrets and variables → Actions:
+#   Variables (or secrets) — required, baked into the app at build time:
+#     EXPO_PUBLIC_SUPABASE_URL       same as NEXT_PUBLIC_SUPABASE_URL
+#     EXPO_PUBLIC_SUPABASE_ANON_KEY  same as NEXT_PUBLIC_SUPABASE_ANON_KEY
+#     EXPO_PUBLIC_API_URL            https://<website domain>, no trailing slash
+#   Secrets — optional, your own signing key (see mobile/README.md):
+#     ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+#   Without them the APK is signed with Expo's shared debug key: fine for
+#   sideloading and testing, not for the Play Store.
+
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/android-apk.yml'
+    tags:
+      - 'mobile-v*'
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # only used to attach the APK to a release on mobile-v* tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY || secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL || secrets.EXPO_PUBLIC_API_URL }}
+      EXPO_NO_TELEMETRY: '1'
+      CI: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check app config
+        run: |
+          missing=0
+          for v in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_API_URL; do
+            if [ -z "${!v}" ]; then echo "::error::$v is not set (repository Variables or Secrets)"; missing=1; fi
+          done
+          case "$EXPO_PUBLIC_API_URL" in
+            https://*) ;;
+            *) echo "::error::EXPO_PUBLIC_API_URL must be an https:// URL (release builds block plain http)"; missing=1 ;;
+          esac
+          exit $missing
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17' # React Native's Gradle toolchain targets JDK 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and lint
+        run: |
+          npm run typecheck
+          npx expo lint
+
+      - name: Set version code
+        # Every build gets a higher versionCode, so a newer APK installs over an older one.
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            cfg.expo.android.versionCode = Number(process.env.GITHUB_RUN_NUMBER);
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2));
+            console.log('versionCode', cfg.expo.android.versionCode, 'versionName', cfg.expo.version);
+          "
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        working-directory: mobile/android
+        # Real phones only (skips x86 emulator ABIs) to keep the build and APK smaller.
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon
+
+      - name: Sign APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          version=$(node -p "require('./app.json').expo.version")
+          out="$RUNNER_TEMP/selfup-${version}-${GITHUB_RUN_NUMBER}.apk"
+          built=android/app/build/outputs/apk/release/app-release.apk
+          apksigner="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner"
+
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            "$apksigner" sign \
+              --ks "$RUNNER_TEMP/release.jks" \
+              --ks-pass env:KEYSTORE_PASSWORD \
+              --ks-key-alias "$KEY_ALIAS" \
+              --key-pass env:KEY_PASSWORD \
+              --out "$out" "$built"
+            rm -f "$RUNNER_TEMP/release.jks"
+            echo "Signed with the release keystore."
+          else
+            cp "$built" "$out"
+            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret — APK is signed with Expo's shared debug key (OK for sideloading, not for the Play Store)."
+          fi
+
+          "$apksigner" verify --print-certs "$out" | head -5
+          echo "APK_PATH=$out" >> "$GITHUB_ENV"
+          echo "APK_NAME=$(basename "$out")" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_PATH }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/mobile-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.APK_PATH }}

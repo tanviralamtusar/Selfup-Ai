@@ -17,6 +17,31 @@ Before the first sync, run `web/scripts/migrations/add_mobile_sync.sql` in the S
 
 ## Build an APK
 
+### On GitHub (no Expo account needed)
+
+`.github/workflows/android-apk.yml` runs Expo's prebuild and a Gradle release build on GitHub's runners, then uploads the APK as a workflow artifact. It runs on pushes to `main` that touch `mobile/`, on demand (Actions → *Android APK* → *Run workflow*), and on `mobile-v*` tags (for example `mobile-v1.0.0`), which also attach the APK to a GitHub Release. Each build sets `versionCode` to the run number, so a newer APK installs over an older one.
+
+One-time setup, in the repo's **Settings → Secrets and variables → Actions**:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `EXPO_PUBLIC_SUPABASE_URL` | Variable | same as the website's `NEXT_PUBLIC_SUPABASE_URL` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Variable | same as `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| `EXPO_PUBLIC_API_URL` | Variable | `https://<your website domain>` (must be HTTPS) |
+| `ANDROID_KEYSTORE_BASE64` | Secret | optional, your signing key, base64-encoded |
+| `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Secret | optional, for that key |
+
+Without the keystore secrets the APK is signed with Expo's shared debug key. That's fine for installing on your own phones, but not for the Play Store. Android only installs an update over an existing app when both are signed with the same key, so switching keys later means uninstalling first (which clears the phone's unsynced queue). Set up your own key before handing the app to anyone:
+
+```bash
+keytool -genkeypair -v -keystore selfup-release.jks -alias selfup -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 selfup-release.jks   # paste the output into ANDROID_KEYSTORE_BASE64
+```
+
+Keep `selfup-release.jks` and its passwords backed up outside the repo. If you lose them, you can never publish an update to the same app.
+
+### With EAS (Expo's cloud build)
+
 ```bash
 npm i -g eas-cli && eas login
 eas build -p android --profile preview      # installable .apk (see eas.json)

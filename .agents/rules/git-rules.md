@@ -7,10 +7,12 @@ trigger: always_on
 ### Branch Strategy
 ```
 main          → production (auto-deploys via Coolify)
-develop       → staging
-feature/*     → new features (branch from develop)
+<module>-v2   → long-running module branches (e.g. fitness-v2, skills-v2)
+feature/*     → new features (branch from main or the module branch)
 fix/*         → bug fixes
 ```
+
+No `develop`/staging branch exists at the moment; PRs merge into `main`.
 
 ### Commit Messages
 ```
@@ -23,11 +25,11 @@ docs: add missing endpoint to backend.md
 
 ### Workflow
 ```bash
-git checkout develop
-git pull origin develop
+git checkout main
+git pull origin main
 git checkout -b feature/skill-roadmap
 # ... make changes ...
 git add .
 git commit -m "feat: add AI skill roadmap generation"
 git push origin feature/skill-roadmap
-# Create PR → merge to develop → test → merge to main
+# Create PR → run lint + build, test the flow → merge to main

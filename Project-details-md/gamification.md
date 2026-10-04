@@ -1,5 +1,13 @@
 # SelfUp — Gamification System
 
+> **Implementation notes (2026-10-04):** The numbers in this original spec have since been superseded by `web/src/constants/gamification.ts` (`MAX_LEVEL`, `RANK_TABLE`, `XP_REWARDS`, `HP_DAMAGE`, `AICOIN_EARN`, `STREAK_FREEZE`, …), which is the source of truth. Architecture as built:
+> - **Single XP path:** `GamificationService` (`web/src/lib/gamification.service.ts`) owns level-ups, rank, AiCoins, stat points and HP. `TaskEconomyService.awardXp` / `applyXpPenalty` / `applyHpDamage` / `recoverHp` delegate to it. Never write `user_profiles.xp`/`level` directly, and pass a task `category` rather than pre-multiplying attribute bonuses.
+> - **Idempotency:** XP awards are keyed on the unique index `xp_transactions (user_id, source_type, source_id)`. There is no `increment_user_xp` RPC.
+> - **New-day check-in:** `DayStartModal` + `GET/POST /api/dailies/cron` roll the day per user (`user_profiles.last_cron_date`). Confirmed dailies earn backdated XP; missed ones apply an XP penalty and HP damage; daily streaks roll (`dailies.current_streak` / `longest_streak`).
+> - **Money XP:** +5 per transaction, +8 per goal contribution, +25 on goal completion.
+>
+> The RPG redesign (attributes, HP states, dungeons, ranks) is specified in `gamification_redesign.md`.
+
 ---
 
 ## XP & Level System

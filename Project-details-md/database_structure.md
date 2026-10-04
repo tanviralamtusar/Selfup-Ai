@@ -5,6 +5,8 @@
 **Storage:** Supabase Storage (body transformation photos, avatars)  
 **Realtime:** Supabase Realtime (notifications, live leaderboard)
 
+> **Last synced:** 2026-10-04. Sections 1–13 are the original V1 design; sections 14–17 come from `web/scripts/migrations/`. For anything security-critical, check the live Supabase schema.
+
 ---
 
 ## Naming Conventions
@@ -587,6 +589,191 @@ CREATE TABLE subscriptions (
   created_at      TIMESTAMPTZ DEFAULT now()
 );
 ```
+
+---
+
+> **Sections 14–17 were added 2026-10-04** from the idempotent migrations in `web/scripts/migrations/`, which are the source of truth for these tables.
+
+### 14. Money Module (`create_money.sql`)
+
+See [money.md](money.md) for behaviour. Amounts are `NUMERIC(14,2)` and always positive; `type` gives the sign. Account balances are computed, never stored. RLS: each table is owner-only, except `money_categories`, which is readable when `user_id IS NULL` (global defaults) or owned.
+
+```sql
+CREATE TABLE money_accounts (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  name            TEXT NOT NULL,
+  type            TEXT NOT NULL DEFAULT 'cash' CHECK (type IN ('cash','bank','card','investment','other')),
+  currency        TEXT NOT NULL DEFAULT 'USD',
+  opening_balance NUMERIC(14,2) NOT NULL DEFAULT 0,
+  color           TEXT DEFAULT '#9c7ef0',
+  icon            TEXT DEFAULT 'wallet',
+  is_active       BOOLEAN NOT NULL DEFAULT true,
+  sort_order      INT DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE money_categories (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES user_profiles(id) ON DELETE CASCADE,  -- NULL = global default
+  name        TEXT NOT NULL,
+  kind        TEXT NOT NULL DEFAULT 'expense' CHECK (kind IN ('income','expense')),
+  icon        TEXT DEFAULT 'tag',
+  color       TEXT DEFAULT '#7a7a8a',
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE money_transactions (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  account_id     UUID REFERENCES money_accounts(id) ON DELETE SET NULL,   -- source for transfers
+  to_account_id  UUID REFERENCES money_accounts(id) ON DELETE SET NULL,   -- destination for transfers
+  category_id    UUID REFERENCES money_categories(id) ON DELETE SET NULL,
+  type           TEXT NOT NULL DEFAULT 'expense' CHECK (type IN ('income','expense','transfer')),
+  amount         NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  currency       TEXT NOT NULL DEFAULT 'USD',
+  note           TEXT,
+  occurred_at    DATE NOT NULL DEFAULT (now() AT TIME ZONE 'utc')::date,
+  xp_earned      INT DEFAULT 0,
+  recurring_id   UUID,              -- set when posted from a recurring rule
+  created_at     TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE money_budgets (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  category_id   UUID NOT NULL REFERENCES money_categories(id) ON DELETE CASCADE,
+  month         DATE NOT NULL,      -- first day of the month
+  limit_amount  NUMERIC(14,2) NOT NULL CHECK (limit_amount >= 0),
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, category_id, month)
+);
+
+CREATE TABLE money_recurring (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  account_id     UUID REFERENCES money_accounts(id) ON DELETE SET NULL,
+  category_id    UUID REFERENCES money_categories(id) ON DELETE SET NULL,
+  name           TEXT NOT NULL,
+  type           TEXT NOT NULL DEFAULT 'expense' CHECK (type IN ('income','expense')),
+  amount         NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  currency       TEXT NOT NULL DEFAULT 'USD',
+  cadence        TEXT NOT NULL DEFAULT 'monthly' CHECK (cadence IN ('weekly','monthly','yearly')),
+  next_due       DATE NOT NULL,
+  auto_post      BOOLEAN NOT NULL DEFAULT false,   -- stored, not yet acted on
+  is_active      BOOLEAN NOT NULL DEFAULT true,
+  last_posted_at DATE,
+  created_at     TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE money_goals (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  name           TEXT NOT NULL,
+  target_amount  NUMERIC(14,2) NOT NULL CHECK (target_amount > 0),
+  current_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+  currency       TEXT NOT NULL DEFAULT 'USD',
+  target_date    DATE,
+  color          TEXT DEFAULT '#5db8a0',
+  icon           TEXT DEFAULT 'target',
+  is_achieved    BOOLEAN NOT NULL DEFAULT false,
+  created_at     TIMESTAMPTZ DEFAULT now(),
+  updated_at     TIMESTAMPTZ DEFAULT now()
+);
+-- Indexes: user_id on every table; money_transactions (user_id, occurred_at DESC), (account_id), (category_id);
+-- money_budgets (user_id, month)
+```
+
+### 15. Fitness Programs (`create_programs.sql`)
+
+Adapted from workout-cool: Program → Week → Session → Exercise, plus enrollment and per-session progress. RLS: published, active programs (and their children) are readable by everyone; enrollments and progress are owner-only. All PKs are `UUID DEFAULT gen_random_uuid()`.
+
+```sql
+CREATE TABLE programs (
+  id, slug TEXT UNIQUE, title TEXT NOT NULL, description TEXT, category TEXT, image_url TEXT,
+  level TEXT DEFAULT 'intermediate' CHECK (level IN ('beginner','intermediate','advanced')),
+  program_type TEXT,                              -- strength | hypertrophy | endurance | ...
+  duration_weeks INT DEFAULT 4, sessions_per_week INT DEFAULT 3, session_duration_min INT DEFAULT 30,
+  equipment TEXT[], is_premium BOOLEAN DEFAULT false, is_active BOOLEAN DEFAULT true,
+  visibility TEXT DEFAULT 'published' CHECK (visibility IN ('draft','published')),
+  participant_count INT DEFAULT 0,
+  created_by UUID REFERENCES user_profiles(id) ON DELETE SET NULL,   -- NULL = system
+  created_at, updated_at TIMESTAMPTZ
+);
+CREATE TABLE program_weeks (
+  id, program_id UUID NOT NULL REFERENCES programs ON DELETE CASCADE,
+  week_number INT NOT NULL, title TEXT, description TEXT,
+  UNIQUE (program_id, week_number)
+);
+CREATE TABLE program_sessions (
+  id, week_id UUID NOT NULL REFERENCES program_weeks ON DELETE CASCADE,
+  session_number INT NOT NULL, title TEXT, description TEXT, equipment TEXT[], estimated_minutes INT DEFAULT 30,
+  UNIQUE (week_id, session_number)
+);
+CREATE TABLE program_session_exercises (
+  id, session_id UUID NOT NULL REFERENCES program_sessions ON DELETE CASCADE,
+  exercise_id UUID NOT NULL REFERENCES exercises, order_index INT DEFAULT 0, instructions TEXT,
+  suggested_sets JSONB DEFAULT '[]',              -- [{ set_index, type, reps, weight, unit, seconds }]
+  UNIQUE (session_id, order_index)
+);
+CREATE TABLE user_program_enrollments (
+  id, user_id UUID NOT NULL REFERENCES user_profiles ON DELETE CASCADE,
+  program_id UUID NOT NULL REFERENCES programs ON DELETE CASCADE,
+  enrolled_at TIMESTAMPTZ, current_week INT DEFAULT 1, current_session INT DEFAULT 1,
+  completed_sessions INT DEFAULT 0, is_active BOOLEAN DEFAULT true, completed_at TIMESTAMPTZ,
+  UNIQUE (user_id, program_id)
+);
+CREATE TABLE user_session_progress (
+  id, enrollment_id UUID NOT NULL REFERENCES user_program_enrollments ON DELETE CASCADE,
+  session_id UUID NOT NULL REFERENCES program_sessions ON DELETE CASCADE,
+  started_at TIMESTAMPTZ, completed_at TIMESTAMPTZ,
+  workout_session_id UUID REFERENCES workout_session_logs ON DELETE SET NULL,
+  UNIQUE (enrollment_id, session_id)
+);
+```
+
+### 16. Exercise Library Columns (`add_exercise_media_columns.sql`, `add_exercise_attributes.sql`)
+
+`exercises` is seeded from free-exercise-db (~873 exercises) by `npm run seed:exercises`. Denormalized attribute columns stand in for workout-cool's EAV tables:
+
+```sql
+ALTER TABLE exercises
+  ADD COLUMN exercise_type     TEXT,              -- strength | cardio | stretching | plyometrics | powerlifting | strongman | ...
+  ADD COLUMN mechanics_type    TEXT,              -- compound | isolation
+  ADD COLUMN force_type        TEXT,              -- push | pull | static
+  ADD COLUMN primary_muscle    TEXT,              -- granular, e.g. 'quadriceps' (muscle_group stays the broad UI group)
+  ADD COLUMN secondary_muscles TEXT[] DEFAULT '{}',
+  ADD COLUMN image_urls        TEXT[] DEFAULT '{}';
+-- Indexes: primary_muscle, equipment, exercise_type
+```
+
+Per-set reps logged by the session tracker go into the existing `workout_session_logs.sets_done` JSONB; no DDL was needed.
+
+### 17. New-Day Check-in & XP Idempotency (`add_day_cron.sql`)
+
+```sql
+ALTER TABLE user_profiles ADD COLUMN last_cron_date DATE;   -- last day rolled over; check-in due when < today
+ALTER TABLE dailies
+  ADD COLUMN current_streak INT NOT NULL DEFAULT 0,
+  ADD COLUMN longest_streak INT NOT NULL DEFAULT 0;
+
+-- awardXp detects repeat awards via unique violation (23505)
+CREATE UNIQUE INDEX xp_transactions_source_uniq ON xp_transactions (user_id, source_type, source_id);
+CREATE INDEX xp_transactions_user_created_idx   ON xp_transactions (user_id, created_at DESC);
+```
+
+There is **no** `increment_user_xp` RPC. All XP writes go through `GamificationService` (`web/src/lib/gamification.service.ts`).
+
+### Tables in use but not yet documented here
+
+These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:
+
+`dailies`, `todos`, `xp_transactions`, `dungeons`, `user_dungeons`, `workout_session_logs`, `diet_plans`, `meal_templates`, `meal_template_foods`, `plan_adjustments`, `skill_phases`, `skill_topics`, `skill_study_days`, `milestone_tests`, `test_attempts`, `resource_library`, `ai_memory_vectors`, `ai_weekly_summaries`.
+
+The other way round, `subscriptions`, `notification_settings`, `nutrition_plans` and `calendar_integrations` (above) are designed but not referenced by the current code.
 
 ---
 

@@ -16,8 +16,8 @@ trigger: always_on
 - Paginate ALL list endpoints
 - Use database indexes for all frequent query patterns
 - Don't make AI API calls synchronously in loops
-- Cache leaderboard results in Redis (1 hour TTL)
-- Cache user coin balance in Redis (invalidate on transaction)
+- Once Redis is re-enabled: cache leaderboard results (1 hour TTL) and user coin balance (invalidate on transaction). Redis is currently disabled (`web/src/lib/redis.ts`), so don't add Redis-dependent code paths yet
+- AI jobs currently run synchronously via `addAiTask()`, so keep them out of hot request paths where possible
 
 ### Images
 - Profile photos: max 400x400px (resize on upload)
@@ -46,14 +46,14 @@ try {
 
 ### Backend
 ```typescript
-// Use the global error handler
-// Log all errors with context
+// There is no global error handler: each route handler catches and responds
+// Log all errors with context; never leak raw DB/AI errors to the client
 
 try {
   // ...
 } catch (error) {
-  logger.error('Task creation failed', { userId, error, body: req.body })
-  throw error  // let global handler format the response
+  console.error('[POST /api/tasks]', { userId: user.id, error })
+  return NextResponse.json({ success: false, error: 'Could not create task' }, { status: 500 })
 }
 ```
 

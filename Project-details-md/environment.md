@@ -1,115 +1,46 @@
 # SelfUp — Environment Variables Reference
 
+> **Last synced with code:** 2026-10-04. This list covers every `process.env.*` read in `web/src` and `web/scripts`.
+> The template is `web/.env.example`. Copy it to `web/.env.local` for local dev; in production set the values in Coolify's Environment tab.
+
 ---
 
-## Backend (.env)
+## Variables
+
+| Variable | Required | Exposed to browser | Used by |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Yes | Every Supabase client |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Yes | Browser client (`lib/supabase.ts`) and user-scoped server clients in API routes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | **No, never** | Admin client for cross-user work: `lib/ai/scheduler.ts`, `lib/model-config.ts`, worker jobs, seed scripts |
+| `GOOGLE_AI_API_KEY` | Yes | No | `lib/gemma.ts` (all generation and embeddings) |
+| `NEXT_PUBLIC_APP_URL` | Production | Yes | Absolute app URL; Docker build arg |
+| `NEXT_PUBLIC_API_BASE_URL` | Production | Yes | Absolute API URL; Docker build arg |
+| `YOUTUBE_API_KEY` | No | No | `api/youtube/search`, `lib/skills/resourceResolver.ts`. Without it, search returns mock data |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | No (unused) | Yes | Only read by `lib/client.ts`, `lib/server.ts` and `lib/middleware.ts`, which nothing imports. Set it if you wire up those SSR helpers |
+
+`NODE_ENV` and `NEXT_RUNTIME` are set by Node/Next.
+
+## Build-time vs runtime
+
+`NEXT_PUBLIC_*` values are inlined into the client bundle at **build time**. The Dockerfile takes `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as build args (wired in `docker-compose.yml`), so changing them requires a rebuild, not just a restart.
+
+## Not currently used
+
+Earlier versions of this doc listed `REDIS_URL`, `RESEND_API_KEY`, `VAPID_*`, `GOOGLE_CLIENT_ID/SECRET`, `SUPABASE_JWT_SECRET` and `GEMMA_MODEL`. None of these are read by the code today:
+
+- **Redis** is disabled (`lib/redis.ts` exports `null`). Re-enabling BullMQ will need `REDIS_URL` again.
+- **Email (Resend)** and **web push (`web-push`)** are installed dependencies but are not wired up.
+- **Google OAuth / Calendar** is not implemented.
+- **Model choice** is per-user in the database (`lib/model-config.ts`), not an env var.
+
+## Local example
 
 ```env
-# ─── SERVER ───────────────────────────────────────
-PORT=3000
-NODE_ENV=development          # development | production
-
-# ─── SUPABASE ─────────────────────────────────────
-SUPABASE_URL=https://yourproject.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=    # From Supabase: Settings → API → service_role
-# WARNING: Never expose this to frontend. Backend only.
-
-SUPABASE_JWT_SECRET=          # From Supabase: Settings → API → JWT Secret
-
-# ─── GOOGLE AI STUDIO ─────────────────────────────
-GEMMA_API_KEY=                # From https://aistudio.google.com/apikey
-GEMMA_MODEL=gemma-3-27b-it    # or gemma-3-12b-it for fallback
-
-# ─── REDIS ────────────────────────────────────────
-REDIS_URL=redis://localhost:6379
-
-# ─── EMAIL (RESEND) ───────────────────────────────
-RESEND_API_KEY=re_             # From https://resend.com/api-keys
-RESEND_FROM=noreply@botbhai.net
-
-# ─── WEB PUSH ─────────────────────────────────────
-VAPID_PUBLIC_KEY=              # Generate: npx web-push generate-vapid-keys
-VAPID_PRIVATE_KEY=
-VAPID_EMAIL=admin@botbhai.net
-
-# ─── GOOGLE OAUTH + CALENDAR ─────────────────────
-GOOGLE_CLIENT_ID=              # From Google Cloud Console
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=https://selfup.botbhai.net/api/auth/google/callback
-
-# ─── YOUTUBE ─────────────────────────────────────
-YOUTUBE_API_KEY=               # From Google Cloud Console → APIs → YouTube Data API v3
-
-# ─── APP ──────────────────────────────────────────
-APP_URL=https://selfup.botbhai.net   # http://localhost:5173 for dev
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_API_BASE_URL="http://localhost:3000/api"
+NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
+SUPABASE_SERVICE_ROLE_KEY="..."
+GOOGLE_AI_API_KEY="..."
+YOUTUBE_API_KEY=""
 ```
-
----
-
-## Frontend (.env)
-
-```env
-VITE_SUPABASE_URL=https://yourproject.supabase.co
-VITE_SUPABASE_ANON_KEY=       # From Supabase: Settings → API → anon/public
-# Safe to expose — RLS protects data
-
-VITE_API_BASE_URL=https://selfup.botbhai.net/api   # http://localhost:3000/api for dev
-VITE_APP_NAME=SelfUp
-VITE_APP_URL=https://selfup.botbhai.net
-
-VITE_VAPID_PUBLIC_KEY=         # Must match backend VAPID_PUBLIC_KEY
-```
-
----
-
-## Where to Find Each Key
-
-| Variable | Where to Get |
-|----------|-------------|
-| `SUPABASE_URL` | Supabase Dashboard → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard → Settings → API |
-| `SUPABASE_JWT_SECRET` | Supabase Dashboard → Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Supabase Dashboard → Settings → API |
-| `GEMMA_API_KEY` | https://aistudio.google.com → Get API Key |
-| `REDIS_URL` | Local: `redis://localhost:6379` |
-| `RESEND_API_KEY` | https://resend.com → API Keys |
-| `VAPID_PUBLIC_KEY` | Run: `npx web-push generate-vapid-keys` |
-| `VAPID_PRIVATE_KEY` | Same as above |
-| `GOOGLE_CLIENT_ID` | Google Cloud Console → APIs → Credentials |
-| `GOOGLE_CLIENT_SECRET` | Same as above |
-| `YOUTUBE_API_KEY` | Google Cloud Console → APIs → YouTube Data API v3 |
-
----
-
-## .gitignore (add these)
-```gitignore
-# Environment files
-.env
-.env.local
-.env.production
-
-# Dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Logs
-*.log
-logs/
-
-# OS
-.DS_Store
-Thumbs.db
-```
-
----
-
-## Coolify Environment Variables Setup
-1. Open Coolify dashboard → your backend service
-2. Environment Variables tab
-3. Add each variable from `backend/.env` one by one
-4. Mark `SUPABASE_SERVICE_ROLE_KEY`, `GEMMA_API_KEY`, `VAPID_PRIVATE_KEY`, `GOOGLE_CLIENT_SECRET` as **Secret** (hidden after save)
-5. Repeat for frontend service with `frontend/.env` variables
-6. Redeploy both services after saving

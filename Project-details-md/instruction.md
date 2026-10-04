@@ -1,281 +1,115 @@
 # SelfUp — Setup & Deployment Instructions
 
+> **Last synced with code:** 2026-10-04. SelfUp is a single Next.js 16 app in `web/` that serves both the UI and the API. The earlier split into a Vite frontend plus an Express backend no longer applies.
+
 ---
 
-## Local Development Setup
+## Local Development
 
 ### Prerequisites
-- Node.js 20+ (`node --version`)
-- npm 10+
-- Redis (`redis-server`)
-- Git
 
-### Step 1: Clone Repository
+- Node.js 20+
+- A Supabase project
+- A Google AI Studio API key (<https://aistudio.google.com/apikey>)
+- Optional: a YouTube Data API v3 key
+
+### 1. Install
+
 ```bash
-git clone https://github.com/yourusername/selfup.git
-cd selfup
+git clone https://github.com/tanviralamtusar/Selfup-Ai.git
+cd Selfup-Ai/web
+npm install
 ```
 
-### Step 2: Install Dependencies
+### 2. Configure environment
+
 ```bash
-# Frontend
-cd frontend && npm install
-
-# Backend
-cd ../backend && npm install
+cp .env.example .env.local
 ```
 
-### Step 3: Supabase Setup
-1. Go to https://supabase.com → New Project
-2. Copy your project URL and anon key
-3. Go to SQL Editor → paste entire contents of `database_structure.md` SQL blocks
-4. Run all SQL (tables, triggers, RLS policies)
-5. Go to Storage → create buckets: `avatars`, `body-photos`, `style-photos`, `moodboard`
-6. Set bucket policies (avatars: public read; others: private)
+Fill in the values; see [environment.md](environment.md).
 
-### Step 4: Google AI Studio Setup
-1. Go to https://aistudio.google.com
-2. Create API key
-3. Note: Free tier = 60 requests/minute, 1500 requests/day
+### 3. Database
 
-### Step 5: Google OAuth + Calendar
-1. Go to https://console.cloud.google.com
-2. Create new project "SelfUp"
-3. Enable APIs: Google+ API, Google Calendar API, YouTube Data API v3
-4. OAuth 2.0 Credentials → Web Application
-5. Authorized redirect URIs: `http://localhost:3000/api/auth/google/callback`
-6. Copy Client ID + Secret
+1. The base schema already exists in the Supabase project (see [database_structure.md](database_structure.md)).
+2. Run each file in `web/scripts/migrations/` in the Supabase **SQL editor**. They are idempotent, so re-running is safe:
+   `add_exercise_media_columns.sql`, `add_exercise_attributes.sql`, `create_programs.sql`, `create_money.sql`, `add_day_cron.sql`.
+3. Because they are applied through the editor, they will **not** appear in Supabase's migration history. Check `information_schema.columns` / `tables` to confirm they ran.
+4. Seed fitness data as needed:
 
-### Step 6: Resend Email Setup
-1. Go to https://resend.com → Create account
-2. Add domain `botbhai.net` (or use `@resend.dev` for dev)
-3. Get API key
+   ```bash
+   npm run seed:exercises   # free-exercise-db library (873 exercises) + attribute backfill
+   npm run seed:programs    # sample multi-week programs
+   ```
 
-### Step 7: Web Push VAPID Keys
+### 4. Run
+
 ```bash
-npx web-push generate-vapid-keys
-# Copy output to .env
+npm run dev      # http://localhost:3000 (UI + /api)
 ```
 
-### Step 8: Environment Files
+No separate worker or Redis is needed: Redis is disabled and AI jobs run synchronously through `addAiTask()`. `src/instrumentation.ts` starts an hourly in-process loop for proactive alerts and weekly summaries.
 
-**`backend/.env`**
-```env
-PORT=3000
-NODE_ENV=development
+### 5. Validate changes
 
-SUPABASE_URL=https://yourproject.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-
-GEMMA_API_KEY=your_google_ai_studio_key
-
-REDIS_URL=redis://localhost:6379
-
-RESEND_API_KEY=re_your_key_here
-RESEND_FROM=noreply@botbhai.net
-
-VAPID_PUBLIC_KEY=your_vapid_public_key
-VAPID_PRIVATE_KEY=your_vapid_private_key
-VAPID_EMAIL=admin@botbhai.net
-
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
-YOUTUBE_API_KEY=your_youtube_api_key
-
-SUPABASE_JWT_SECRET=your_supabase_jwt_secret
-APP_URL=http://localhost:5173
-```
-
-**`frontend/.env`**
-```env
-VITE_SUPABASE_URL=https://yourproject.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key_here
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_APP_NAME=SelfUp
-VITE_VAPID_PUBLIC_KEY=your_vapid_public_key
-```
-
-### Step 9: Start Development Servers
 ```bash
-# Terminal 1: Redis
-redis-server
-
-# Terminal 2: Backend
-cd backend && npm run dev
-
-# Terminal 3: Frontend
-cd frontend && npm run dev
-
-# App runs at http://localhost:5173
-# API runs at http://localhost:3000
+npm run lint
+npm run build    # includes the TypeScript check
 ```
+
+There is no unit-test suite yet, so exercise the affected page or API flow manually.
 
 ---
 
 ## Production Deployment (Coolify VPS)
 
-### VPS Specs
-- 16GB RAM, 4 Core CPU
-- Ubuntu 24.04
-- Coolify installed
+Deployment uses `docker-compose.yml` at the repo root, which builds `web/Dockerfile`: a multi-stage `node:20-alpine` image serving on port 3000, with a `wget` healthcheck on `/`.
 
-### Step 1: Install Redis on VPS
-```bash
-ssh root@your-vps-ip
-apt update && apt install -y redis-server
-systemctl enable redis-server
-systemctl start redis-server
-redis-cli ping  # should return PONG
+1. In Coolify, create a **Docker Compose** resource from the GitHub repo (`main` branch).
+2. In the Environment tab, add the variables from [environment.md](environment.md). The four `NEXT_PUBLIC_*` values used as build args must be present **before** building.
+3. Point the domain (e.g. an `A` record for `selfup` → VPS IP) and enable Let's Encrypt in Coolify.
+4. Deploy. Pushes to `main` redeploy.
+
+### Supabase auth URLs
+
+Supabase → Authentication → URL Configuration:
+
+```text
+Site URL: https://<your-domain>
+Redirect URLs: https://<your-domain>/**
 ```
 
-### Step 2: Configure Domain
-In your DNS provider (wherever botbhai.net is registered):
-```
-Type: A
-Name: selfup
-Value: your-vps-ip
-TTL: 300
-```
+### Verify
 
-### Step 3: Deploy Backend on Coolify
-1. Open Coolify dashboard → New Service → Application
-2. Connect GitHub repository
-3. Set build settings:
-   - Root directory: `backend`
-   - Build command: `npm run build`
-   - Start command: `node dist/index.js`
-   - Port: `3000`
-4. Add all environment variables from `backend/.env` (production values)
-5. Set `REDIS_URL=redis://localhost:6379` (same VPS)
-6. Domain: leave empty (will be on internal port)
-7. Deploy
-
-### Step 4: Deploy Frontend on Coolify
-1. New Service → Static Site
-2. Same GitHub repo
-3. Build settings:
-   - Root directory: `frontend`
-   - Build command: `npm run build`
-   - Output directory: `dist`
-4. Add environment variables from `frontend/.env` (production values):
-   - `VITE_API_BASE_URL=https://selfup.botbhai.net/api`
-5. Domain: `selfup.botbhai.net`
-6. Enable SSL (Let's Encrypt) ✅
-7. Deploy
-
-### Step 5: Configure Nginx Reverse Proxy
-Coolify handles this automatically. But set up the `/api` routing:
-
-In Coolify → your frontend service → Advanced → Add Custom Nginx config:
-```nginx
-location /api {
-  proxy_pass http://backend-service:3000;
-  proxy_set_header Host $host;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
-
-Or configure them as two separate services and use Coolify's built-in proxy.
-
-### Step 6: Update OAuth Redirect URIs
-Go back to Google Cloud Console → OAuth Credentials → Add production URI:
-```
-https://selfup.botbhai.net/api/auth/google/callback
-```
-
-### Step 7: Update Supabase
-Go to Supabase → Authentication → URL Configuration:
-```
-Site URL: https://selfup.botbhai.net
-Redirect URLs: https://selfup.botbhai.net/**
-```
-
-### Step 8: Verify Deployment
-```bash
-# Test backend
-curl https://selfup.botbhai.net/api/health
-
-# Should return: {"status": "ok", "version": "1.0.0"}
-```
-
----
-
-## Service Worker Setup (Web Push)
-
-Create `frontend/public/sw.js`:
-```javascript
-self.addEventListener('push', function(event) {
-  const data = event.data.json()
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/badge-72.png',
-      data: data.url
-    })
-  )
-})
-
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close()
-  event.waitUntil(clients.openWindow(event.notification.data))
-})
-```
-
-Register in frontend:
-```typescript
-// src/lib/notifications.ts
-export async function registerPushNotifications() {
-  const registration = await navigator.serviceWorker.register('/sw.js')
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
-  })
-  // Send subscription to backend
-  await api.post('/api/notifications/subscribe', subscription)
-}
-```
+Open the site, sign up, finish onboarding, and complete a daily. Then confirm that the XP bar moves and that the next day's check-in modal appears.
 
 ---
 
 ## Database Backups
-Supabase free tier: daily backups (7-day retention)  
-Pro tier: point-in-time recovery  
-Manual backup:
-```bash
-pg_dump "postgresql://postgres:[password]@db.yourproject.supabase.co:5432/postgres" > backup.sql
-```
 
----
+- Supabase free tier: daily backups (7-day retention); Pro tier: point-in-time recovery.
+- Manual: `pg_dump "postgresql://postgres:[password]@db.<project-ref>.supabase.co:5432/postgres" > backup.sql`
 
 ## Monitoring
-- Coolify dashboard: CPU, RAM, request logs
-- Backend: Winston logs saved to `/var/log/selfup/`
-- Error tracking: Add Sentry in V2
+
+- Coolify dashboard: container CPU/RAM and logs.
+- App logs go to stdout (`console.*`, tagged like `[Gemma]`, `[Queue Bypass]`, `[Pathfinder Scheduler]`).
 
 ---
 
 ## Common Issues
 
-**Redis not connecting:**
-```bash
-systemctl status redis-server
-# If stopped: systemctl start redis-server
-```
+**AI calls failing / rate-limited**
+`generateResponse()` retries once on `gemini-2.5-flash`. If both attempts fail, check `GOOGLE_AI_API_KEY` and AI Studio quotas. Per-user model choice is stored on `user_profiles` (`getUserModelConfig()` in `lib/model-config.ts`).
 
-**Gemma rate limit hit constantly:**
-- Check AI queue is processing: GET `/api/ai/queue/status`
-- Reduce concurrent AI actions in `config/env.ts`
-- Consider switching to Gemini 1.5 Flash (higher free limits)
+**"Column does not exist" errors (e.g. `last_cron_date`, `current_streak`, `exercise_type`)**
+A migration from `web/scripts/migrations/` hasn't been run on this database. Run it in the SQL editor.
 
-**Supabase RLS blocking queries:**
-- Remember to use service role key in backend (bypasses RLS)
-- Frontend should ONLY use anon key (RLS applies)
+**XP granted twice on double-click**
+The unique index `xp_transactions_source_uniq` from `add_day_cron.sql` is missing.
 
-**Push notifications not working:**
-- Check VAPID keys match in frontend + backend `.env`
-- Chrome requires HTTPS for push notifications (works in production)
-- Firefox may require additional permissions config
+**Supabase RLS blocking queries**
+API routes query as the user, so RLS applies. Check the table's policies before reaching for the service-role key. Use that key only for genuinely cross-user work, and never in the browser.
+
+**`npm run worker` logs "Redis connection missing. Worker will not start."**
+Expected: Redis is disabled, so jobs run in-process and the worker isn't needed.

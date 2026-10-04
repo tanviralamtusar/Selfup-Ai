@@ -1,4 +1,33 @@
 # SelfUp — Feature Status Report
+
+## 🔄 Update — October 4, 2026
+
+What changed since the April snapshot below (branch `fitness-v2`):
+
+### Shipped
+
+- ✅ **Money module** (new pillar): accounts, income/expense/transfer transactions, monthly budgets, recurring bills/income, savings goals, Overview + Bluecoins-style Dashboard analytics, AI spending insights, and XP for logging. See `money.md`.
+- ✅ **Fitness v2 / workout-cool port:** exercise attributes + free-exercise-db library (~873 exercises), interactive muscle-map picker, rest timer + per-set reps, multi-week Programs with enrollment/progress, 3-step workout builder.
+- ✅ **XP system consolidation:** all XP goes through `GamificationService`. This fixed a silent bug where the `increment_user_xp` RPC never existed, so completions granted no coins, stat points or rank updates.
+- ✅ **New-day check-in (Habitica-style):** `DayStartModal` + `/api/dailies/cron`. Dailies now reset each day, misses cost XP/HP, and daily streaks are tracked. (Before this, a ticked daily stayed ticked forever.)
+- ✅ **XP idempotency:** unique index on `xp_transactions (user_id, source_type, source_id)` prevents double awards.
+- ✅ **Habits list redesign:** Habitica-style list with a circular + button.
+- ✅ **AppShell layout + Analysis page:** activity feed and attributes moved off the dashboard into `/analysis`.
+- ✅ **Platform:** Next.js / eslint-config-next 16.3.6.
+- ✅ All migrations in `web/scripts/migrations/` applied to the Supabase project (verified 2026-09-29).
+
+### Current state worth knowing
+
+- 🙈 **Hidden from nav:** AI Chat, Fitness, Skills, Style, Quests and Social are implemented but deliberately hidden from the sidebar (`temporarilyHiddenNavItems` in `AppShell.tsx`). Visible: Dashboard, Time, Money, Analysis.
+- ⚠️ **Redis/BullMQ disabled:** AI jobs run synchronously in-request; proactive alerts and weekly summaries run from an in-process hourly loop (`instrumentation.ts`).
+- ⚠️ **Recurring `auto_post`** is stored but never acted on; recurring items must be posted manually.
+- ⚠️ **Not wired:** email (Resend), web push, Google OAuth/Calendar, rate limiting, subscriptions/payments.
+- ⚠️ **No unit tests;** validation is `npm run lint` + `npm run build` + manual testing.
+
+---
+
+## April 2026 snapshot (historical)
+
 **Generated:** April 21, 2026  
 **Project Stage:** V1 Development  
 **Last Updated:** Current Build

@@ -12,6 +12,7 @@ trigger: always_on
 5. **Never mutate Zustand state directly** — always use store actions
 6. **Loading states** — every data-dependent component must handle loading + error
 7. **Mobile-first** — write mobile CSS first, add desktop with `lg:` prefix
+8. **Navigation** — sidebar/bottom nav lives in `components/layout/AppShell.tsx`; route paths are constants in `constants/routes.ts`
 
 ### Component Template
 ```tsx
@@ -37,13 +38,14 @@ export function WorkoutCard({ workout, onComplete }: WorkoutCardProps) {
 // NEVER use fetch() directly in components
 // ALWAYS use service functions + TanStack Query
 
-// services/tasks.service.ts
-export async function completTask(taskId: string): Promise<void> {
-  const res = await api.patch(`/tasks/${taskId}/complete`)
+// Client API functions: web/src/lib/<module>/client.ts (e.g. lib/money/client.ts)
+// Send the Supabase access token as `Authorization: Bearer <token>`
+export async function completeTask(taskId: string): Promise<void> {
+  const res = await fetch(`/api/todos/${taskId}/complete`, { method: 'POST', headers: authHeaders() })
   if (!res.ok) throw new Error('Failed to complete task')
 }
 
-// hooks/useTasks.ts
+// Hooks: web/src/lib/hooks/useX.ts (e.g. useTodos.ts)
 export function useCompleteTask() {
   return useMutation({
     mutationFn: completTask,
@@ -52,10 +54,12 @@ export function useCompleteTask() {
 }
 ```
 
+Some older pages still call `fetch()` inline. Move that logic into a client function and a hook when you touch them, rather than copying the pattern.
+
 ### State Rules
 ```typescript
 // Global state (Zustand): only for truly global things
-// - auth user, theme, mode (chat/dashboard), timer
+// - auth user + profile (store/authStore.ts), UI state (store/uiStore.ts)
 
 // Server state (TanStack Query): ALL database data
 // - tasks, habits, fitness data, AI chat, etc.

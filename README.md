@@ -1,119 +1,122 @@
 # SelfUp AI — Personal Life-Operating System
 
-SelfUp is an AI-powered personal development platform designed to help users (primarily age 10–30) optimize their lives through four core pillars: Fitness, Skills, Time Management, and Style. It combines the conversational power of AI with the engaging nature of gamified dashboards.
+SelfUp is an AI-powered, gamified personal development platform. It tracks the parts of your life that matter — habits, dailies and to-dos, money, fitness, skills, and style — and turns progress into XP, levels, ranks, and AiCoins.
 
 > **"If someone uses this app properly, they can change their life entirely."**
 
 ---
 
-## 🚀 Core Pillars
+## 🚀 Modules
 
-| Pillar | Description |
-| :--- | :--- |
-| **🏋️ Fitness** | Personalized workout plans, meal/calorie tracking, and body transformation logs. |
-| **🧠 Skills** | AI-generated roadmaps for learning any skill, integrated with YouTube and progress tracking. |
-| **⏰ Time** | Task management, habit tracking, auto-scheduling, and Pomodoro timers. |
-| **👗 Style** | Fashion recommendations and personal style profile management. |
+| Module | Route | Status | What it does |
+| :--- | :--- | :--- | :--- |
+| **📋 Dashboard** | `/dashboard` | Live | Habitica-style board of Habits, Dailies and To-Dos; profile, XP/HP bars, streaks, badges. |
+| **⏰ Time** | `/time` | Live | Board, Pomodoro focus timer, habit heatmaps/calendar, time-blocking schedule with AI auto-schedule. |
+| **💰 Money** | `/money` | Live | Accounts, transactions, monthly budgets, recurring bills/income, savings goals, analytics, AI spending insights. |
+| **📊 Analysis** | `/analysis` | Live | Attribute radar, stat allocation, activity feed and progress charts. |
+| **🏋️ Fitness** | `/fitness` | Hidden from nav | AI workout plans, 873-exercise library with muscle-map picker, multi-week programs, session tracker with rest timer, nutrition, body metrics. |
+| **🧠 Skills** | `/skills` | Hidden from nav | AI roadmaps, topics/milestones, YouTube resources, AI-generated tests. |
+| **👗 Style** | `/style` | Hidden from nav | Outfit log, moodboard, AI recommendations. |
+| **⚔️ Quests / 👥 Social / 💬 AI Chat** | `/quests`, `/social/*`, `/chat` | Hidden from nav | Quests, leaderboard/friends, conversational AI with memory. |
 
----
+"Hidden from nav" modules are implemented and routable, but are deliberately left out of the sidebar (`temporarilyHiddenNavItems` in `web/src/components/layout/AppShell.tsx`) until they are revisited.
 
-## 🎭 Two Interactive Modes
+### Gamification
 
-SelfUp offers two distinct ways to interact with your data:
-
-- **Chat Mode**: A full conversational AI interface (powered by Google's Gemma) that can understand your goals, update your tasks, and generate plans via natural language.
-- **Dashboard Mode**: A Habitica-style visual interface for a quick overview of your profile, stats, active quests, and roadmaps.
+- All XP flows through `GamificationService` (`web/src/lib/gamification.service.ts`) — level-ups, rank, AiCoins, stat points and HP.
+- **New-day check-in** (Habitica-style): on the first visit of a day, `DayStartModal` asks which of yesterday's dailies you actually did; the rest cost XP and HP, and streaks roll over (`/api/dailies/cron`).
+- Money actions also earn XP: +5 per logged transaction, +8 per goal contribution (+25 bonus when a goal is reached).
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend & Core
-- **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack)
-- **UI Library**: [React 19](https://reactjs.org/)
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) + Custom Design System
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Data Fetching**: [TanStack Query v5](https://tanstack.com/query)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-
-### Backend & Infrastructure
-- **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL)
-- **AI Engine**: Google AI Studio (Gemma)
-- **Background Tasks**: [BullMQ](https://docs.bullmq.io/) + [Redis](https://redis.io/)
-- **Email**: [Resend](https://resend.com/)
-- **Deployment**: [Coolify](https://coolify.io/) on VPS
-
----
-
-## ✨ Key Features
-
-- **Background AI Processing**: Large tasks like fitness plan generation and skill roadmaps run in the background. An **Activity Tracker** in the header provides real-time status updates (Processing, Done, Failed).
-- **Gamification**: Earn **AiCoins** and XP to level up. Complete daily quests and maintain streaks to build consistency.
-- **AI Memory**: The system remembers your preferences, progress, and previous conversations to provide highly personalized advice.
-- **Automatic Scheduling**: Let the AI organize your day based on your habits and priorities.
+- **Framework**: Next.js 16 (App Router, Turbopack) — single app in `web/`, UI and API routes together
+- **UI**: React 19, Tailwind CSS 4, Radix UI / shadcn, Framer Motion, Lucide, Recharts
+- **State & data**: TanStack Query v5, Zustand (global client state only), React Hook Form + Zod
+- **Database & Auth**: Supabase (PostgreSQL + RLS)
+- **AI**: Google GenAI SDK — `gemini-2.5-flash` default with automatic fallback; `gemma-4-31b-it` and `gemini-2.5-pro` selectable per user; `gemini-embedding-2` for memory embeddings
+- **Background jobs**: BullMQ worker code exists, but **Redis is currently disabled** — `addAiTask()` runs jobs synchronously in the request (see `web/src/lib/queue.ts`, `web/src/lib/redis.ts`). Proactive alerts and weekly summaries run from an in-process hourly loop started in `web/src/instrumentation.ts`.
+- **Deployment**: Docker (`web/Dockerfile`) via Coolify on a VPS
 
 ---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
+
 - Node.js 20+
-- Redis (for BullMQ)
-- Supabase Project
-- Google AI Studio API Key
+- A Supabase project
+- A Google AI Studio API key
+- *(Optional)* YouTube Data API key — without it, YouTube search returns mock data
 
-### Installation
+### Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/tanviralamtusar/Selfup-Ai.git
-   cd Selfup-Ai
-   ```
+```bash
+git clone https://github.com/tanviralamtusar/Selfup-Ai.git
+cd Selfup-Ai/web
+npm install
+cp .env.example .env.local   # then fill in the values
+npm run dev                  # http://localhost:3000
+```
 
-2. **Install dependencies**:
-   ```bash
-   cd web
-   npm install
-   ```
+### Environment variables (`web/.env.local`)
 
-3. **Environment Variables**:
-   Create a `.env.local` in the `web` directory with the following:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   GOOGLE_AI_API_KEY=your_google_ai_key
-   REDIS_URL=redis://localhost:6379
-   ```
+| Variable | Required | Used for |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Browser + user-scoped server clients |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only admin client — never expose to the browser |
+| `GOOGLE_AI_API_KEY` | Yes | All AI features |
+| `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_BASE_URL` | Prod | Absolute URLs; also Docker build args |
+| `YOUTUBE_API_KEY` | No | Skills resources and YouTube search |
 
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
+### Database migrations
 
-5. **Run the background worker**:
-   ```bash
-   npm run worker
-   ```
+Base schema lives in Supabase. Incremental migrations are in `web/scripts/migrations/*.sql` and are applied by pasting them into the **Supabase SQL editor** (they are idempotent). They are not tracked by the Supabase migrations table, so verify against `information_schema` rather than `list_migrations`.
+
+| File | Adds |
+| :--- | :--- |
+| `add_exercise_media_columns.sql` | Exercise muscle + image columns |
+| `add_exercise_attributes.sql` | Exercise type/mechanics/force attributes + indexes |
+| `create_programs.sql` | Multi-week fitness programs + enrollments/progress |
+| `create_money.sql` | Money module tables + RLS |
+| `add_day_cron.sql` | `last_cron_date`, daily streaks, XP idempotency index |
+
+Then seed fitness data if needed: `npm run seed:exercises` and `npm run seed:programs`.
+
+### Scripts (run from `web/`)
+
+| Command | Purpose |
+| :--- | :--- |
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build + type check |
+| `npm run lint` | ESLint |
+| `npm run worker` | BullMQ worker — won't start while Redis is disabled |
+| `npm run seed:exercises` | Seed/backfill the exercise library (free-exercise-db) |
+| `npm run seed:programs` | Seed fitness programs |
+
+There is no unit-test suite yet. Validate changes with `npm run lint`, `npm run build`, and by exercising the affected route.
 
 ---
 
-## 📜 Development Rules & Guidelines
+## 📚 Documentation
 
-This project follows strict architectural rules defined in the `.agents/` directory. 
-- **Frontend**: No business logic in components; use custom hooks.
-- **Backend**: No business logic in controllers; all logic stays in services.
-- **Security**: Always verify resource ownership; never expose the service role key to the frontend.
+- **[AGENTS.md](AGENTS.md)** — contributor & AI-agent guide: structure, conventions, current-state gotchas. Start here.
+- **[.agents/rules/](.agents/rules/)** — frontend, backend, security, performance and Git rules.
+- **[Project-details-md/](Project-details-md/README.md)** — design specs and reference docs; the index marks which describe the current system and which are historical specs.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] V1 Core Web Implementation
-- [ ] V2 Mobile Apps (Android/iOS)
-- [ ] V2 Desktop App (Windows)
-- [ ] V3 Deep Analytics & Parental Controls
+- [x] V1 core web app (dashboard, time, gamification)
+- [x] Money module
+- [x] Fitness v2 (exercise library, programs, session tracker)
+- [ ] Re-enable Fitness, Skills, Style, Quests, Social and Chat in navigation
+- [ ] Re-enable Redis/BullMQ for true background processing
+- [ ] Mobile (Android/iOS) and desktop apps
+- [ ] Deep analytics & parental controls
 
 ---
 

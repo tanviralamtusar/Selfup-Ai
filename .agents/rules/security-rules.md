@@ -5,8 +5,10 @@ trigger: always_on
 ## Security Rules
 
 ### Authentication
-- All `/api/*` routes (except `/api/auth/*`) require valid JWT
-- JWT verified via Supabase admin client — never custom JWT parsing
+- All `/api/*` routes (except `/api/auth/*`) require a valid JWT sent as `Authorization: Bearer <token>`
+- Verify it with `verifyAuth(req)` from `@/lib/api-auth` (calls `supabase.auth.getUser`), never with custom JWT parsing
+- Then query as the user (Supabase client carrying the user's token) so RLS enforces ownership as a second layer
+- Page protection is client-side in `app/(protected)/layout.tsx` and there is no Next middleware, so never rely on page guards for data security
 - Token expiry: 1 hour (Supabase default), refresh token: 7 days
 
 ### Data Access
@@ -25,6 +27,7 @@ async function deleteTask(userId: string, taskId: string) {
 - Validate file uploads: type (image only), size (max 5MB)
 
 ### Rate Limits
+Target limits. They are **not yet enforced** in code.
 ```typescript
 // Per-user per-hour limits
 AI chat:          20 requests/hour

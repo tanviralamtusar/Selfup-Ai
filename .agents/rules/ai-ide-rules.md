@@ -13,7 +13,10 @@ When using AI IDE assistance:
 6. When generating DB queries, verify RLS will allow the query
 
 ### Useful context to always provide to AI IDE:
-- `database_structure.md` (for DB queries)
-- `backend.md` (for API routes)
-- `frontend.md` (for component/hook structure)
-- `ai_system.md` (for AI feature work)
+- `AGENTS.md` (repo map and current-state gotchas, always)
+- `Project-details-md/database_structure.md` (for DB queries)
+- `Project-details-md/api.md` (current API route inventory)
+- `.agents/rules/frontend-rules.md` (for component/hook structure)
+- `Project-details-md/ai_system_v3.md` (for AI feature work)
+- `Project-details-md/money.md` (for the Money module)
+- `Project-details-md/README.md` shows which docs are current and which are historical specs

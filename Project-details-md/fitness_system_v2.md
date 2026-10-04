@@ -5,6 +5,14 @@
 > **AiCoin Cost:** 15 coins per AI-generated plan  
 > **Philosophy:** The AI is a world-class personal trainer living inside the System. It asks, analyses, builds, and adapts.
 
+> **Implementation status (2026-10-04):** This is the original design spec. Since then the module has also gained features ported from [workout-cool](https://github.com/Snouzy/workout-cool) (MIT), on branch `fitness-v2`:
+> 1. **Exercise attributes:** denormalized `exercise_type`, `mechanics_type`, `force_type`, `primary_muscle`, `secondary_muscles`, `image_urls` on `exercises`; library seeded from free-exercise-db (~873 exercises).
+> 2. **Muscle-map picker:** SVG body diagram in `web/src/components/fitness/muscle-map/` (see its `NOTICE.md`), used by the **Exercises** tab.
+> 3. **Session tracker:** rest countdown (`RestTimer.tsx`) and per-set reps logging in `workout_session_logs.sets_done`.
+> 4. **Programs:** multi-week Program → Week → Session → Exercise with enrollment and progress (**Programs** tab, `/api/fitness/programs/*`, `npm run seed:programs`), plus a 3-step workout builder (`components/fitness/workout-builder/`).
+>
+> Page tabs are now `workout | programs | exercises | nutrition | body`. Schema: `database_structure.md` §15–16. Background generation runs synchronously (Redis is disabled), not via BullMQ as described below. **Fitness is currently hidden from the sidebar** (`AppShell.tsx`), though `/fitness` still works.
+
 ---
 
 ## Table of Contents

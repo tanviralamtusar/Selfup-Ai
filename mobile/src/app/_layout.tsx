@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router'
+import { DarkTheme, router, Stack, ThemeProvider } from 'expo-router'
+import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect, useState } from 'react'
@@ -8,6 +9,7 @@ import { CheckInModal } from '@/components/CheckInModal'
 import { UpdatePrompt } from '@/components/UpdatePrompt'
 import { initDatabase, resetDatabase } from '@/db/database'
 import { getKv, setKv } from '@/db/kv'
+import { clearReminders, setupNotifications, startReminderSync } from '@/lib/notifications'
 import { supabase } from '@/lib/supabase'
 import { startSync } from '@/sync/engine'
 import { colors } from '@/ui/theme'
@@ -56,6 +58,31 @@ export default function RootLayout() {
       stop?.()
     }
   }, [ready, userId])
+
+  // Reminders follow the signed-in user's synced data; cleared on sign-out.
+  useEffect(() => {
+    if (!ready) return
+    if (!userId) {
+      clearReminders().catch(() => {})
+      return
+    }
+    let stop: (() => void) | undefined
+    setupNotifications()
+      .then(() => {
+        stop = startReminderSync()
+      })
+      .catch(() => {})
+    return () => stop?.()
+  }, [ready, userId])
+
+  // Tapping a reminder opens the tab it belongs to.
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => {
+      const route = r.notification.request.content.data?.route
+      if (typeof route === 'string') router.navigate(route as never)
+    })
+    return () => sub.remove()
+  }, [])
 
   if (!ready) return null
 

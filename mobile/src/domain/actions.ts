@@ -44,6 +44,8 @@ export interface NewDaily {
   priority?: Priority
   repeat_type?: 'daily' | 'weekly'
   repeat_days?: string[]
+  /** Reminder time "HH:MM" (local), or null for none. */
+  scheduled_time?: string | null
 }
 
 export async function createDaily(input: NewDaily) {
@@ -56,6 +58,7 @@ export async function createDaily(input: NewDaily) {
     priority,
     repeat_type,
     repeat_days: repeat_type === 'weekly' ? input.repeat_days : undefined,
+    scheduled_time: input.scheduled_time || undefined,
   }
   const row: Daily = {
     id,
@@ -67,7 +70,7 @@ export async function createDaily(input: NewDaily) {
     source: 'user',
     repeat_type,
     repeat_days: repeat_type === 'weekly' ? input.repeat_days ?? [] : null,
-    scheduled_time: null,
+    scheduled_time: input.scheduled_time || null,
     expires_on: null,
     subtasks: [],
     require_all_subtasks: false,
@@ -174,13 +177,16 @@ export interface NewTodo {
   title: string
   priority?: Priority
   due_date?: string | null
+  /** Reminder time "HH:MM" (local) on the due date, or null for none. */
+  scheduled_time?: string | null
 }
 
 export async function createTodo(input: NewTodo) {
   const id = randomUUID()
   const priority = input.priority ?? 'medium'
   const due_date = input.due_date || null
-  const body = { id, title: input.title.trim(), priority, due_date: due_date ?? undefined }
+  const scheduled_time = due_date ? input.scheduled_time || null : null
+  const body = { id, title: input.title.trim(), priority, due_date: due_date ?? undefined, scheduled_time: scheduled_time ?? undefined }
   const row: Todo = {
     id,
     user_id: getCurrentUserId(),
@@ -190,7 +196,7 @@ export async function createTodo(input: NewTodo) {
     category: 'general',
     source: 'user',
     due_date,
-    scheduled_time: null,
+    scheduled_time,
     subtasks: [],
     require_all_subtasks: false,
     is_completed: false,

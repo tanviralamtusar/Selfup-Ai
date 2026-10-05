@@ -68,6 +68,19 @@ eas build -p android --profile production   # .aab for the Play Store
 
 `EXPO_PUBLIC_*` values are baked in at build time, so set them in `.env` (or as EAS environment variables) first. Release builds block plain `http://` traffic, so point `EXPO_PUBLIC_API_URL` at the HTTPS production site. The Android package id (and iOS bundle id) is `app.selfup.net` (`app.json`). It is permanent once the app is uploaded to the Play Store.
 
+## Reminders
+
+Local notifications (`src/lib/notifications.ts`, `expo-notifications`) are scheduled on the phone from the synced data, so they fire offline and also cover times set on the website:
+
+| Source | When it rings |
+| --- | --- |
+| Daily with `scheduled_time` | That time on each of the next 7 days it's due; today's is skipped once ticked |
+| To-do with `scheduled_start`, or `due_date` + `scheduled_time` | Once, at that time |
+| To-do with only a `due_date` | 9:00 AM on the due date |
+| Running focus session | When the timer ends |
+
+The schedule is rebuilt whenever those records change and when the app comes to the foreground, so completing or deleting an item cancels its reminder. Times are the phone's local time (`scheduled_time` is a Postgres `TIME`). **Settings → Reminders** has the on/off switch, permission status, a test notification, and **Allow exact timing**. That last one grants Android 12+'s "Alarms & reminders" permission; without it Android may deliver reminders a few minutes late. Habits have no time field, so they don't get reminders.
+
 ## Checks
 
 ```bash

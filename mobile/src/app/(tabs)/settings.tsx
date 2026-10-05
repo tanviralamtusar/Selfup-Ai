@@ -5,6 +5,7 @@ import * as Linking from 'expo-linking'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Platform, StyleSheet, Text, View } from 'react-native'
 
+import { RemindersCard } from '@/components/RemindersCard'
 import { db, resetDatabase, subscribe } from '@/db/database'
 import { setKv, useKv } from '@/db/kv'
 import type { Profile } from '@/domain/types'
@@ -60,6 +61,8 @@ export default function Settings() {
       <H1>Settings</H1>
 
       <AppCard />
+
+      <RemindersCard />
 
       <Card>
         <H2>Account</H2>

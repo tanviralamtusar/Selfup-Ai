@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { View } from 'react-native'
+import { Alert, Linking, View } from 'react-native'
 
 import { ProfileHeader } from '@/components/ProfileHeader'
+import { formatDate, formatTime, PickerField } from '@/components/PickerField'
 import { SwipeTabs } from '@/components/SwipeTabs'
 import { TaskRow } from '@/components/TaskRow'
 import {
@@ -17,6 +18,7 @@ import {
 } from '@/domain/actions'
 import { isDailyDoneToday, isHabitDone, useHabits, useOpenTodos, useTodayDailies } from '@/domain/selectors'
 import type { Difficulty, Priority, ResetType } from '@/lib/gamification'
+import { ensurePermission, parseTime } from '@/lib/notifications'
 import { serverDay } from '@/lib/dates'
 import { requestSync } from '@/sync/engine'
 import { useSyncStatus } from '@/sync/status'
@@ -86,7 +88,11 @@ export default function Dashboard() {
               <TaskRow
                 key={d.id}
                 title={d.title}
-                subtitle={`+${d.xp_reward} XP${d.current_streak ? ` · 🔥 ${d.current_streak}` : ''}`}
+                subtitle={[
+                  `+${d.xp_reward} XP`,
+                  d.current_streak ? `🔥 ${d.current_streak}` : null,
+                  parseTime(d.scheduled_time) ? `⏰ ${formatTime(d.scheduled_time!.slice(0, 5))}` : null,
+                ].filter(Boolean).join(' · ')}
                 priority={d.priority}
                 done={isDailyDoneToday(d)}
                 pending={pendingIds.has(d.id)}
@@ -128,7 +134,8 @@ export default function Dashboard() {
                 title={t.title}
                 subtitle={[
                   `+${t.xp_reward} XP`,
-                  t.due_date ? (t.due_date < today ? `overdue since ${t.due_date}` : `due ${t.due_date}`) : null,
+                  t.due_date ? (t.due_date < today ? `overdue since ${formatDate(t.due_date)}` : `due ${formatDate(t.due_date)}`) : null,
+                  parseTime(t.scheduled_time) ? `⏰ ${formatTime(t.scheduled_time!.slice(0, 5))}` : null,
                 ].filter(Boolean).join(' · ')}
                 priority={t.priority}
                 done={t.is_completed}
@@ -153,23 +160,33 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
   const [reset, setReset] = useState<ResetType>('daily')
   const [weekly, setWeekly] = useState(false)
   const [days, setDays] = useState<string[]>(['mon', 'wed', 'fri'])
-  const [due, setDue] = useState('')
+  const [due, setDue] = useState<string | null>(null)
+  const [time, setTime] = useState<string | null>(null)
 
-  const dueValid = !due || /^\d{4}-\d{2}-\d{2}$/.test(due)
-  const valid = title.trim().length > 0 && title.length <= 100 && dueValid && (!weekly || days.length > 0)
+  const valid = title.trim().length > 0 && title.length <= 100 && (!weekly || days.length > 0)
 
   const close = () => {
     setTitle('')
-    setDue('')
+    setDue(null)
+    setTime(null)
     onClose()
   }
 
   const save = async () => {
     if (!valid) return
-    if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days })
+    // A to-do reminder needs a day; picking only a time means today.
+    const dueDate = kind === 'todos' && time && !due ? localToday() : due
+    if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time })
     else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset })
-    else await createTodo({ title, priority, due_date: due || null })
+    else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time })
     close()
+
+    if (time && kind !== 'habits' && !(await ensurePermission(true))) {
+      Alert.alert('Notifications are off', 'Saved, but SelfUp can’t remind you. Turn on notifications for SelfUp in Android settings.', [
+        { text: 'Not now', style: 'cancel' },
+        { text: 'Open settings', onPress: () => Linking.openSettings() },
+      ])
+    }
   }
 
   return (
@@ -206,16 +223,28 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
               ))}
             </View>
           )}
+          <PickerField label="Reminder" mode="time" value={time} onChange={setTime} placeholder="No reminder" />
+          {time && <Muted>You’ll be notified at {formatTime(time)} on each day it’s due, until you tick it off.</Muted>}
         </>
       )}
 
       {kind === 'todos' && (
-        <Input label="Due date (YYYY-MM-DD, optional)" value={due} onChangeText={setDue} placeholder="2026-10-15" autoCapitalize="none" />
+        <>
+          <PickerField label="Due date" mode="date" value={due} onChange={setDue} placeholder="No due date" />
+          <PickerField label="Reminder" mode="time" value={time} onChange={setTime} placeholder="No reminder" />
+          {time && <Muted>You’ll be notified {due ? formatDate(due) : 'today'} at {formatTime(time)}.</Muted>}
+          {!time && due && <Muted>Without a time you’ll get a reminder at 9:00 AM on the due date.</Muted>}
+        </>
       )}
-      {!dueValid && <Muted>Use the format YYYY-MM-DD.</Muted>}
 
       <Button label="Save" onPress={save} disabled={!valid} />
       <Muted>Saved on this phone instantly; syncs to the website when you’re online.</Muted>
     </Sheet>
   )
+}
+
+/** Today's date on the phone (YYYY-MM-DD, local time). */
+function localToday(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }

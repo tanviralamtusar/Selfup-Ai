@@ -25,6 +25,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="money" options={tab('Money', 'wallet-outline')} />
       <Tabs.Screen name="time" options={tab('Time', 'timer-outline')} />
       <Tabs.Screen name="analysis" options={tab('Analysis', 'stats-chart-outline')} />
+      <Tabs.Screen name="settings" options={tab('Settings', 'settings-outline')} />
     </Tabs>
   )
 }

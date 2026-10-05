@@ -5,11 +5,8 @@ import { useKv } from '@/db/kv'
 import type { Profile } from '@/domain/types'
 import { timeAgo } from '@/lib/dates'
 import { ATTRIBUTES, getRank } from '@/lib/gamification'
-import { supabase } from '@/lib/supabase'
-import { currentVersionLabel } from '@/lib/updater'
 import { apiRequest } from '@/sync/api'
 import { requestSync } from '@/sync/engine'
-import { usePendingOps } from '@/sync/hooks'
 import { useSyncStatus } from '@/sync/status'
 import { Body, Button, Card, Empty, H1, H2, Muted, ProgressBar, Row, Screen } from '@/ui/primitives'
 import { colors, radius } from '@/ui/theme'
@@ -34,7 +31,6 @@ export default function Analysis() {
   const profile = useKv<Profile>('profile')
   const cache = useKv<AnalysisCache>('analysis')
   const { online, syncing, lastError } = useSyncStatus()
-  const pending = usePendingOps()
   const [allocating, setAllocating] = useState<string | null>(null)
 
   const allocate = async (attribute: string) => {
@@ -43,17 +39,7 @@ export default function Analysis() {
     const r = await apiRequest('POST', '/api/gamification', JSON.stringify({ action: 'allocate_stat', attribute }))
     setAllocating(null)
     if (r.kind === 'ok') requestSync()
-    else Alert.alert('Couldn’t allocate', r.kind === 'transient' ? 'You’re offline.' : r.error)
-  }
-
-  const signOut = () => {
-    const go = () => supabase.auth.signOut({ scope: 'local' })
-    if (pending.count === 0) return go()
-    Alert.alert(
-      'Sign out?',
-      `${pending.count} change${pending.count === 1 ? '' : 's'} haven’t synced yet. They stay on this phone and sync when you sign back in with the same account.`,
-      [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: go }]
-    )
+    else Alert.alert('Couldn’t allocate', r.error)
   }
 
   if (!profile) {
@@ -147,8 +133,6 @@ export default function Analysis() {
         {cache?.updatedAt && <Muted>Updated {timeAgo(cache.updatedAt)}</Muted>}
       </Card>
 
-      <Button label="Sign out" variant="ghost" onPress={signOut} />
-      <Muted style={{ textAlign: 'center' }}>SelfUp {currentVersionLabel()}</Muted>
     </Screen>
   )
 }

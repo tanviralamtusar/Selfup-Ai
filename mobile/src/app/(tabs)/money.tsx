@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 
+import { PickerField } from '@/components/PickerField'
+
 import {
   contributeToGoal,
   createAccount,
@@ -175,6 +177,7 @@ function TransactionSheet({ visible, onClose, m }: { visible: boolean; onClose: 
   const [accountId, setAccountId] = useState<string | null>(null)
   const [toAccountId, setToAccountId] = useState<string | null>(null)
   const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [date, setDate] = useState<string | null>(null)
 
   const account = accountId ?? m.accounts[0]?.id ?? null
   const cats = m.categories.filter((c) => c.kind === (type === 'income' ? 'income' : 'expense'))
@@ -185,13 +188,14 @@ function TransactionSheet({ visible, onClose, m }: { visible: boolean; onClose: 
     setAmount('')
     setNote('')
     setCategoryId(null)
+    setDate(null)
     onClose()
   }
 
   const save = async () => {
     if (!valid || !account) return
     const currency = m.accounts.find((a) => a.id === account)?.currency ?? m.currency
-    await createTransaction({ type, amount: amt, account_id: account, to_account_id: toAccountId, category_id: categoryId, note, currency })
+    await createTransaction({ type, amount: amt, account_id: account, to_account_id: toAccountId, category_id: categoryId, note, currency, occurred_at: date ?? localDay() })
     close()
   }
 
@@ -205,6 +209,7 @@ function TransactionSheet({ visible, onClose, m }: { visible: boolean; onClose: 
       ) : (
         <Picker label="Category" items={cats.map((c) => ({ id: c.id, label: c.name }))} value={categoryId} onChange={setCategoryId} allowNone />
       )}
+      <PickerField label="Date" mode="date" value={date ?? localDay()} onChange={setDate} placeholder="Today" allowPast clearable={false} />
       <Input label="Note (optional)" value={note} onChangeText={setNote} maxLength={200} />
       <Button label="Save" onPress={save} disabled={!valid} />
       {type !== 'transfer' && <Muted>+5 XP when it syncs.</Muted>}

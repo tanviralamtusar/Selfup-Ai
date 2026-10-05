@@ -33,7 +33,7 @@ const WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 export default function Analysis() {
   const profile = useKv<Profile>('profile')
   const cache = useKv<AnalysisCache>('analysis')
-  const { online, syncing } = useSyncStatus()
+  const { online, syncing, lastError } = useSyncStatus()
   const pending = usePendingOps()
   const [allocating, setAllocating] = useState<string | null>(null)
 
@@ -60,7 +60,11 @@ export default function Analysis() {
     return (
       <Screen onRefresh={() => requestSync()} refreshing={syncing}>
         <H1>Analysis</H1>
-        <Empty text="Connect once to load your stats." />
+        <Card>
+          <Empty text={syncing ? 'Loading your stats…' : online ? 'Your stats haven’t loaded yet.' : 'Connect to the internet once to load your stats.'} />
+          {!syncing && lastError ? <Muted style={{ color: colors.danger }}>{lastError}</Muted> : null}
+          {!syncing && online && <Button label="Retry" variant="ghost" onPress={() => requestSync()} />}
+        </Card>
       </Screen>
     )
   }

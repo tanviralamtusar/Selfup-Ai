@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { db, emit, subscribe } from './database'
+import { db, emit, subscribe, withWriteLock } from './database'
 
 export async function getKv<T>(k: string): Promise<T | null> {
   const r = await db.getFirstAsync<{ v: string }>('SELECT v FROM kv WHERE k = ?', [k])
@@ -8,7 +8,7 @@ export async function getKv<T>(k: string): Promise<T | null> {
 }
 
 export async function setKv(k: string, v: unknown) {
-  await db.runAsync('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)', [k, JSON.stringify(v)])
+  await withWriteLock(() => db.runAsync('INSERT OR REPLACE INTO kv (k, v) VALUES (?, ?)', [k, JSON.stringify(v)]))
   emit(`kv:${k}`)
 }
 

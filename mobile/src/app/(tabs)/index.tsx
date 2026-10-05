@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View } from 'react-native'
 
 import { ProfileHeader } from '@/components/ProfileHeader'
+import { SwipeTabs } from '@/components/SwipeTabs'
 import { TaskRow } from '@/components/TaskRow'
 import {
   completeDaily,
@@ -47,8 +48,10 @@ const RESETS = [
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
+const TABS: readonly Tab[] = ['dailies', 'habits', 'todos']
+
 export default function Dashboard() {
-  const [tab, setTab] = useState<Tab>('dailies')
+  const [page, setPage] = useState(0)
   const [adding, setAdding] = useState(false)
   const dailies = useTodayDailies()
   const habits = useHabits()
@@ -56,30 +59,27 @@ export default function Dashboard() {
   const pendingIds = usePendingIds()
   const syncing = useSyncStatus((s) => s.syncing)
 
+  const tab = TABS[page]
   const doneDailies = dailies.filter(isDailyDoneToday).length
+  const doneHabits = habits.filter(isHabitDone).length
   const today = serverDay()
+  const addButton = <Button label="+ Add" small onPress={() => setAdding(true)} />
 
   return (
     <Screen onRefresh={() => requestSync()} refreshing={syncing}>
       <ProfileHeader />
 
-      <Segmented
-        options={[
-          { value: 'dailies', label: `Dailies ${doneDailies}/${dailies.length}` },
-          { value: 'habits', label: `Habits ${habits.length}` },
-          { value: 'todos', label: `To-dos ${todos.length}` },
+      <SwipeTabs
+        tabs={[
+          { key: 'dailies', label: `Dailies ${doneDailies}/${dailies.length}` },
+          { key: 'habits', label: `Habits ${doneHabits}/${habits.length}` },
+          { key: 'todos', label: `To-dos ${todos.length}` },
         ]}
-        value={tab}
-        onChange={setTab}
-      />
-
-      <Card>
-        <H2 right={<Button label="+ Add" small onPress={() => setAdding(true)} />}>
-          {tab === 'dailies' ? 'Today’s dailies' : tab === 'habits' ? 'Habits' : 'To-dos'}
-        </H2>
-
-        {tab === 'dailies' &&
-          (dailies.length === 0 ? (
+        index={page}
+        onIndexChange={setPage}>
+        <Card>
+          <H2 right={addButton}>Today’s dailies</H2>
+          {dailies.length === 0 ? (
             <Empty text="No dailies today. Add one to build a routine." />
           ) : (
             dailies.map((d) => (
@@ -94,10 +94,13 @@ export default function Dashboard() {
                 onDelete={() => deleteDaily(d.id)}
               />
             ))
-          ))}
+          )}
+          <Muted>Tap the circle to complete. Long-press to delete. Swipe for habits and to-dos.</Muted>
+        </Card>
 
-        {tab === 'habits' &&
-          (habits.length === 0 ? (
+        <Card>
+          <H2 right={addButton}>Habits</H2>
+          {habits.length === 0 ? (
             <Empty text="No habits yet." />
           ) : (
             habits.map((h) => (
@@ -111,10 +114,12 @@ export default function Dashboard() {
                 onDelete={() => deleteHabit(h.id)}
               />
             ))
-          ))}
+          )}
+        </Card>
 
-        {tab === 'todos' &&
-          (todos.length === 0 ? (
+        <Card>
+          <H2 right={addButton}>To-dos</H2>
+          {todos.length === 0 ? (
             <Empty text="Nothing on your list." />
           ) : (
             todos.map((t) => (
@@ -132,9 +137,9 @@ export default function Dashboard() {
                 onDelete={() => deleteTodo(t.id)}
               />
             ))
-          ))}
-        <Muted>Tap the circle to complete. Long-press an item to delete it.</Muted>
-      </Card>
+          )}
+        </Card>
+      </SwipeTabs>
 
       <AddSheet kind={tab} visible={adding} onClose={() => setAdding(false)} />
     </Screen>

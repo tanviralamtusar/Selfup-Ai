@@ -3,8 +3,10 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useKv } from '@/db/kv'
 import type { Profile } from '@/domain/types'
 import { getHpState, getRank } from '@/lib/gamification'
+import { requestSync } from '@/sync/engine'
 import { usePendingOps } from '@/sync/hooks'
-import { Card, Muted, ProgressBar, Row } from '@/ui/primitives'
+import { useSyncStatus } from '@/sync/status'
+import { Button, Card, Muted, ProgressBar, Row } from '@/ui/primitives'
 import { colors, space } from '@/ui/theme'
 import { SyncBadge } from './SyncBadge'
 
@@ -12,14 +14,18 @@ import { SyncBadge } from './SyncBadge'
 export function ProfileHeader() {
   const profile = useKv<Profile>('profile')
   const pending = usePendingOps()
+  const syncing = useSyncStatus((st) => st.syncing)
+  const lastError = useSyncStatus((st) => st.lastError)
 
   if (!profile) {
     return (
       <Card>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Muted>Loading your profile…</Muted>
+          <Muted>{syncing ? 'Loading your profile…' : 'Profile not loaded yet'}</Muted>
           <SyncBadge />
         </Row>
+        {!syncing && lastError ? <Muted style={{ color: colors.danger }}>{lastError}</Muted> : null}
+        {!syncing && <Button small variant="ghost" label="Retry" onPress={() => requestSync()} />}
       </Card>
     )
   }

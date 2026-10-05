@@ -191,8 +191,10 @@ async function flush(): Promise<FlushOutcome> {
 
   // Which server day is open? Needed only if a day-scored op is queued, or to
   // surface a pending check-in.
-  const cron = await apiGet<{ data: { isDue: boolean; lastCronDate: string } }>('/api/dailies/cron')
+  const cronRes = await apiRequest('GET', '/api/dailies/cron')
+  const cron = cronRes.kind === 'ok' ? (cronRes.json as { data: { isDue: boolean; lastCronDate: string } }) : null
   const openDay = cron?.data?.lastCronDate ?? null
+  if (cronRes.kind !== 'ok') status().set({ lastError: `/api/dailies/cron: ${cronRes.error} (HTTP ${cronRes.status})` })
 
   let held = 0
   for (const op of ops) {
@@ -234,7 +236,10 @@ async function flush(): Promise<FlushOutcome> {
     await removeOp(op.op_id)
   }
 
-  status().set({ heldOps: held })
+  status().set({
+    heldOps: held,
+    heldReason: held === 0 ? null : openDay ? 'checkin' : 'server',
+  })
 
   if (cron?.data?.isDue) await loadCheckin()
   else status().set({ checkin: null })
@@ -349,55 +354,80 @@ async function selectAll(table: string, build?: (q: any) => any): Promise<Row[]>
   return out
 }
 
+/**
+ * Refresh everything. Each part is independent — the profile, every table
+ * and the analysis cache — so one failure can't leave the rest stale. Any
+ * problems are collected and thrown at the end so they show in the sync sheet
+ * and the sync retries with backoff.
+ */
 async function pullAll() {
   const uid = userId
   if (!uid) return
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+  const problems: string[] = []
 
-  const [dailies, habits, todos, pomodoro, accounts, categories, txns, budgets, recurring, goals] = await Promise.all([
-    selectAll('dailies', (q) => q.eq('user_id', uid)),
-    selectAll('habits', (q) => q.eq('user_id', uid).eq('is_active', true)),
-    selectAll('todos', (q) => q.eq('user_id', uid).or(`is_completed.eq.false,completed_at.gte.${weekAgo}`)),
-    selectAll('pomodoro_sessions', (q) => q.eq('user_id', uid).gte('started_at', weekAgo)),
-    selectAll('money_accounts', (q) => q.eq('user_id', uid)),
-    selectAll('money_categories', (q) => q.eq('is_active', true)),
-    selectAll('money_transactions', (q) => q.eq('user_id', uid).order('occurred_at', { ascending: false })),
-    selectAll('money_budgets', (q) => q.eq('user_id', uid)),
-    selectAll('money_recurring', (q) => q.eq('user_id', uid)),
-    selectAll('money_goals', (q) => q.eq('user_id', uid)),
-  ])
+  // First: the header and Analysis depend on it.
+  await pullProfile(uid, problems)
+
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+  const specs: [string, (q: any) => any][] = [
+    ['dailies', (q) => q.eq('user_id', uid)],
+    ['habits', (q) => q.eq('user_id', uid).eq('is_active', true)],
+    ['todos', (q) => q.eq('user_id', uid).or(`is_completed.eq.false,completed_at.gte.${weekAgo}`)],
+    ['pomodoro_sessions', (q) => q.eq('user_id', uid).gte('started_at', weekAgo)],
+    ['money_accounts', (q) => q.eq('user_id', uid)],
+    ['money_categories', (q) => q.eq('is_active', true)],
+    ['money_transactions', (q) => q.eq('user_id', uid).order('occurred_at', { ascending: false })],
+    ['money_budgets', (q) => q.eq('user_id', uid)],
+    ['money_recurring', (q) => q.eq('user_id', uid)],
+    ['money_goals', (q) => q.eq('user_id', uid)],
+  ]
+  const results = await Promise.allSettled(specs.map(([table, build]) => selectAll(table, build)))
 
   // Re-read after the network round trip: an op queued meanwhile must not be clobbered.
   const protectedIds = await pendingEntityIds()
-  await replaceTable('dailies', dailies, protectedIds)
-  await replaceTable('habits', habits, protectedIds)
-  await replaceTable('todos', todos, protectedIds)
-  await replaceTable('pomodoro_sessions', pomodoro, protectedIds)
-  await replaceTable('money_accounts', accounts, protectedIds)
-  await replaceTable('money_categories', categories, protectedIds)
-  await replaceTable('money_transactions', txns, protectedIds)
-  await replaceTable('money_budgets', budgets, protectedIds)
-  await replaceTable('money_recurring', recurring, protectedIds)
-  await replaceTable('money_goals', goals, protectedIds)
+  for (let i = 0; i < specs.length; i++) {
+    const r = results[i]
+    if (r.status === 'fulfilled') await replaceTable(specs[i][0], r.value, protectedIds)
+    else problems.push(String(r.reason?.message ?? r.reason))
+  }
 
-  // Profile via the API: it also rolls the overall streak, like the website does on load.
-  const profile = await apiGet('/api/user')
-  if (profile?.id) await setKv('profile', profile)
+  await pullAnalysis(problems)
 
-  await pullAnalysis()
+  if (problems.length) throw new Error(problems.join(' · '))
+}
+
+async function pullProfile(uid: string, problems: string[]) {
+  // The API also rolls the overall streak, like the website does on load.
+  const r = await apiRequest('GET', '/api/user')
+  if (r.kind === 'ok' && r.json?.id) {
+    await setKv('profile', r.json)
+    return
+  }
+  problems.push(`/api/user: ${'error' in r ? r.error : 'no profile'} (HTTP ${r.status})`)
+
+  // Fall back to reading the row directly (RLS: own row) so the app still shows XP/HP.
+  const { data, error } = await supabase.from('user_profiles').select('*').eq('id', uid).maybeSingle()
+  if (data) {
+    const cur = (await getKv<Record<string, unknown>>('profile')) ?? {}
+    await setKv('profile', { ...cur, ...data })
+  } else if (error) {
+    problems.push(`user_profiles: ${error.message}`)
+  }
 }
 
 /** Cached for offline viewing on the Analysis tab. */
-async function pullAnalysis() {
+async function pullAnalysis(problems: string[]) {
   const [activities, stats] = await Promise.all([
-    apiGet<any[]>('/api/user/activities'),
-    apiGet<{ data: { weeklyActivity: unknown } }>('/api/gamification?type=stats'),
+    apiRequest('GET', '/api/user/activities'),
+    apiRequest('GET', '/api/gamification?type=stats'),
   ])
+  if (activities.kind !== 'ok') problems.push(`/api/user/activities: ${activities.error} (HTTP ${activities.status})`)
+  if (stats.kind !== 'ok') problems.push(`/api/gamification: ${stats.error} (HTTP ${stats.status})`)
   const prev = (await getKv<Record<string, unknown>>('analysis')) ?? {}
   await setKv('analysis', {
     ...prev,
-    ...(Array.isArray(activities) ? { activities } : {}),
-    ...(stats?.data ? { weeklyActivity: stats.data.weeklyActivity } : {}),
+    ...(activities.kind === 'ok' && Array.isArray(activities.json) ? { activities: activities.json } : {}),
+    ...(stats.kind === 'ok' && stats.json?.data ? { weeklyActivity: stats.json.data.weeklyActivity } : {}),
     updatedAt: new Date().toISOString(),
   })
 }
@@ -419,9 +449,17 @@ function subscribeRealtime(uid: string) {
     await setKv('profile', { ...cur, ...(p.new as Record<string, unknown>) })
   })
 
-  ch.subscribe((state) => {
-    // After a (re)connect we may have missed events while away — catch up.
-    if (state === 'SUBSCRIBED') requestSync()
+  // Catch up only after a real drop; startSync() already did the initial sync,
+  // and re-syncing on every SUBSCRIBED made the app pull in a loop.
+  let dropped = false
+  ch.subscribe((state, err) => {
+    status().set({ realtime: err ? `${state}: ${err.message}` : state })
+    if (state === 'SUBSCRIBED') {
+      if (dropped) requestSync()
+      dropped = false
+    } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
+      dropped = true
+    }
   })
   channel = ch
 }

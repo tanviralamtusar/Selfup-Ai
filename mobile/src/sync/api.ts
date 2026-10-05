@@ -19,8 +19,9 @@ export async function apiRequest(
   body?: string | null,
   idempotencyKey?: string
 ): Promise<ApiResult> {
+  if (!API_URL) return { kind: 'transient', status: 0, error: 'EXPO_PUBLIC_API_URL was not set when this app was built' }
   const token = await getAccessToken()
-  if (!token) return { kind: 'auth', status: 401, error: 'Not signed in' }
+  if (!token) return { kind: 'auth', status: 401, error: 'No Supabase session on this phone (not signed in)' }
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -36,14 +37,16 @@ export async function apiRequest(
       signal: controller.signal,
     })
     const json = await res.json().catch(() => null)
-    const error = (json && (json.error as string)) || `HTTP ${res.status}`
+    const error = (json && (json.error as string)) || `HTTP ${res.status} from ${method} ${path}`
 
     if (res.ok) return { kind: 'ok', status: res.status, json }
     if (res.status === 401) return { kind: 'auth', status: 401, error }
     if (res.status >= 500 || res.status === 429 || res.status === 408) return { kind: 'transient', status: res.status, error }
     return { kind: 'rejected', status: res.status, json, error }
   } catch (e: any) {
-    return { kind: 'transient', status: 0, error: e?.name === 'AbortError' ? 'Request timed out' : 'Network unavailable' }
+    // Keep the platform's message (DNS, TLS, refused…): it's the only clue when this fails on a phone.
+    const why = e?.name === 'AbortError' ? `timed out after ${TIMEOUT_MS / 1000}s` : String(e?.message ?? e)
+    return { kind: 'transient', status: 0, error: `Can't reach ${API_URL}${path}: ${why}` }
   } finally {
     clearTimeout(timer)
   }

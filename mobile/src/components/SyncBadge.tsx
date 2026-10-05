@@ -11,7 +11,7 @@ import { colors, radius, space } from '@/ui/theme'
 
 /** Compact online/offline + queue indicator; tap for details. */
 export function SyncBadge() {
-  const { online, syncing, lastSyncAt, lastError, heldOps, needsSignIn } = useSyncStatus()
+  const { online, syncing, lastSyncAt, lastError, heldOps, heldReason, needsSignIn, realtime } = useSyncStatus()
   const pending = usePendingOps()
   const failures = useSyncFailures()
   const [open, setOpen] = useState(false)
@@ -38,15 +38,20 @@ export function SyncBadge() {
 
       <Sheet visible={open} title="Sync" onClose={() => setOpen(false)}>
         <Body>{online ? 'Online' : 'Offline. Everything you do is saved on this phone and syncs automatically when you reconnect.'}</Body>
-        <Muted>Last synced {timeAgo(lastSyncAt)}</Muted>
+        <Muted>Last synced {timeAgo(lastSyncAt)} · Live updates: {realtime === 'SUBSCRIBED' ? 'on' : realtime}</Muted>
         {pending.count > 0 && (
           <Muted>
             {pending.count} change{pending.count === 1 ? '' : 's'} waiting{pending.xp ? ` (+${pending.xp} XP pending)` : ''}.
           </Muted>
         )}
-        {heldOps > 0 && <Muted>{heldOps} completion{heldOps === 1 ? '' : 's'} will send after today’s check-in.</Muted>}
+        {heldOps > 0 && (
+          <Muted>
+            {heldOps} completion{heldOps === 1 ? '' : 's'}{' '}
+            {heldReason === 'server' ? 'waiting until the server can be reached.' : 'will send after today’s check-in.'}
+          </Muted>
+        )}
         {needsSignIn && <Body style={{ color: colors.danger }}>Your session expired. Sign out and back in to resume syncing. Queued changes are kept.</Body>}
-        {lastError && !needsSignIn && <Muted>Last problem: {lastError}</Muted>}
+        {lastError && !needsSignIn && <Body style={{ color: colors.danger }} selectable>Last problem: {lastError}</Body>}
         <Button label="Sync now" onPress={() => requestSync()} disabled={!online} />
 
         {failures.length > 0 && (

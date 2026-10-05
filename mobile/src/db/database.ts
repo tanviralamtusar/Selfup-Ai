@@ -50,19 +50,49 @@ const MIGRATIONS: string[] = [
   `,
 ]
 
+/** What every query helper accepts: the shared connection (inside or outside a write). */
+export type Executor = Pick<typeof db, 'runAsync' | 'getAllAsync' | 'getFirstAsync' | 'execAsync'>
+
+// ── Writes ───────────────────────────────────────────────────
+// All writes go through ONE connection, one at a time. Exclusive
+// transactions open a second connection, and two connections writing at
+// once fail immediately with "database is locked" (e.g. a tap landing
+// while a sync replaces a table). A promise-chain lock serializes writers
+// instead, so they wait their turn.
+
+let writeChain: Promise<unknown> = Promise.resolve()
+
+/** Run `fn` with the write lock held. Inside it, pass the executor to helpers instead of letting them lock again. */
+export function withWriteLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = writeChain.then(fn, fn)
+  writeChain = run.catch(() => {})
+  return run
+}
+
+/** Atomic multi-statement write: lock + BEGIN/COMMIT (ROLLBACK on error) on the shared connection. */
+export function writeTransaction<T>(fn: (ex: Executor) => Promise<T>): Promise<T> {
+  return withWriteLock(async () => {
+    let result!: T
+    await db.withTransactionAsync(async () => {
+      result = await fn(db)
+    })
+    return result
+  })
+}
+
 let ready: Promise<void> | null = null
 
 /** Apply pending schema migrations once per launch. */
 export function initDatabase(): Promise<void> {
   if (!ready) {
     ready = (async () => {
-      await db.execAsync('PRAGMA journal_mode = WAL;')
+      await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;')
       const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version')
       const current = row?.user_version ?? 0
       for (let v = current; v < MIGRATIONS.length; v++) {
-        await db.withExclusiveTransactionAsync(async (txn) => {
-          await txn.execAsync(MIGRATIONS[v])
-          await txn.execAsync(`PRAGMA user_version = ${v + 1}`)
+        await writeTransaction(async (ex) => {
+          await ex.execAsync(MIGRATIONS[v])
+          await ex.execAsync(`PRAGMA user_version = ${v + 1}`)
         })
       }
     })()
@@ -104,9 +134,9 @@ export function emit(...channels: string[]) {
 
 /** Wipe everything (sign-out / account switch). */
 export async function resetDatabase() {
-  await db.withExclusiveTransactionAsync(async (txn) => {
-    await txn.execAsync('DELETE FROM records; DELETE FROM outbox; DELETE FROM kv; DELETE FROM sync_failures;')
-  })
+  await writeTransaction((ex) =>
+    ex.execAsync('DELETE FROM records; DELETE FROM outbox; DELETE FROM kv; DELETE FROM sync_failures;')
+  )
   emit('*')
   for (const c of listeners.keys()) emit(c)
 }

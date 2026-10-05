@@ -57,8 +57,8 @@ export function Muted({ children, style }: { children: ReactNode; style?: TextSt
   return <Text style={[styles.muted, style]}>{children}</Text>
 }
 
-export function Body({ children, style, numberOfLines }: { children: ReactNode; style?: TextStyle; numberOfLines?: number }) {
-  return <Text style={[styles.body, style]} numberOfLines={numberOfLines}>{children}</Text>
+export function Body({ children, style, numberOfLines, selectable }: { children: ReactNode; style?: TextStyle; numberOfLines?: number; selectable?: boolean }) {
+  return <Text style={[styles.body, style]} numberOfLines={numberOfLines} selectable={selectable}>{children}</Text>
 }
 
 export function Button({

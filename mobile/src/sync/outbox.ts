@@ -1,6 +1,6 @@
 import { randomUUID } from 'expo-crypto'
 
-import { db, emit } from '@/db/database'
+import { db, emit, withWriteLock, writeTransaction, type Executor } from '@/db/database'
 
 export type OpKind =
   | 'daily.create' | 'daily.update' | 'daily.delete' | 'daily.complete'
@@ -44,20 +44,18 @@ export interface Op {
   created_at: string
 }
 
-type Txn = Parameters<Parameters<typeof db.withExclusiveTransactionAsync>[0]>[0]
-
 /**
  * Apply a local change and queue its server op atomically. `apply` writes the
  * optimistic state with the given transaction; the op is appended in the same
  * transaction, so a crash can never leave one without the other.
  */
 export async function commitLocal(
-  apply: (txn: Txn) => Promise<void>,
+  apply: (ex: Executor) => Promise<void>,
   op: OpInput,
   touchedTables: string[] = []
 ): Promise<string> {
   const opId = randomUUID()
-  await db.withExclusiveTransactionAsync(async (txn) => {
+  await writeTransaction(async (txn) => {
     await apply(txn)
     await txn.runAsync(
       `INSERT INTO outbox (op_id, kind, tbl, entity_id, method, path, body, action_date, xp_hint, created_at)
@@ -93,12 +91,12 @@ export async function listOps(): Promise<Op[]> {
 }
 
 export async function removeOp(opId: string) {
-  await db.runAsync('DELETE FROM outbox WHERE op_id = ?', [opId])
+  await withWriteLock(() => db.runAsync('DELETE FROM outbox WHERE op_id = ?', [opId]))
   emit('outbox')
 }
 
 export async function markAttempt(opId: string, error: string) {
-  await db.runAsync('UPDATE outbox SET attempts = attempts + 1, last_error = ? WHERE op_id = ?', [error, opId])
+  await withWriteLock(() => db.runAsync('UPDATE outbox SET attempts = attempts + 1, last_error = ? WHERE op_id = ?', [error, opId]))
   emit('outbox')
 }
 
@@ -109,14 +107,16 @@ export async function pendingEntityIds(): Promise<Set<string>> {
 }
 
 export async function recordFailure(op: Op, label: string, error: string) {
-  await db.runAsync(
-    'INSERT OR REPLACE INTO sync_failures (op_id, kind, label, error, created_at) VALUES (?, ?, ?, ?, ?)',
-    [op.op_id, op.kind, label, error, new Date().toISOString()]
+  await withWriteLock(() =>
+    db.runAsync(
+      'INSERT OR REPLACE INTO sync_failures (op_id, kind, label, error, created_at) VALUES (?, ?, ?, ?, ?)',
+      [op.op_id, op.kind, label, error, new Date().toISOString()]
+    )
   )
   emit('sync_failures')
 }
 
 export async function clearFailures() {
-  await db.runAsync('DELETE FROM sync_failures')
+  await withWriteLock(() => db.runAsync('DELETE FROM sync_failures'))
   emit('sync_failures')
 }

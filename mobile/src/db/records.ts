@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { db, emit, subscribe } from './database'
+import { db, emit, subscribe, withWriteLock, writeTransaction, type Executor } from './database'
 
 export type Row = { id: string } & Record<string, any>
-
-type Executor = Pick<typeof db, 'runAsync' | 'getAllAsync' | 'getFirstAsync'>
 
 export async function getRecord<T extends Row>(tbl: string, id: string, ex: Executor = db): Promise<T | null> {
   const r = await ex.getFirstAsync<{ data: string }>('SELECT data FROM records WHERE tbl = ? AND id = ?', [tbl, id])
@@ -16,22 +14,28 @@ export async function listRecords<T extends Row>(tbl: string, ex: Executor = db)
   return rows.map((r) => JSON.parse(r.data) as T)
 }
 
-export async function putRecord(tbl: string, row: Row, ex: Executor = db) {
-  await ex.runAsync('INSERT OR REPLACE INTO records (tbl, id, data) VALUES (?, ?, ?)', [tbl, row.id, JSON.stringify(row)])
+/** Pass `ex` when already inside writeTransaction(); otherwise this takes the write lock itself. */
+export async function putRecord(tbl: string, row: Row, ex?: Executor) {
+  const write = (e: Executor) => e.runAsync('INSERT OR REPLACE INTO records (tbl, id, data) VALUES (?, ?, ?)', [tbl, row.id, JSON.stringify(row)])
+  await (ex ? write(ex) : withWriteLock(() => write(db)))
   emit(tbl)
 }
 
 /** Shallow-merge `patch` into an existing row; no-op if the row is gone. */
-export async function patchRecord<T extends Row>(tbl: string, id: string, patch: Partial<T>, ex: Executor = db): Promise<T | null> {
-  const cur = await getRecord<T>(tbl, id, ex)
-  if (!cur) return null
-  const next = { ...cur, ...patch }
-  await putRecord(tbl, next, ex)
-  return next
+export async function patchRecord<T extends Row>(tbl: string, id: string, patch: Partial<T>, ex?: Executor): Promise<T | null> {
+  const apply = async (e: Executor) => {
+    const cur = await getRecord<T>(tbl, id, e)
+    if (!cur) return null
+    const next = { ...cur, ...patch }
+    await putRecord(tbl, next, e)
+    return next
+  }
+  return ex ? apply(ex) : withWriteLock(() => apply(db))
 }
 
-export async function removeRecord(tbl: string, id: string, ex: Executor = db) {
-  await ex.runAsync('DELETE FROM records WHERE tbl = ? AND id = ?', [tbl, id])
+export async function removeRecord(tbl: string, id: string, ex?: Executor) {
+  const write = (e: Executor) => e.runAsync('DELETE FROM records WHERE tbl = ? AND id = ?', [tbl, id])
+  await (ex ? write(ex) : withWriteLock(() => write(db)))
   emit(tbl)
 }
 
@@ -41,7 +45,7 @@ export async function removeRecord(tbl: string, id: string, ex: Executor = db) {
  * version until their ops have been replayed.
  */
 export async function replaceTable(tbl: string, rows: Row[], protectedIds: Set<string>) {
-  await db.withExclusiveTransactionAsync(async (txn) => {
+  await writeTransaction(async (txn) => {
     const keep = new Set(rows.map((r) => r.id))
     const existing = await txn.getAllAsync<{ id: string }>('SELECT id FROM records WHERE tbl = ?', [tbl])
     for (const { id } of existing) {

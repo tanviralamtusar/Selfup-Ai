@@ -33,10 +33,14 @@ interface SyncState {
   syncing: boolean
   lastSyncAt: string | null
   lastError: string | null
+  /** Supabase realtime channel state ('SUBSCRIBED', 'CHANNEL_ERROR', …). */
+  realtime: string
   /** The server rejected our token and it couldn't be refreshed. */
   needsSignIn: boolean
   /** Completions waiting for the new-day check-in before they can be sent. */
   heldOps: number
+  /** Why they're held: waiting for the check-in, or the server's day couldn't be read. */
+  heldReason: 'checkin' | 'server' | null
   checkin: Checkin | null
   /** "Later" on the check-in hides it until this time (ms epoch); held completions keep waiting. */
   checkinSnoozedUntil: number
@@ -50,7 +54,9 @@ export const useSyncStatus = create<SyncState>((set) => ({
   lastSyncAt: null,
   lastError: null,
   needsSignIn: false,
+  realtime: 'connecting',
   heldOps: 0,
+  heldReason: null,
   checkin: null,
   checkinSnoozedUntil: 0,
   checkinResult: null,

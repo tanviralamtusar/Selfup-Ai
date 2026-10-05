@@ -1,5 +1,15 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## SelfUp specifics (read first)
+
+This is the offline-first Android client for the SelfUp website in `../web`. `README.md` covers features, the sync design, releases and troubleshooting, and `../AGENTS.md` covers the whole repo.
+
+- **Writes:** never write to Supabase directly. Every change goes through an action in `src/domain/actions.ts` → `commitLocal()` (local row + outbox op), and the sync engine replays it through the website's `/api` with an `Idempotency-Key`. New API mutations the app uses must be wrapped in `idempotent()` on the server and accept a client `id`.
+- **SQLite:** all writes go through the write lock in `src/db/database.ts`. Inside `writeTransaction`, pass the executor to record helpers, or it deadlocks.
+- **Days:** completions are scored per server day (UTC). Reminder times (`scheduled_time`) are phone-local.
+- **Releases:** any push to `main` touching `mobile/` publishes an APK as the latest GitHub Release, and installed apps update from it. Keep the `mobile-v<version>-b<build>` tag format and the `app.selfup.net` package id.
+- **Debugging sync on a device:** start from Settings → Connection → *Test connection* and Settings → Sync → *Last problem*. They show the platform's real error.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:

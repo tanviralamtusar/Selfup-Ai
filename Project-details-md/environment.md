@@ -28,7 +28,7 @@
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Same as `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
 | `EXPO_PUBLIC_API_URL` | Website origin the app syncs through, no trailing slash (HTTPS for release builds) |
 
-All three are inlined into the app bundle at build time. Template: `mobile/.env.example`.
+All three are inlined into the app bundle at build time. Template: `mobile/.env.example`. For release builds they come from GitHub **repository Variables** of the same names (see `mobile/README.md`). Paste them without a trailing line break: one in `EXPO_PUBLIC_API_URL` broke every API call in Android builds 3–5. The workflow and `mobile/src/lib/env.ts` now strip whitespace, quotes and trailing slashes, and the workflow warns when it had to.
 
 ## Build-time vs runtime
 

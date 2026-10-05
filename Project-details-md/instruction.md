@@ -85,6 +85,19 @@ Open the site, sign up, finish onboarding, and complete a daily. Then confirm th
 
 ---
 
+## Android App Releases
+
+The app in `mobile/` ships through GitHub, not Coolify. Full details are in [`mobile/README.md`](../mobile/README.md).
+
+1. **One-time setup:** add the repository Variables `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` and `EXPO_PUBLIC_API_URL` (`https://selfup.botbhai.net`, with no trailing line break). Optionally add the keystore secrets for your own signing key; do this before sharing the app.
+2. **Ship:** push to `main` with changes under `mobile/`. The *Android APK* workflow builds the APK and publishes it as the latest GitHub Release (`mobile-v<version>-b<build>`).
+3. **Phones:** first install from the Releases page. After that, the app offers each new build itself.
+4. **Verify:** on a phone, open **Settings → Connection → Test connection**. Both lines should say OK.
+
+Server-side, the app relies on the `idempotent()`-wrapped API routes and the `add_mobile_sync.sql` migration, so redeploy the website before releasing an app build that depends on new API behaviour.
+
+---
+
 ## Database Backups
 
 - Supabase free tier: daily backups (7-day retention); Pro tier: point-in-time recovery.

@@ -23,7 +23,10 @@ Android app, from `mobile/`:
 npx expo start                        # dev server; open in Expo Go
 npm run typecheck && npx expo lint
 npx expo export --platform android    # full Metro/Hermes bundle — catches bad imports without a device
+npx expo install <pkg>                # add mobile deps (SDK-matched versions)
 ```
+
+Android releases are built by GitHub Actions (`.github/workflows/android-apk.yml`) on every push to `main` that touches `mobile/`; there's no local native build step.
 
 There is no test runner in either project, so there is no way to run a single test. Validate with `lint` + `build`, then exercise the route or page by hand. Exploratory scripts go in `web/scratch/` (gitignored).
 
@@ -54,7 +57,12 @@ There is no test runner in either project, so there is no way to run a single te
 - **Pull:** reads the user's rows straight from Supabase (RLS) and replaces the cache, skipping rows that still have queued ops.
 - **Realtime:** `postgres_changes` applies other devices' edits.
 - **Day-scored ops:** daily completes and habit logs carry `action_date`. They are sent only when it equals the server's open day (`GET /api/dailies/cron` → `lastCronDate`); later days wait for the in-app check-in, and closed days are reported as failures.
-- **Adding a synced table or action:** server route (wrapped, accepting a client `id`), realtime publication, `SYNCED_TABLES` + `pullAll()` in the engine, an action in `actions.ts`, and an `onSuccess` case if the response should replace the local row.
+- **Adding a synced table or action:** server route (wrapped, accepting a client `id`), realtime publication, `SYNCED_TABLES` + the `specs` list in `pullAll()`, an action in `actions.ts`, and an `onSuccess` case if the response should replace the local row.
+- **SQLite writes:** everything goes through one connection behind a promise-chain lock (`withWriteLock` / `writeTransaction` in `src/db/database.ts`). Inside a transaction, pass the executor to `putRecord`/`patchRecord`/`removeRecord`. Calling them without it re-takes the lock and deadlocks.
+- **Pull resilience:** the profile is fetched first (falling back to a direct `user_profiles` read when `/api/user` fails), and each table pulls independently via `Promise.allSettled`. Problems are collected into `lastError`, which is shown on the header, in Settings → Sync and in Settings → Connection → *Test connection*. `src/sync/api.ts` keeps the platform's real error text, so read it before guessing at sync bugs.
+- **Reminders:** `src/lib/notifications.ts` rebuilds the OS notification schedule from local `dailies` / `todos` / `pomodoro_sessions`, debounced, on any change and on foreground. It's a pure function of synced data, so website-set times ring too. `scheduled_time` is a Postgres `TIME` interpreted as phone-local time.
+- **Updates:** `src/lib/updater.ts` compares the latest GitHub Release tag `mobile-v<version>-b<build>` with the installed `versionCode` and installs via the package installer. The tag format and a public repo are load-bearing.
+- **Build config:** `src/lib/env.ts` trims/unquotes `EXPO_PUBLIC_*` values. A pasted trailing newline in the API URL once broke all API calls on Android.
 
 ## Other docs
 

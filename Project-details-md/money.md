@@ -1,6 +1,6 @@
 # SelfUp — Money Module
 
-> **Status:** Live (merged on `fitness-v2`, July 2026). Schema: `web/scripts/migrations/create_money.sql`.
+> **Status:** Live since July 2026 (built on `fitness-v2`, now merged into `main`). Also available offline in the Android app's Money tab. Schema: `web/scripts/migrations/create_money.sql`.
 
 A personal-finance suite: accounts, income/expense/transfer transactions, monthly per-category budgets, recurring bills and income, savings goals, analytics, and AI spending insights. Logging money activity earns XP.
 

@@ -18,7 +18,7 @@ SelfUp is an AI-powered, gamified personal development platform. It tracks the p
 | **🧠 Skills** | `/skills` | Hidden from nav | AI roadmaps, topics/milestones, YouTube resources, AI-generated tests. |
 | **👗 Style** | `/style` | Hidden from nav | Outfit log, moodboard, AI recommendations. |
 | **⚔️ Quests / 👥 Social / 💬 AI Chat** | `/quests`, `/social/*`, `/chat` | Hidden from nav | Quests, leaderboard/friends, conversational AI with memory. |
-| **📱 Android app** | `mobile/` | New | Dashboard, Money, Time and Analysis on your phone. Works fully offline and syncs with the website in real time when connected. See [mobile/README.md](mobile/README.md). |
+| **📱 Android app** | `mobile/` | Live | Dashboard, Money, Time, Analysis and Settings on your phone. Works fully offline, syncs with the website in real time, sends reminders, and updates itself from GitHub Releases. Install the latest APK from [Releases](https://github.com/tanviralamtusar/Selfup-Ai/releases); details in [mobile/README.md](mobile/README.md). |
 
 "Hidden from nav" modules are implemented and routable, but are deliberately left out of the sidebar (`temporarilyHiddenNavItems` in `web/src/components/layout/AppShell.tsx`) until they are revisited.
 
@@ -117,7 +117,8 @@ There is no unit-test suite yet. Validate changes with `npm run lint`, `npm run 
 - [x] Fitness v2 (exercise library, programs, session tracker)
 - [ ] Re-enable Fitness, Skills, Style, Quests, Social and Chat in navigation
 - [ ] Re-enable Redis/BullMQ for true background processing
-- [x] Android app with offline sync (`mobile/`)
+- [x] Android app with offline sync, reminders and in-app updates (`mobile/`)
+- [ ] Android signing key + Play Store listing
 - [ ] iOS build and desktop app
 - [ ] Deep analytics & parental controls
 

@@ -6,13 +6,13 @@ trigger: always_on
 
 ### Branch Strategy
 ```
-main          → production (auto-deploys via Coolify)
-<module>-v2   → long-running module branches (e.g. fitness-v2, skills-v2)
-feature/*     → new features (branch from main or the module branch)
-fix/*         → bug fixes
+main          → the only long-lived branch: production (Coolify deploys the website;
+                pushes touching mobile/ publish a new Android release)
+feature/*     → short-lived, branched from main, merged back by PR
+fix/*         → short-lived bug fixes, same flow
 ```
 
-No `develop`/staging branch exists at the moment; PRs merge into `main`.
+There is no `develop`/staging branch. The old module branches (`fitness-v2`, `skills-v2`, …) have been merged into `main` and deleted from GitHub. Remember that a push to `main` ships: the website redeploys, and any `mobile/` change becomes an app update on users' phones.
 
 ### Commit Messages
 ```

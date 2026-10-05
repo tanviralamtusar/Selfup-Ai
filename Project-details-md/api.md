@@ -1,6 +1,6 @@
 # SelfUp — API Reference
 
-> **Last synced with code:** 2026-10-04 (branch `fitness-v2`).
+> **Last synced with code:** 2026-10-05 (`main`).
 > This replaces the original Express-era API spec. To regenerate the inventory, list the `route.ts` files under `web/src/app/api/` and their exported `GET`/`POST`/`PATCH`/`PUT`/`DELETE` handlers.
 
 **Base URL:** same origin, `/api` (Next.js route handlers in `web/src/app/api/**/route.ts`)

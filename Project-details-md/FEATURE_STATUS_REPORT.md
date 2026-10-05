@@ -1,8 +1,8 @@
 # SelfUp — Feature Status Report
 
-## 🔄 Update — October 4, 2026
+## 🔄 Update — October 5, 2026
 
-What changed since the April snapshot below (branch `fitness-v2`):
+What changed since the April snapshot below. Built on `fitness-v2`, which is now merged into `main`; `main` is the only branch.
 
 ### Shipped
 
@@ -22,11 +22,21 @@ What changed since the April snapshot below (branch `fitness-v2`):
 - ✅ **Realtime sync:** website pages (dashboard, time, money, analysis, profile) update live via Supabase Realtime when anything changes on another device.
 - ✅ **Fix:** the dashboard refreshed the profile from the nonexistent `/api/user/profile` after completions, so XP didn't update until reload.
 - ✅ `add_mobile_sync.sql` applied in Supabase (2026-10-05).
-- ⏳ Needs an EAS build pointed at the production URL.
+
+### Added 2026-10-05 (Android builds 3–7)
+
+- ✅ **Release pipeline:** `.github/workflows/android-apk.yml` builds an APK on GitHub Actions for every `mobile/` push to `main` and publishes it as the latest GitHub Release (`mobile-v<version>-b<build>`).
+- ✅ **In-app updates:** the app checks GitHub Releases and offers new builds (one-tap install, auto-retrying download).
+- ✅ **Swipeable Dailies / Habits / To-dos slider** on the mobile dashboard.
+- ✅ **Settings tab:** version/build, check for updates, account, sync status with real error text, *Test connection*, device info, local storage, reset.
+- ✅ **Reminders:** local notifications for dailies and to-dos with a time, to-dos with a due date, and focus sessions; native time/date pickers when adding items.
+- ✅ **Sync hardening:** SQLite writes serialized through one connection; pulls independent per table; profile falls back to a direct Supabase read; realtime no longer re-syncs on every reconnect.
+- ✅ **Fix (builds 3–5 couldn't reach the website):** the `EXPO_PUBLIC_API_URL` repository variable had a trailing line break, so Android rejected the host ("Invalid URL host"). The app and the workflow now clean these values.
+- ⏳ **Open:** own Android signing key (APKs use Expo's shared debug key so far); habits have no reminder time; reminders can't yet be added to existing items from the app.
 
 ### Current state worth knowing
 
-- 🙈 **Hidden from nav:** AI Chat, Fitness, Skills, Style, Quests and Social are implemented but deliberately hidden from the sidebar (`temporarilyHiddenNavItems` in `AppShell.tsx`). Visible: Dashboard, Time, Money, Analysis.
+- 🙈 **Hidden from nav (website):** AI Chat, Fitness, Skills, Style, Quests and Social are implemented but deliberately hidden from the sidebar (`temporarilyHiddenNavItems` in `AppShell.tsx`). Visible: Dashboard, Time, Money, Analysis. The Android app covers the same four plus Settings.
 - ⚠️ **Redis/BullMQ disabled:** AI jobs run synchronously in-request; proactive alerts and weekly summaries run from an in-process hourly loop (`instrumentation.ts`).
 - ⚠️ **Recurring `auto_post`** is stored but never acted on; recurring items must be posted manually.
 - ⚠️ **Not wired:** email (Resend), web push, Google OAuth/Calendar, rate limiting, subscriptions/payments.

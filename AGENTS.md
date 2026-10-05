@@ -4,7 +4,7 @@
 
 The application is a single Next.js 16 app in `web/`; run Node commands from that directory. Route pages, layouts, and API handlers are in `web/src/app/` (including `(auth)`, `(protected)`, and `api/`). Reusable UI is in `web/src/components/<module>/`, domain and infrastructure code in `web/src/lib/`, global client state in `web/src/store/`, and shared types/constants in `web/src/types/` and `web/src/constants/`. Use `@/` for imports from `src/`. Static files belong in `web/public/`; operational scripts, seed data, and SQL migrations live in `web/scripts/`.
 
-The Android app is an Expo / React Native project in `mobile/` (run its commands from that directory; see `mobile/README.md`). It is offline-first: it keeps a local SQLite copy of the user's data, queues every change in an outbox, and replays the queue through the website's `/api` routes when online. It never writes to Supabase directly.
+The Android app is an Expo (SDK 57) / React Native project in `mobile/`; run its commands from that directory and see `mobile/README.md` (features, build/release, sync design, troubleshooting). It is offline-first: it keeps a local SQLite copy of the user's data, queues every change in an outbox, and replays the queue through the website's `/api` routes when online. It reads from Supabase directly but never writes to it. Tabs: Dashboard, Money, Time, Analysis, Settings. It also has local reminders (`expo-notifications`) and self-updates from GitHub Releases.
 
 Read the applicable rules in `.agents/rules/` before changing frontend, backend, security-sensitive, or Git-related code. Design specs and reference docs are in `Project-details-md/` — check its `README.md` index first, since many of those files describe planned designs rather than the current code. `docker-compose.yml` and `web/Dockerfile` describe the production container deployed by Coolify.
 
@@ -32,6 +32,7 @@ Navigation lives in `web/src/components/layout/AppShell.tsx`. Chat, Fitness, Ski
 - **Daily reset**: `GET/POST /api/dailies/cron`, driven by `DayStartModal`, rolls the day per user using `user_profiles.last_cron_date`. The reset only runs when the user next opens the app; there is no scheduled server job for it.
 - **Money**: amounts are always positive and `type` gives the sign. Account balances are computed (opening balance + Σ transactions), never stored.
 - **Mobile sync contract** (don't break it when editing these routes): mutation routes the app replays are wrapped in `idempotent()` (`lib/idempotency.ts`), so a repeated `Idempotency-Key` returns the stored response instead of re-running. Create routes accept a client-generated `id` (`clientId()` / `existingOnDuplicate()`). `dailies/[id]/complete` and `habits/[id]/log` accept a `date` so offline completions score on the day they happened. When you add a mutation the app uses, wrap it the same way.
+- **Mobile build config**: `EXPO_PUBLIC_*` values are baked into the APK from repository Variables. A trailing newline in `EXPO_PUBLIC_API_URL` once made every API call fail on Android ("Invalid URL host"); both the workflow and `mobile/src/lib/env.ts` now clean the values. When a phone can't sync, read **Settings → Connection → Test connection** on the device before guessing.
 - **Realtime**: synced tables are in the `supabase_realtime` publication (`add_mobile_sync.sql`). Website pages refresh through `useRealtimeRefresh()` (`lib/hooks/useRealtimeRefresh.ts`); the protected layout keeps the profile (XP/HP) live.
 
 ## Build, Test, and Development Commands
@@ -45,7 +46,7 @@ From `web/`:
 - `npm run seed:exercises` and `npm run seed:programs` populate fitness data when required.
 - `npm run worker` starts the BullMQ worker. It won't start while Redis is disabled.
 
-From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (bundle check), `eas build -p android --profile preview` (APK via EAS). CI: `.github/workflows/android-apk.yml` builds the APK on every `mobile/` push to `main` and publishes it as the latest GitHub Release (`mobile-v<version>-b<build>`); installed apps self-update from that release (`mobile/src/lib/updater.ts`). Setup in `mobile/README.md`.
+From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (full bundle check, no device needed). Releases: every push to `main` touching `mobile/` runs `.github/workflows/android-apk.yml`, which builds the APK and publishes it as the latest GitHub Release tagged `mobile-v<version>-b<run_number>`. Installed apps update from that release (`mobile/src/lib/updater.ts` parses the tag, so keep the format; the repo must stay public). Use `npx expo install` (not `npm install`) for new mobile packages so versions match the SDK.
 
 There is no configured unit-test command yet. At minimum, run `npm run lint` and `npm run build` for code changes; manually exercise the affected route or API flow. Keep exploratory scripts in `web/scratch/` rather than application directories.
 
@@ -63,7 +64,7 @@ Validate every incoming request with Zod, keep controllers/route handlers thin, 
 
 ## Commits & Pull Requests
 
-Follow the established Conventional Commit style: `feat: add daily check-in cron`, `fix: handle Redis restart`, or `refactor: extract coin service`. `main` is production (Coolify deploys it). Work happens on module branches (such as `fitness-v2` or `skills-v2`) or on `feature/<name>` / `fix/<name>`, and is merged into `main` through a PR. No `develop` branch currently exists. PRs should explain the user-visible change, link the issue when available, note configuration or migration needs, include screenshots for UI work, and state the validation commands run.
+Follow the established Conventional Commit style: `feat: add daily check-in cron`, `fix: handle Redis restart`, or `refactor: extract coin service`. `main` is the only branch on GitHub and is production: Coolify deploys the website from it, and pushes touching `mobile/` publish a new Android release. For larger work, branch `feature/<name>` or `fix/<name>` from `main` and merge back through a PR; the old module branches (`fitness-v2`, `skills-v2`, …) have been merged and deleted. PRs should explain the user-visible change, link the issue when available, note configuration or migration needs, include screenshots for UI work, and state the validation commands run.
 
 ## Knowledge Graph
 

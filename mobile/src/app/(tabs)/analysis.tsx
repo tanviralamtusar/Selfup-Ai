@@ -6,6 +6,7 @@ import type { Profile } from '@/domain/types'
 import { timeAgo } from '@/lib/dates'
 import { ATTRIBUTES, getRank } from '@/lib/gamification'
 import { supabase } from '@/lib/supabase'
+import { currentVersionLabel } from '@/lib/updater'
 import { apiRequest } from '@/sync/api'
 import { requestSync } from '@/sync/engine'
 import { usePendingOps } from '@/sync/hooks'
@@ -143,6 +144,7 @@ export default function Analysis() {
       </Card>
 
       <Button label="Sign out" variant="ghost" onPress={signOut} />
+      <Muted style={{ textAlign: 'center' }}>SelfUp {currentVersionLabel()}</Muted>
     </Screen>
   )
 }

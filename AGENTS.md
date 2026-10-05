@@ -45,7 +45,7 @@ From `web/`:
 - `npm run seed:exercises` and `npm run seed:programs` populate fitness data when required.
 - `npm run worker` starts the BullMQ worker. It won't start while Redis is disabled.
 
-From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (bundle check), `eas build -p android --profile preview` (APK via EAS). CI: `.github/workflows/android-apk.yml` builds a signed APK on GitHub Actions (setup in `mobile/README.md`).
+From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (bundle check), `eas build -p android --profile preview` (APK via EAS). CI: `.github/workflows/android-apk.yml` builds the APK on every `mobile/` push to `main` and publishes it as the latest GitHub Release (`mobile-v<version>-b<build>`); installed apps self-update from that release (`mobile/src/lib/updater.ts`). Setup in `mobile/README.md`.
 
 There is no configured unit-test command yet. At minimum, run `npm run lint` and `npm run build` for code changes; manually exercise the affected route or API flow. Keep exploratory scripts in `web/scratch/` rather than application directories.
 

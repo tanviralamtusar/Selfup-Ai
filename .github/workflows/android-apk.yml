@@ -1,6 +1,8 @@
 # Builds the SelfUp Android app (mobile/) into an installable APK on GitHub's
-# runners: no Expo/EAS account needed. The APK is uploaded as a workflow
-# artifact; pushing a `mobile-v*` tag also attaches it to a GitHub Release.
+# runners (no Expo/EAS account needed) and, for builds of `main`, publishes it
+# as the latest GitHub Release tagged `mobile-v<version>-b<build>`. Installed
+# apps check that release and offer the update (mobile/src/lib/updater.ts);
+# <build> is the Android versionCode, so don't rename the tag format.
 #
 # Repository settings → Secrets and variables → Actions:
 #   Variables (or secrets) — required, baked into the app at build time:
@@ -21,15 +23,13 @@ on:
     paths:
       - 'mobile/**'
       - '.github/workflows/android-apk.yml'
-    tags:
-      - 'mobile-v*'
 
 concurrency:
   group: android-apk-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: write # only used to attach the APK to a release on mobile-v* tags
+  contents: write # to create the release + tag
 
 jobs:
   build:
@@ -47,6 +47,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history + tags, for release notes since the last release
 
       - name: Check app config
         run: |
@@ -130,6 +132,7 @@ jobs:
           "$apksigner" verify --print-certs "$out" | head -5
           echo "APK_PATH=$out" >> "$GITHUB_ENV"
           echo "APK_NAME=$(basename "$out")" >> "$GITHUB_ENV"
+          echo "APP_VERSION=$version" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -138,8 +141,32 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/mobile-v')
+      - name: Write release notes
+        if: github.ref == 'refs/heads/main'
+        run: |
+          tag="mobile-v${APP_VERSION}-b${GITHUB_RUN_NUMBER}"
+          prev=$(git describe --tags --match 'mobile-v*' --abbrev=0 2>/dev/null || true)
+          {
+            echo "SelfUp for Android ${APP_VERSION} (build ${GITHUB_RUN_NUMBER})"
+            echo
+            if [ -n "$prev" ]; then
+              echo "Changes since ${prev}:"
+              git log --no-merges --pretty='- %s' "${prev}..HEAD" -- . | head -40
+            else
+              echo "Recent changes:"
+              git log --no-merges --pretty='- %s' -15 -- .
+            fi
+          } > "$RUNNER_TEMP/notes.md"
+          echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          cat "$RUNNER_TEMP/notes.md"
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ github.sha }}
+          name: SelfUp Android ${{ env.APP_VERSION }} (build ${{ github.run_number }})
+          body_path: ${{ runner.temp }}/notes.md
           files: ${{ env.APK_PATH }}
+          make_latest: 'true'

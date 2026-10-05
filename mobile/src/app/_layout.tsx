@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useEffect, useState } from 'react'
 
 import { CheckInModal } from '@/components/CheckInModal'
+import { UpdatePrompt } from '@/components/UpdatePrompt'
 import { initDatabase, resetDatabase } from '@/db/database'
 import { getKv, setKv } from '@/db/kv'
 import { supabase } from '@/lib/supabase'
@@ -70,6 +71,7 @@ export default function RootLayout() {
         </Stack.Protected>
       </Stack>
       {userId ? <CheckInModal /> : null}
+      <UpdatePrompt />
     </ThemeProvider>
   )
 }

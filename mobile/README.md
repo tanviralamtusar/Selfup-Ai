@@ -19,7 +19,25 @@ Before the first sync, run `web/scripts/migrations/add_mobile_sync.sql` in the S
 
 ### On GitHub (no Expo account needed)
 
-`.github/workflows/android-apk.yml` runs Expo's prebuild and a Gradle release build on GitHub's runners, then uploads the APK as a workflow artifact. It runs on pushes to `main` that touch `mobile/`, on demand (Actions → *Android APK* → *Run workflow*), and on `mobile-v*` tags (for example `mobile-v1.0.0`), which also attach the APK to a GitHub Release. Each build sets `versionCode` to the run number, so a newer APK installs over an older one.
+`.github/workflows/android-apk.yml` runs Expo's prebuild and a Gradle release build on GitHub's runners. It runs on every push to `main` that touches `mobile/`, and on demand (Actions → *Android APK* → *Run workflow*). Each build on `main`:
+
+- sets `versionCode` to the workflow run number, so every build is newer than the last;
+- uploads the APK as a workflow artifact;
+- publishes it as the **latest GitHub Release**, tagged `mobile-v<version>-b<build>` (e.g. `mobile-v1.0.0-b7`), with the commits since the previous release as notes.
+
+### App updates
+
+Installed apps update themselves from those releases (`src/lib/updater.ts`, `src/components/UpdatePrompt.tsx`):
+
+1. On launch, and when the app comes back to the foreground (at most every 30 minutes), it reads the latest release from the GitHub API.
+2. If the tag's build number is higher than the installed `versionCode`, it shows **Update available**.
+3. **Update now** downloads the APK and opens Android's installer. *Later* hides that build until a newer one is published.
+
+Android doesn't allow silent installs for apps outside the Play Store, so each update needs one tap to confirm, plus a one-time "Allow from this source". App data, including unsynced changes, survives the update. Updates only install over an APK signed with the same key, so pick your signing setup (below) before you start sharing the app. The repo must stay public for the update check to work without a token. The check is skipped in Expo Go and dev builds.
+
+To ship an update: change something in `mobile/`, push to `main`, and wait for the workflow to finish. Phones see it the next time the app opens. To ship user-visible version names, bump `expo.version` in `app.json`; the build number increases automatically.
+
+The first APK that includes the updater must be installed by hand from the Releases page. After that, updates arrive in the app.
 
 One-time setup, in the repo's **Settings → Secrets and variables → Actions**:
 

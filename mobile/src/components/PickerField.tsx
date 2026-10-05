@@ -27,12 +27,18 @@ export function PickerField({
   value,
   onChange,
   placeholder,
+  allowPast = false,
+  clearable = true,
 }: {
   label: string
   mode: 'time' | 'date'
   value: string | null
   onChange: (v: string | null) => void
   placeholder: string
+  /** Date mode only: allow days before today (default: today onward). */
+  allowPast?: boolean
+  /** Show a Clear button when a value is set. */
+  clearable?: boolean
 }) {
   const open = () => {
     const now = new Date()
@@ -50,7 +56,7 @@ export function PickerField({
       value: initial,
       mode,
       is24Hour: false,
-      minimumDate: mode === 'date' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : undefined,
+      minimumDate: mode === 'date' && !allowPast ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : undefined,
       onChange: (event, picked) => {
         if (event.type !== 'set' || !picked) return
         onChange(
@@ -71,7 +77,7 @@ export function PickerField({
         <Pressable onPress={open} style={styles.field} accessibilityRole="button" accessibilityLabel={`${label}: ${shown}. Change`}>
           <Text style={[styles.value, !value && { color: colors.textMuted }]}>{shown}</Text>
         </Pressable>
-        {value ? (
+        {value && clearable ? (
           <Pressable onPress={() => onChange(null)} style={styles.clear} accessibilityRole="button" accessibilityLabel={`Clear ${label}`} hitSlop={8}>
             <Text style={styles.clearText}>Clear</Text>
           </Pressable>

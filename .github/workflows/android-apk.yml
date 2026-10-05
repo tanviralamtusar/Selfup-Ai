@@ -39,9 +39,6 @@ jobs:
       run:
         working-directory: mobile
     env:
-      EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || secrets.EXPO_PUBLIC_SUPABASE_URL }}
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY || secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
-      EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL || secrets.EXPO_PUBLIC_API_URL }}
       EXPO_NO_TELEMETRY: '1'
       CI: '1'
 
@@ -51,10 +48,28 @@ jobs:
           fetch-depth: 0 # full history + tags, for release notes since the last release
 
       - name: Check app config
+        # Raw values come in as RAW_*; only the cleaned ones are exported (via GITHUB_ENV)
+        # to the rest of the job, so nothing later can see the uncleaned value.
+        env:
+          RAW_EXPO_PUBLIC_SUPABASE_URL: ${{ vars.EXPO_PUBLIC_SUPABASE_URL || secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          RAW_EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.EXPO_PUBLIC_SUPABASE_ANON_KEY || secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          RAW_EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL || secrets.EXPO_PUBLIC_API_URL }}
         run: |
           missing=0
           for v in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_API_URL; do
-            if [ -z "${!v}" ]; then echo "::error::$v is not set (repository Variables or Secrets)"; missing=1; fi
+            rawvar="RAW_$v"
+            raw="${!rawvar}"
+            # Strip whitespace/newlines and surrounding quotes picked up when pasting into
+            # GitHub settings. A trailing newline in the API URL made every request fail on
+            # Android with "Invalid URL host".
+            clean=$(printf '%s' "$raw" | tr -d '\r\n\t' | sed -e 's/^[[:space:]"'\'']*//' -e 's/[[:space:]"'\'']*$//')
+            case "$v" in *_URL) clean="${clean%/}" ;; esac
+            if [ -z "$clean" ]; then echo "::error::$v is not set (repository Variables or Secrets)"; missing=1; continue; fi
+            if [ "$clean" != "$raw" ]; then
+              echo "::warning::$v had stray whitespace, quotes or a trailing slash; cleaned it for this build. Fix the value in Settings → Secrets and variables → Actions."
+            fi
+            printf '%s=%s\n' "$v" "$clean" >> "$GITHUB_ENV"
+            export "$v=$clean"
           done
           case "$EXPO_PUBLIC_API_URL" in
             https://*) ;;

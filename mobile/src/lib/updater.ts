@@ -72,16 +72,34 @@ export async function checkForUpdate(): Promise<AvailableUpdate | null> {
 /** Download the APK (reporting 0–1 progress) and open Android's installer. */
 export async function downloadAndInstall(update: AvailableUpdate, onProgress?: (fraction: number) => void): Promise<void> {
   const dest = new File(Paths.cache, `selfup-update-${update.build}.apk`)
-  if (dest.exists) dest.delete()
 
-  const task = File.createDownloadTask(update.apkUrl, dest, {
-    onProgress: ({ bytesWritten, totalBytes }) => {
-      const total = totalBytes > 0 ? totalBytes : update.sizeBytes
-      if (total > 0) onProgress?.(Math.min(1, bytesWritten / total))
-    },
-  })
-  const file = await task.downloadAsync()
-  if (!file) throw new Error('Download was cancelled')
+  // Large downloads get cut off ("Software caused connection abort") when the
+  // network hands over or the phone sleeps; retry a few times before giving up.
+  const ATTEMPTS = 3
+  let file: File | null = null
+  let lastError: unknown = null
+  for (let attempt = 1; attempt <= ATTEMPTS && !file; attempt++) {
+    if (dest.exists) dest.delete()
+    onProgress?.(0)
+    try {
+      const task = File.createDownloadTask(update.apkUrl, dest, {
+        onProgress: ({ bytesWritten, totalBytes }) => {
+          const total = totalBytes > 0 ? totalBytes : update.sizeBytes
+          if (total > 0) onProgress?.(Math.min(1, bytesWritten / total))
+        },
+      })
+      file = await task.downloadAsync()
+      if (!file) throw new Error('Download was cancelled')
+    } catch (e) {
+      file = null
+      lastError = e
+      if (attempt < ATTEMPTS) await new Promise((r) => setTimeout(r, 2000 * attempt))
+    }
+  }
+  if (!file) {
+    const why = lastError instanceof Error ? lastError.message : String(lastError)
+    throw new Error(`Download kept failing (${why}). Keep the app open on a stable connection and tap Update now again.`)
+  }
 
   // The installer needs a content:// URI it is allowed to read.
   const contentUri = await getContentUriAsync(file.uri)

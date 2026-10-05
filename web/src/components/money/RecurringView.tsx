@@ -6,7 +6,7 @@ import { moneyApi } from '@/lib/money/client'
 import type { MoneyAccount, MoneyCategory, MoneyRecurring } from '@/types/money'
 import { formatMoney } from '@/lib/money/format'
 import { MoneyIcon, EmptyState, MoneyModal, Field, inputCls, selectCls, Segmented } from './shared'
-import { cn } from '@/lib/utils'
+import { cn, localDateStr } from '@/lib/utils'
 
 interface Props {
   accounts: MoneyAccount[]
@@ -15,7 +15,7 @@ interface Props {
   onChanged: () => void
 }
 
-const todayStr = () => new Date().toISOString().slice(0, 10)
+const todayStr = () => localDateStr()
 
 export function RecurringView({ accounts, categories, currency, onChanged }: Props) {
   const [rules, setRules] = useState<MoneyRecurring[]>([])

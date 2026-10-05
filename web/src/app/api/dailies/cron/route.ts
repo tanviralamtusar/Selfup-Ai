@@ -5,6 +5,7 @@ import { TaskEconomyService } from '@/lib/task-economy.service'
 import { GamificationService } from '@/lib/gamification.service'
 import { HP_DAMAGE, HP_RECOVERY } from '@/constants/gamification'
 import { idempotent } from '@/lib/idempotency'
+import { daysBetween, todayIn, weekdayOf } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -16,22 +17,16 @@ function getDb(req: NextRequest) {
   })
 }
 
-const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-
-function toDateStr(d: Date): string {
-  return d.toISOString().split('T')[0]
-}
-
 /**
- * Was this daily scheduled on the given date?
+ * Was this daily scheduled on `day` (YYYY-MM-DD in the user's zone)?
  * Mirrors the filter in GET /api/dailies, but for an arbitrary day.
  */
-function isScheduledOn(daily: any, date: Date): boolean {
-  const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  if (daily.expires_on && new Date(daily.expires_on) < dayStart) return false
-  if (daily.created_at && new Date(daily.created_at) > new Date(dayStart.getTime() + 86400000)) return false
+function isScheduledOn(daily: any, day: string, tz: string): boolean {
+  if (daily.expires_on && daily.expires_on < day) return false
+  // Created after that day ended (in the user's zone) — it wasn't due yet.
+  if (daily.created_at && todayIn(tz, new Date(daily.created_at)) > day) return false
   if (daily.repeat_type === 'weekly' && daily.repeat_days) {
-    return daily.repeat_days.includes(DAY_NAMES[date.getDay()])
+    return daily.repeat_days.includes(weekdayOf(day))
   }
   return true
 }
@@ -39,16 +34,18 @@ function isScheduledOn(daily: any, date: Date): boolean {
 async function loadCronState(db: SupabaseClient, userId: string) {
   const { data: profile } = await db
     .from('user_profiles')
-    .select('last_cron_date')
+    .select('last_cron_date, timezone')
     .eq('id', userId)
     .single()
 
-  const today = toDateStr(new Date())
+  // Days roll over at midnight in the user's own zone, not UTC.
+  const tz: string = profile?.timezone || 'UTC'
+  const today = todayIn(tz)
   // A profile that has never run cron is treated as up to date, so a brand new
   // user is not immediately shown a check-in for days they were never here.
   const lastCronDate: string = profile?.last_cron_date ?? today
 
-  return { today, lastCronDate, isDue: lastCronDate < today }
+  return { today, tz, lastCronDate, isDue: lastCronDate < today }
 }
 
 /**
@@ -62,7 +59,7 @@ export async function GET(req: NextRequest) {
   if (error || !user) return NextResponse.json({ success: false, error }, { status: 401 })
 
   const db = getDb(req)
-  const { today, lastCronDate, isDue } = await loadCronState(db, user.id)
+  const { today, tz, lastCronDate, isDue } = await loadCronState(db, user.id)
 
   if (!isDue) {
     return NextResponse.json({ success: true, data: { isDue: false, lastCronDate, dailies: [] } })
@@ -76,8 +73,7 @@ export async function GET(req: NextRequest) {
 
   if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
 
-  const missedDay = new Date(`${lastCronDate}T12:00:00`)
-  const dueThatDay = (data || []).filter((d) => isScheduledOn(d, missedDay))
+  const dueThatDay = (data || []).filter((d) => isScheduledOn(d, lastCronDate, tz))
 
   return NextResponse.json({
     success: true,
@@ -85,9 +81,7 @@ export async function GET(req: NextRequest) {
       isDue: true,
       lastCronDate,
       today,
-      daysMissed: Math.round(
-        (new Date(`${today}T12:00:00`).getTime() - missedDay.getTime()) / 86400000
-      ),
+      daysMissed: daysBetween(lastCronDate, today),
       dailies: dueThatDay.map((d) => ({
         id: d.id,
         title: d.title,
@@ -122,7 +116,7 @@ async function handlePOST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const completedIds: string[] = Array.isArray(body.completedIds) ? body.completedIds : []
 
-  const { today, lastCronDate, isDue } = await loadCronState(db, user.id)
+  const { today, tz, lastCronDate, isDue } = await loadCronState(db, user.id)
 
   // Not due — the day was already rolled (double submit, or another tab won).
   // Returning success keeps the client idempotent.
@@ -147,8 +141,7 @@ async function handlePOST(req: NextRequest) {
     .select('*')
     .eq('user_id', user.id)
 
-  const missedDay = new Date(`${lastCronDate}T12:00:00`)
-  const dueThatDay = (allDailies || []).filter((d) => isScheduledOn(d, missedDay))
+  const dueThatDay = (allDailies || []).filter((d) => isScheduledOn(d, lastCronDate, tz))
   const confirmed = new Set(completedIds)
 
   const economy = new TaskEconomyService(db)

@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { moneyApi } from '@/lib/money/client'
 import type { MoneyAccount, MoneyCategory, MoneyTransaction, TransactionType } from '@/types/money'
 import { MoneyModal, Field, inputCls, selectCls, Segmented } from './shared'
-import { cn } from '@/lib/utils'
+import { cn, localDateStr } from '@/lib/utils'
 
 interface Props {
   open: boolean
@@ -16,7 +16,7 @@ interface Props {
   onSaved: (result: { leveledUp?: boolean; levelUpDetails?: any }) => void
 }
 
-const todayStr = () => new Date().toISOString().slice(0, 10)
+const todayStr = () => localDateStr()
 
 export function TransactionModal({ open, onClose, accounts, categories, defaultCurrency, editing, onSaved }: Props) {
   const [type, setType] = useState<TransactionType>('expense')

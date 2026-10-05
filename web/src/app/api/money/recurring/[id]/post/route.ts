@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authed, num } from '@/lib/money/server'
 import { idempotent } from '@/lib/idempotency'
+import { getUserTimezone, todayIn } from '@/lib/user-time'
 
 /** Advance a date by one cadence step. */
 function advance(dateIso: string, cadence: string): string {
@@ -28,7 +29,7 @@ async function handlePOST(req: NextRequest, { params }: { params: Promise<{ id: 
     .single()
   if (rErr || !rule) return NextResponse.json({ error: 'Recurring rule not found' }, { status: 404 })
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIn(await getUserTimezone(db, user.id))
 
   const { data: txn, error: tErr } = await db
     .from('money_transactions')

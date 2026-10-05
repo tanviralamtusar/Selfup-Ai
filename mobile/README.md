@@ -156,7 +156,8 @@ realtime: postgres_changes on the synced tables ─► apply other devices' chan
 
 **Days and XP.**
 
-- Completions are scored per server day (UTC, like the website) and carry the day they happened.
+- Days follow the **phone's time zone**. Before each sync the app copies it into `user_profiles.timezone`, and the server computes "today" in that zone (`web/src/lib/user-time.ts`). Dailies, the check-in, XP day keys, habit logs and streaks all roll over at the user's local midnight, on the website too.
+- Completions carry the (local) day they happened.
 - The server keeps a day open until the new-day check-in runs, and a completion for the open day is sent immediately.
 - Completions for a later day wait for the in-app check-in ("Welcome back"); **Later** snoozes it for 10 minutes.
 - A completion for a day that was already closed can't be scored, and is listed under *Couldn't sync*.

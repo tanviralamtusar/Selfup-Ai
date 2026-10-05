@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronRight, Flame, Loader2, Plus, Sparkles, Trophy, MoreVertical, Edit2, Trash2, Zap as ZapIcon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, localDateStr } from '@/lib/utils'
 import { HabitHeatmap } from './HabitHeatmap'
 
 interface Habit {
@@ -129,7 +129,7 @@ export function HabitsView() {
             ...h,
             is_completed_this_cycle: true,
             current_streak: h.current_streak + 1,
-            habit_logs: [...(h.habit_logs || []), { completed_at: new Date().toISOString().split('T')[0] }]
+            habit_logs: [...(h.habit_logs || []), { completed_at: localDateStr() }]
           } : h
         ))
       }

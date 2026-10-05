@@ -17,3 +17,13 @@ export function formatNumber(num: number) {
 export function formatRelative(date: Date | string | number) {
   return formatDistanceToNow(new Date(date), { addSuffix: true })
 }
+
+/**
+ * YYYY-MM-DD for the browser's local day (optionally `daysAgo` days back).
+ * Days follow the user's own time zone, matching the server's `todayIn(profile.timezone)`.
+ */
+export function localDateStr(daysAgo = 0): string {
+  const d = new Date()
+  d.setDate(d.getDate() - daysAgo)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}

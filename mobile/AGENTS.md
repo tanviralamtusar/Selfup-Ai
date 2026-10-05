@@ -6,7 +6,7 @@ This is the offline-first Android client for the SelfUp website in `../web`. `RE
 
 - **Writes:** never write to Supabase directly. Every change goes through an action in `src/domain/actions.ts` → `commitLocal()` (local row + outbox op), and the sync engine replays it through the website's `/api` with an `Idempotency-Key`. New API mutations the app uses must be wrapped in `idempotent()` on the server and accept a client `id`.
 - **SQLite:** all writes go through the write lock in `src/db/database.ts`. Inside `writeTransaction`, pass the executor to record helpers, or it deadlocks.
-- **Days:** completions are scored per server day (UTC). Reminder times (`scheduled_time`) are phone-local.
+- **Days:** everything follows the phone's time zone. `syncTimeZone()` in `src/sync/engine.ts` keeps `user_profiles.timezone` equal to it, and the server computes "today" in that zone. Use `localDay()` / `dayOf()` from `src/lib/dates.ts`, never `toISOString().slice(0, 10)`, for day logic. Reminder times (`scheduled_time`) are phone-local too.
 - **Releases:** any push to `main` touching `mobile/` publishes an APK as the latest GitHub Release, and installed apps update from it. Keep the `mobile-v<version>-b<build>` tag format and the `app.selfup.net` package id.
 - **Debugging sync on a device:** start from Settings → Connection → *Test connection* and Settings → Sync → *Last problem*. They show the platform's real error.
 

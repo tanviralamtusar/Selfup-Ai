@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useRecords } from '@/db/records'
-import { monthKey, serverDay, serverDayName } from '@/lib/dates'
+import { dayOf, localDay, localDayName, monthKey, shiftMonth } from '@/lib/dates'
 import type {
   Daily,
   Habit,
@@ -16,27 +16,27 @@ import type {
 
 const PRIORITY_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
 
-/** Mirrors GET /api/dailies: active today (not expired; weekly only on its days). */
+/** Mirrors GET /api/dailies: active today (not expired; weekly only on its days), in the phone's zone. */
 export function isDueToday(d: Daily, now = new Date()): boolean {
-  const today = serverDay(now)
+  const today = localDay(now)
   if (d.expires_on && d.expires_on < today) return false
-  if (d.repeat_type === 'weekly' && d.repeat_days) return d.repeat_days.includes(serverDayName(now))
+  if (d.repeat_type === 'weekly' && d.repeat_days) return d.repeat_days.includes(localDayName(now))
   return true
 }
 
 /**
- * Done for the current server day. The server clears `is_completed` at the
+ * Done today (phone-local day). The server clears `is_completed` at the
  * new-day check-in; until that runs (e.g. offline past midnight) a tick from
  * the previous day must not count for today.
  */
 export function isDailyDoneToday(d: Daily): boolean {
-  return d.is_completed && (d.completed_at ?? '').slice(0, 10) === serverDay()
+  return d.is_completed && dayOf(d.completed_at) === localDay()
 }
 
 export function isHabitDone(h: Habit): boolean {
   if (!h.is_completed_this_cycle) return false
   // Daily habits roll over with the check-in; weekly/monthly keep the server flag.
-  return h.reset_type !== 'daily' || (h.completed_at ?? '').slice(0, 10) === serverDay()
+  return h.reset_type !== 'daily' || dayOf(h.completed_at) === localDay()
 }
 
 export function useTodayDailies(): Daily[] {
@@ -61,7 +61,7 @@ export function useHabits(): Habit[] {
 export function useOpenTodos(): Todo[] {
   const rows = useRecords<Todo>('todos')
   return useMemo(() => {
-    const today = serverDay()
+    const today = localDay()
     return rows
       .filter((t) => !t.is_completed)
       .sort((a, b) => {
@@ -126,11 +126,7 @@ export function useMoney(month: string = monthKey()): MoneyView {
   return useMemo(() => {
     const withBalance = computeBalances(accounts, txns)
     const categoryById = new Map(categories.map((c) => [c.id, c]))
-    const monthEnd = (() => {
-      const d = new Date(`${month}T12:00:00Z`)
-      d.setUTCMonth(d.getUTCMonth() + 1)
-      return monthKey(d)
-    })()
+    const monthEnd = shiftMonth(month, 1)
     const monthTxns = txns
       .filter((t) => t.occurred_at >= month && t.occurred_at < monthEnd)
       .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at) || b.created_at.localeCompare(a.created_at))

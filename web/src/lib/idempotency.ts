@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { addDays, todayIn } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -22,15 +23,15 @@ export function clientId(v: unknown): { id?: string } {
 }
 
 /**
- * The day an action belongs to (YYYY-MM-DD, same UTC convention as the rest
- * of the API). Offline clients send the day the user actually acted so XP
- * keys and logs land on that day; anything outside the last week, in the
- * future, or malformed falls back to today.
+ * The day an action belongs to (YYYY-MM-DD in the user's zone `tz`). Offline
+ * clients send the day the user actually acted so XP keys and logs land on
+ * that day; anything outside the last week, in the future, or malformed falls
+ * back to today.
  */
-export function actionDate(v: unknown): string {
-  const today = new Date().toISOString().split('T')[0]
+export function actionDate(v: unknown, tz: string): string {
+  const today = todayIn(tz)
   if (typeof v !== 'string' || !DATE_RE.test(v)) return today
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+  const weekAgo = addDays(today, -7)
   return v >= weekAgo && v <= today ? v : today
 }
 

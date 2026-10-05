@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
+import { isValidTimeZone } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -23,7 +24,12 @@ export async function PATCH(req: NextRequest) {
   if (ai_persona_name !== undefined) updateData.ai_persona_name = ai_persona_name
   if (ai_persona_style !== undefined) updateData.ai_persona_style = ai_persona_style
   if (is_public !== undefined) updateData.is_public = is_public
-  if (timezone !== undefined) updateData.timezone = timezone
+  if (timezone !== undefined) {
+    if (!isValidTimeZone(timezone)) {
+      return NextResponse.json({ success: false, error: 'Invalid time zone' }, { status: 400 })
+    }
+    updateData.timezone = timezone
+  }
 
   const { data, error: dbErr } = await db
     .from('user_profiles')

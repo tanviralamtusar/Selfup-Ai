@@ -6,7 +6,7 @@ import { completeTodo, deleteTodo, finishPomodoro, startPomodoro } from '@/domai
 import { useOpenTodos } from '@/domain/selectors'
 import type { PomodoroSession } from '@/domain/types'
 import { useRecords } from '@/db/records'
-import { serverDay } from '@/lib/dates'
+import { dayOf, localDay } from '@/lib/dates'
 import { requestSync } from '@/sync/engine'
 import { useSyncStatus } from '@/sync/status'
 import { Body, Button, Card, Empty, H1, H2, Muted, Row, Screen, Segmented } from '@/ui/primitives'
@@ -49,9 +49,9 @@ export default function Time() {
     }
   }, [active, remaining, endsAt])
 
-  const today = serverDay()
+  const today = localDay()
   const todaySessions = sessions
-    .filter((s) => s.started_at.slice(0, 10) === today && s.status !== 'active')
+    .filter((s) => dayOf(s.started_at) === today && s.status !== 'active')
     .sort((a, b) => b.started_at.localeCompare(a.started_at))
   const focusMinutes = todaySessions.filter((s) => s.status === 'completed').reduce((m, s) => m + s.duration_minutes, 0)
   const dueToday = todos.filter((t) => t.due_date && t.due_date <= today)

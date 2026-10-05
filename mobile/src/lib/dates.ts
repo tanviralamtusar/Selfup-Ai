@@ -1,22 +1,43 @@
 /**
- * The server buckets days in UTC (`new Date().toISOString().split('T')[0]`),
- * for XP idempotency keys, the new-day check-in and habit logs. The app uses
- * the same convention so an offline action lands on the day the server
- * expects.
+ * Days follow the phone's time zone. The sync engine copies that zone into
+ * `user_profiles.timezone`, and the server computes "today" in it, so
+ * dailies, the new-day check-in, XP day keys and streaks all roll over at the
+ * user's own midnight (not UTC).
  */
-export function serverDay(date: Date = new Date()): string {
-  return date.toISOString().slice(0, 10)
-}
 
 const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
-export function serverDayName(date: Date = new Date()): string {
-  return DAY_NAMES[date.getUTCDay()]
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/** The phone's IANA time zone, e.g. "Asia/Dhaka". */
+export function phoneTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+  } catch {
+    return 'UTC'
+  }
 }
 
-/** First day of the month containing `date`, as YYYY-MM-01 (matches the web's monthKey). */
+/** Local calendar day as YYYY-MM-DD. */
+export function localDay(date: Date = new Date()): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/** Local calendar day of an ISO timestamp (e.g. completed_at), or '' if missing. */
+export function dayOf(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : localDay(d)
+}
+
+/** 'sun'…'sat' for the local day (matches dailies.repeat_days). */
+export function localDayName(date: Date = new Date()): string {
+  return DAY_NAMES[date.getDay()]
+}
+
+/** First day of the local month containing `date`, as YYYY-MM-01. */
 export function monthKey(date: Date = new Date()): string {
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-01`
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-01`
 }
 
 export function monthLabel(month: string): string {
@@ -24,10 +45,11 @@ export function monthLabel(month: string): string {
   return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' })
 }
 
+/** Move a YYYY-MM-01 month key by `delta` months (pure calendar math). */
 export function shiftMonth(month: string, delta: number): string {
-  const d = new Date(`${month}T12:00:00Z`)
-  d.setUTCMonth(d.getUTCMonth() + delta)
-  return monthKey(d)
+  const [y, m] = month.split('-').map(Number)
+  const total = y * 12 + (m - 1) + delta
+  return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}-01`
 }
 
 export function timeAgo(iso: string | null | undefined): string {

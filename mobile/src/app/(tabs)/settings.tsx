@@ -9,7 +9,7 @@ import { RemindersCard } from '@/components/RemindersCard'
 import { db, resetDatabase, subscribe } from '@/db/database'
 import { setKv, useKv } from '@/db/kv'
 import type { Profile } from '@/domain/types'
-import { serverDay, timeAgo } from '@/lib/dates'
+import { localDay, phoneTimeZone, timeAgo } from '@/lib/dates'
 import { API_URL, SUPABASE_URL } from '@/lib/env'
 import { supabase } from '@/lib/supabase'
 import { canSelfUpdate, checkForUpdate, downloadAndInstall, type AvailableUpdate } from '@/lib/updater'
@@ -189,15 +189,22 @@ function ConnectionCard() {
 }
 
 function DeviceCard() {
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const tz = phoneTimeZone()
+  const profile = useKv<Profile & { timezone?: string }>('profile')
+  const accountTz = profile?.timezone
   return (
     <Card>
       <H2>Device</H2>
       <Item label="Model" value={[Device.manufacturer, Device.modelName].filter(Boolean).join(' ') || '—'} />
       <Item label="OS" value={`${Platform.OS === 'android' ? 'Android' : Platform.OS} ${Device.osVersion ?? Platform.Version}`} />
-      <Item label="Time zone" value={tz ?? '—'} />
-      <Item label="Server day (UTC)" value={serverDay()} />
-      <Muted>Dailies and the check-in follow the server day, which changes at midnight UTC.</Muted>
+      <Item label="Time zone" value={tz} />
+      <Item label="Today" value={localDay()} />
+      <Item
+        label="Account time zone"
+        value={accountTz ? (accountTz === tz ? `${accountTz} ✓` : `${accountTz} (updating to ${tz})`) : '—'}
+        tone={accountTz && accountTz !== tz ? colors.warning : undefined}
+      />
+      <Muted>Your day follows this phone’s time zone: dailies, the check-in and streaks roll over at your local midnight, on the website too.</Muted>
     </Card>
   )
 }

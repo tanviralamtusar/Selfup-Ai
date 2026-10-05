@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent, actionDate } from '@/lib/idempotency'
+import { getUserTimezone } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -73,7 +74,7 @@ async function handlePOST(
   // Offline clients replay with the day the user actually ticked it.
   const economy = new TaskEconomyService(db)
   const body = await req.json().catch(() => ({}))
-  const day = actionDate(body.date)
+  const day = actionDate(body.date, await getUserTimezone(db, user.id))
   const sourceId = `${daily.id}:${day}`
 
   const xpResult = await economy.awardXp(

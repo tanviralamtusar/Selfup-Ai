@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { QuestService } from '@/lib/quest.service'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent, clientId } from '@/lib/idempotency'
+import { getUserTimezone, startOfTodayIn } from '@/lib/user-time'
 
 /** A client timestamp within the last week, else now. Offline replays keep real times. */
 function clientTime(v: unknown): string {
@@ -111,8 +112,7 @@ export async function GET(req: NextRequest) {
     global: { headers: { Authorization: `Bearer ${token}` } }
   })
 
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
+  const todayStart = startOfTodayIn(await getUserTimezone(db, user.id))
 
   const { data, error: dbErr } = await db
     .from('pomodoro_sessions')

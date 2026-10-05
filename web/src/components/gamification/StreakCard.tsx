@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Shield, TrendingUp, Plus, Loader2, AlertTriangle, Calendar, Zap } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn, localDateStr } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/authStore'
 
@@ -30,8 +30,8 @@ export function StreakCard({ currentStreak, bestStreak, freezeCount, weeklyActiv
   const [isPurchasing, setIsPurchasing] = useState(false)
   const { session, updateProfile } = useAuthStore()
 
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const today = localDateStr()
+  const yesterday = localDateStr(1)
 
   const loggedToday = lastDate === today
   const isAtRisk = !loggedToday && lastDate === yesterday

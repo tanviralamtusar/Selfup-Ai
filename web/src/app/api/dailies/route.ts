@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateTaskXp } from '@/lib/task-economy.service'
+import { getUserTimezone, todayIn, weekdayOf } from '@/lib/user-time'
 import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -23,9 +24,9 @@ export async function GET(req: NextRequest) {
   if (error || !user) return NextResponse.json({ success: false, error }, { status: 401 })
 
   const db = getDb(req)
-  const today = new Date()
-  const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-  const todayDay = dayNames[today.getDay()]
+  // "Today" in the user's own zone, so dailies roll over at their midnight.
+  const today = todayIn(await getUserTimezone(db, user.id))
+  const todayDay = weekdayOf(today)
 
   const { data, error: dbErr } = await db
     .from('dailies')
@@ -39,8 +40,7 @@ export async function GET(req: NextRequest) {
   // Filter: only show dailies active today
   const activeDailies = (data || []).filter((d: any) => {
     // Check if expired
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    if (d.expires_on && new Date(d.expires_on) < todayStart) return false
+    if (d.expires_on && d.expires_on < today) return false
 
     // If weekly repeat, check if today is an active day
     if (d.repeat_type === 'weekly' && d.repeat_days) {

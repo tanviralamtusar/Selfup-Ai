@@ -14,7 +14,7 @@ import {
 } from '@/domain/actions'
 import { formatMoney, useMoney, type MoneyView } from '@/domain/selectors'
 import type { AccountType, MoneyGoal, TransactionType } from '@/domain/types'
-import { monthKey, monthLabel, serverDay, shiftMonth } from '@/lib/dates'
+import { localDay, monthKey, monthLabel, shiftMonth } from '@/lib/dates'
 import { requestSync } from '@/sync/engine'
 import { useSyncStatus } from '@/sync/status'
 import { usePendingIds } from '@/sync/usePendingIds'
@@ -139,7 +139,7 @@ export default function Money() {
             <Row key={r.id} style={styles.line}>
               <View style={{ flex: 1 }}>
                 <Body>{r.name}</Body>
-                <Muted>{r.cadence} · next {r.next_due}{r.next_due <= serverDay() ? ' · due' : ''}</Muted>
+                <Muted>{r.cadence} · next {r.next_due}{r.next_due <= localDay() ? ' · due' : ''}</Muted>
               </View>
               <Body>{r.type === 'income' ? '+' : '−'}{formatMoney(Number(r.amount), r.currency)}</Body>
               <Button small label="Post" onPress={() => postRecurring(r)} />

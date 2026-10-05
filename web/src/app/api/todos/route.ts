@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateTaskXp } from '@/lib/task-economy.service'
 import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
+import { getUserTimezone, todayIn } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
   if (dbErr) return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 })
 
   // Enrich with overdue flag
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayIn(await getUserTimezone(db, user.id))
   const enriched = (data || []).map((t: any) => ({
     ...t,
     is_overdue: !t.is_completed && t.due_date && t.due_date < today,

@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import { addDays, daysBetween, getUserTimezone, todayIn, weekdayOf } from '@/lib/user-time'
 import {
   xpToNextLevel,
   clampLevel,
@@ -427,7 +428,7 @@ export class GamificationService {
   async updateOverallStreak(userId: string): Promise<{ streak: number; freezeUsed: boolean }> {
     const { data: profile, error } = await this.supabase
       .from('user_profiles')
-      .select('streak_overall, streak_best, streak_last_date, streak_freeze_count, is_pro')
+      .select('streak_overall, streak_best, streak_last_date, streak_freeze_count, is_pro, timezone')
       .eq('id', userId)
       .single()
 
@@ -436,17 +437,15 @@ export class GamificationService {
       return { streak: 0, freezeUsed: false }
     }
 
-    const now = new Date()
-    const todayStr = now.toISOString().split('T')[0]
+    // Days in the user's own zone, so the streak ticks over at their midnight.
+    const todayStr = todayIn(profile.timezone)
 
     // Already counted today
     if (profile.streak_last_date === todayStr) {
       return { streak: profile.streak_overall ?? 0, freezeUsed: false }
     }
 
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    const yesterdayStr = addDays(todayStr, -1)
 
     let newStreak = 1
     let freezeUsed = false
@@ -455,9 +454,7 @@ export class GamificationService {
     if (profile.streak_last_date === yesterdayStr) {
       newStreak = (profile.streak_overall ?? 0) + 1
     } else if (profile.streak_last_date && freezeCount > 0) {
-      const lastDate = new Date(profile.streak_last_date)
-      const diffTime = Math.abs(now.getTime() - lastDate.getTime())
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      const diffDays = daysBetween(profile.streak_last_date, todayStr)
 
       if (diffDays <= 2) {
         newStreak = (profile.streak_overall ?? 0) + 1
@@ -595,36 +592,22 @@ export class GamificationService {
    * Returns an array of 7 booleans [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
    */
   async getWeeklyActivity(userId: string): Promise<boolean[]> {
-    const now = new Date()
-    const dayOfWeek = now.getDay()
-
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-    monday.setHours(0, 0, 0, 0)
-
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    sunday.setHours(23, 59, 59, 999)
+    // The user's current week (Mon–Sun) in their own zone; habit_logs dates are local days too.
+    const today = todayIn(await getUserTimezone(this.supabase, userId))
+    const sinceMonday = (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const).indexOf(
+      weekdayOf(today) as 'mon'
+    )
+    const monday = addDays(today, -sinceMonday)
+    const sunday = addDays(monday, 6)
 
     const { data: logs } = await this.supabase
       .from('habit_logs')
       .select('completed_at')
       .eq('user_id', userId)
-      .gte('completed_at', monday.toISOString().split('T')[0])
-      .lte('completed_at', sunday.toISOString().split('T')[0])
+      .gte('completed_at', monday)
+      .lte('completed_at', sunday)
 
-    const activityMap = new Array(7).fill(false)
-    const completedDays = new Set(logs?.map((l) => l.completed_at))
-
-    for (let i = 0; i < 7; i++) {
-      const current = new Date(monday)
-      current.setDate(monday.getDate() + i)
-      const dateStr = current.toISOString().split('T')[0]
-      if (completedDays.has(dateStr)) {
-        activityMap[i] = true
-      }
-    }
-
-    return activityMap
+    const completedDays = new Set(logs?.map((l) => String(l.completed_at).slice(0, 10)))
+    return Array.from({ length: 7 }, (_, i) => completedDays.has(addDays(monday, i)))
   }
 }

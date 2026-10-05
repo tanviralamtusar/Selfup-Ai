@@ -1,7 +1,7 @@
 import { randomUUID } from 'expo-crypto'
 
 import { getRecord, patchRecord, putRecord, removeRecord } from '@/db/records'
-import { serverDay } from '@/lib/dates'
+import { localDay } from '@/lib/dates'
 import {
   dailyXp,
   habitHpPenalty,
@@ -93,8 +93,8 @@ export async function completeDaily(daily: Daily) {
     },
     {
       kind: 'daily.complete', tbl: 'dailies', entityId: daily.id, method: 'POST',
-      path: `/api/dailies/${daily.id}/complete`, body: { date: serverDay() },
-      actionDate: serverDay(), xpHint: daily.xp_reward,
+      path: `/api/dailies/${daily.id}/complete`, body: { date: localDay() },
+      actionDate: localDay(), xpHint: daily.xp_reward,
     }
   )
 }
@@ -159,8 +159,8 @@ export async function logHabit(habit: Habit) {
     },
     {
       kind: 'habit.log', tbl: 'habits', entityId: habit.id, method: 'POST',
-      path: `/api/habits/${habit.id}/log`, body: { date: serverDay() },
-      actionDate: serverDay(), xpHint: habit.xp_reward,
+      path: `/api/habits/${habit.id}/log`, body: { date: localDay() },
+      actionDate: localDay(), xpHint: habit.xp_reward,
     }
   )
 }
@@ -305,7 +305,7 @@ export interface NewTransaction {
 
 export async function createTransaction(input: NewTransaction) {
   const id = randomUUID()
-  const occurred_at = input.occurred_at ?? serverDay()
+  const occurred_at = input.occurred_at ?? localDay()
   const body = {
     id,
     type: input.type,
@@ -399,7 +399,7 @@ function advance(dateIso: string, cadence: MoneyRecurring['cadence']): string {
 /** Post a recurring bill/income now (mirrors POST /api/money/recurring/[id]/post). */
 export async function postRecurring(rule: MoneyRecurring) {
   const tempTxnId = randomUUID()
-  const today = serverDay()
+  const today = localDay()
   const txn: MoneyTransaction = {
     id: tempTxnId,
     user_id: getCurrentUserId(),

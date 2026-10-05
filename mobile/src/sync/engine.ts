@@ -5,6 +5,7 @@ import { AppState } from 'react-native'
 import { emit } from '@/db/database'
 import { getKv, setKv } from '@/db/kv'
 import { getRecord, putRecord, removeRecord, replaceTable, type Row } from '@/db/records'
+import { phoneTimeZone } from '@/lib/dates'
 import { supabase } from '@/lib/supabase'
 import { apiGet, apiRequest } from './api'
 import {
@@ -157,6 +158,8 @@ async function runSync(pull: boolean) {
   running = true
   status().set({ syncing: true })
   try {
+    // Before anything day-scored is sent, make the server count days in this phone's zone.
+    await syncTimeZone()
     const outcome = await flush()
     if (outcome === 'auth') return
     if (pull) await pullAll()
@@ -176,6 +179,23 @@ async function runSync(pull: boolean) {
       requestSync()
     }
   }
+}
+
+/**
+ * Keep `user_profiles.timezone` equal to the phone's zone. The server computes
+ * "today" (dailies, check-in, XP day keys, streaks) in that zone, so it must
+ * match before completions are replayed. Cheap no-op once in sync; retried on
+ * the next sync if it fails.
+ */
+async function syncTimeZone() {
+  const tz = phoneTimeZone()
+  const profile = await getKv<Record<string, unknown>>('profile')
+  const known = (profile?.timezone as string | undefined) ?? (await getKv<string>('tz:synced'))
+  if (known === tz) return
+  const r = await apiRequest('PATCH', '/api/settings/profile', JSON.stringify({ timezone: tz }))
+  if (r.kind !== 'ok') return
+  await setKv('tz:synced', tz)
+  if (profile) await setKv('profile', { ...profile, timezone: tz })
 }
 
 function scheduleRetry() {

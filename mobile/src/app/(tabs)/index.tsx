@@ -19,7 +19,7 @@ import {
 import { isDailyDoneToday, isHabitDone, useHabits, useOpenTodos, useTodayDailies } from '@/domain/selectors'
 import type { Difficulty, Priority, ResetType } from '@/lib/gamification'
 import { ensurePermission, parseTime } from '@/lib/notifications'
-import { serverDay } from '@/lib/dates'
+import { localDay } from '@/lib/dates'
 import { requestSync } from '@/sync/engine'
 import { useSyncStatus } from '@/sync/status'
 import { usePendingIds } from '@/sync/usePendingIds'
@@ -64,7 +64,7 @@ export default function Dashboard() {
   const tab = TABS[page]
   const doneDailies = dailies.filter(isDailyDoneToday).length
   const doneHabits = habits.filter(isHabitDone).length
-  const today = serverDay()
+  const today = localDay()
   const addButton = <Button label="+ Add" small onPress={() => setAdding(true)} />
 
   return (

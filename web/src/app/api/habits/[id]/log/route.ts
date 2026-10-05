@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent, actionDate } from '@/lib/idempotency'
+import { getUserTimezone } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -72,7 +73,7 @@ async function handlePOST(
 
   // Also log in habit_logs for historical tracking. Offline clients replay
   // with the day the user actually logged it.
-  const today = actionDate(body.date)
+  const today = actionDate(body.date, await getUserTimezone(db, user.id))
   const logRow: Record<string, unknown> = { habit_id: habitId, user_id: user.id, completed_at: today }
   if (notes) logRow.notes = notes
   await db

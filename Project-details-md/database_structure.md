@@ -785,6 +785,31 @@ CREATE TABLE sync_idempotency (
 
 The migration also adds `user_profiles`, `dailies`, `habits`, `todos`, `pomodoro_sessions` and all six `money_*` tables to the `supabase_realtime` publication.
 
+### 19. Deadline Goals (`create_goals.sql`)
+
+```sql
+CREATE TABLE goals (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+  title         TEXT NOT NULL,                 -- 1–120 chars
+  description   TEXT,
+  target_value  NUMERIC(12,2) NOT NULL DEFAULT 1,  -- 1 = yes/no goal
+  current_value NUMERIC(12,2) NOT NULL DEFAULT 0,
+  unit          TEXT,                          -- "books", "km"…
+  deadline      DATE NOT NULL,                 -- last day (user's zone) to reach the target
+  difficulty    TEXT NOT NULL DEFAULT 'medium' CHECK (difficulty IN ('easy','medium','hard')),
+  xp_reward     INT NOT NULL DEFAULT 50,       -- GOAL_REWARDS in constants/gamification.ts
+  hp_penalty    INT NOT NULL DEFAULT 20,
+  status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','completed','failed')),
+  completed_at  TIMESTAMPTZ,
+  failed_at     TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);  -- RLS: owner-only. In the supabase_realtime publication.
+```
+
+Separate from the onboarding `user_goals`. Failing (deadline passed → `failed` + HP damage) happens in `failExpiredGoals()` (`lib/goals.service.ts`), called from `POST /api/dailies/cron` and `GET /api/goals`.
+
 ### Tables in use but not yet documented here
 
 These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:

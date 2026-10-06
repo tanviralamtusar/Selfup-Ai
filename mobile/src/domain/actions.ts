@@ -6,6 +6,7 @@ import {
   dailyXp,
   habitHpPenalty,
   habitXp,
+  GOAL_REWARDS,
   MONEY_XP,
   todoXp,
   type Difficulty,
@@ -16,6 +17,8 @@ import { getCurrentUserId } from '@/sync/engine'
 import { commitLocal } from '@/sync/outbox'
 import type {
   Daily,
+  Goal,
+  GoalDifficulty,
   Habit,
   MoneyAccount,
   MoneyBudget,
@@ -171,6 +174,73 @@ export async function logHabit(habit: Habit) {
 export async function deleteHabit(id: string) {
   await commitLocal((t) => removeRecord('habits', id, t), {
     kind: 'habit.delete', tbl: 'habits', entityId: id, method: 'DELETE', path: `/api/habits/${id}`,
+  })
+}
+
+// ── Goals (strict deadline) ──────────────────────────────────
+
+export interface NewGoal {
+  title: string
+  /** How much counts as done (1 for a yes/no goal). */
+  target_value: number
+  unit?: string | null
+  /** Last day to reach the target (YYYY-MM-DD, phone-local). */
+  deadline: string
+  difficulty: GoalDifficulty
+}
+
+export async function createDeadlineGoal(input: NewGoal) {
+  const id = randomUUID()
+  const reward = GOAL_REWARDS[input.difficulty]
+  const body = {
+    id,
+    title: input.title.trim(),
+    target_value: input.target_value,
+    unit: input.unit?.trim() || null,
+    deadline: input.deadline,
+    difficulty: input.difficulty,
+  }
+  const row: Goal = {
+    ...body,
+    user_id: getCurrentUserId(),
+    description: null,
+    current_value: 0,
+    xp_reward: reward.xp,
+    hp_penalty: reward.hpPenalty,
+    status: 'active',
+    completed_at: null,
+    failed_at: null,
+    created_at: now(),
+    updated_at: now(),
+  }
+  await commitLocal((t) => putRecord('goals', row, t), {
+    kind: 'goals.create', tbl: 'goals', entityId: id, method: 'POST', path: '/api/goals', body,
+  })
+}
+
+/** Add progress to a goal; reaching the target completes it (XP when it syncs). */
+export async function addGoalProgress(goal: Goal, amount: number) {
+  const current = Math.max(0, Number(goal.current_value) + amount)
+  const done = current >= Number(goal.target_value)
+  await commitLocal(
+    async (t) => {
+      await patchRecord<Goal>('goals', goal.id, {
+        current_value: current,
+        ...(done ? { status: 'completed' as const, completed_at: now() } : {}),
+        updated_at: now(),
+      }, t)
+    },
+    {
+      kind: 'goals.progress', tbl: 'goals', entityId: goal.id, method: 'PATCH',
+      path: `/api/goals/${goal.id}`, body: { title: goal.title, progress: amount, date: localDay() },
+      xpHint: done ? goal.xp_reward : 0,
+    }
+  )
+}
+
+export async function deleteDeadlineGoal(id: string) {
+  await commitLocal((t) => removeRecord('goals', id, t), {
+    kind: 'goals.delete', tbl: 'goals', entityId: id, method: 'DELETE', path: `/api/goals/${id}`,
   })
 }
 

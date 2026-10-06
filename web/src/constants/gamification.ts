@@ -98,6 +98,17 @@ export const HP_DAMAGE = {
   INACTIVITY_72H: 50,
 } as const
 
+// ─── Deadline Goals ─────────────────────────────
+// XP for reaching a goal by its deadline; HP lost when the deadline passes first.
+
+export type GoalDifficulty = 'easy' | 'medium' | 'hard'
+
+export const GOAL_REWARDS: Record<GoalDifficulty, { xp: number; hpPenalty: number }> = {
+  easy:   { xp: 25,  hpPenalty: 10 },
+  medium: { xp: 50,  hpPenalty: 20 },
+  hard:   { xp: 100, hpPenalty: 35 },
+}
+
 export const HP_RECOVERY = {
   PERFECT_DAY: 20,
   RECOVERY_TASK: 15,

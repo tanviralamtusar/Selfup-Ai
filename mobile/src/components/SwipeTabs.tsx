@@ -58,7 +58,7 @@ export function SwipeTabs({
               accessibilityRole="tab"
               accessibilityState={{ selected }}
               style={styles.tab}>
-              <Text style={[styles.tabText, selected && styles.tabTextOn]} numberOfLines={1}>
+              <Text style={[styles.tabText, selected && styles.tabTextOn]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
                 {t.label}
               </Text>
             </Pressable>

@@ -64,6 +64,8 @@ All day logic uses the user's own time zone (`user_profiles.timezone`, an IANA n
 | PATCH, DELETE | `/api/todos/[id]` | |
 | POST | `/api/todos/[id]/complete` | |
 | PATCH | `/api/todos/batch` | Batch-update scheduling fields (`scheduled_start/end`) |
+| GET, POST | `/api/goals` | Deadline goals. GET first fails expired ones (HP penalty). POST `{ title, target_value?, unit?, deadline, difficulty }`, deadline today or later |
+| PATCH, DELETE | `/api/goals/[id]` | PATCH `{ progress }`, `{ current_value }` or `{ complete: true }` (+ `date` for offline); reaching the target completes it (XP); 409 after the deadline. DELETE of an active goal older than 1 h costs its HP penalty |
 | GET, POST | `/api/tasks` | Cross-module tasks |
 | PATCH, DELETE | `/api/tasks/[id]` | |
 | PATCH | `/api/tasks/batch` | |

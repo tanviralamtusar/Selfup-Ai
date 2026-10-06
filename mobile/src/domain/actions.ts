@@ -111,13 +111,16 @@ export interface NewHabit {
   title: string
   difficulty?: Difficulty
   reset_type?: ResetType
+  /** Last day the habit runs (YYYY-MM-DD); omit for an indefinite habit. */
+  end_date?: string | null
 }
 
 export async function createHabit(input: NewHabit) {
   const id = randomUUID()
   const difficulty = input.difficulty ?? 'medium'
   const reset_type = input.reset_type ?? 'daily'
-  const body = { id, title: input.title.trim(), difficulty, reset_type }
+  const end_date = input.end_date || null
+  const body = { id, title: input.title.trim(), difficulty, reset_type, is_indefinite: !end_date, end_date: end_date ?? undefined }
   const row: Habit = {
     id,
     user_id: getCurrentUserId(),
@@ -129,8 +132,8 @@ export async function createHabit(input: NewHabit) {
     is_positive: true,
     is_negative: false,
     difficulty,
-    is_indefinite: true,
-    end_date: null,
+    is_indefinite: !end_date,
+    end_date,
     current_streak: 0,
     longest_streak: 0,
     is_completed_this_cycle: false,

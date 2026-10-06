@@ -113,7 +113,7 @@ export default function Dashboard() {
               <TaskRow
                 key={h.id}
                 title={h.title}
-                subtitle={`${h.reset_type} · +${h.xp_reward} XP${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}`}
+                subtitle={`${h.reset_type} · +${h.xp_reward} XP${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}${h.end_date ? ` · until ${formatDate(h.end_date)}` : ''}`}
                 done={isHabitDone(h)}
                 pending={pendingIds.has(h.id)}
                 onComplete={() => logHabit(h)}
@@ -162,6 +162,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
   const [days, setDays] = useState<string[]>(['mon', 'wed', 'fri'])
   const [due, setDue] = useState<string | null>(null)
   const [time, setTime] = useState<string | null>(null)
+  const [endDate, setEndDate] = useState<string | null>(null)
 
   const valid = title.trim().length > 0 && title.length <= 100 && (!weekly || days.length > 0)
 
@@ -169,6 +170,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     setTitle('')
     setDue(null)
     setTime(null)
+    setEndDate(null)
     onClose()
   }
 
@@ -177,7 +179,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     // A to-do reminder needs a day; picking only a time means today.
     const dueDate = kind === 'todos' && time && !due ? localToday() : due
     if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time })
-    else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset })
+    else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate })
     else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time })
     close()
 
@@ -199,6 +201,8 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
         <>
           <Segmented label="Difficulty" options={DIFFICULTIES} value={difficulty} onChange={setDifficulty} />
           <Segmented label="Resets" options={RESETS} value={reset} onChange={setReset} />
+          <PickerField label="End date" mode="date" value={endDate} onChange={setEndDate} placeholder="No end date (ongoing)" />
+          {endDate && <Muted>Runs until {formatDate(endDate)}.</Muted>}
         </>
       )}
 
@@ -231,8 +235,8 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
       {kind === 'todos' && (
         <>
           <PickerField label="Due date" mode="date" value={due} onChange={setDue} placeholder="No due date" />
-          <PickerField label="Reminder" mode="time" value={time} onChange={setTime} placeholder="No reminder" />
-          {time && <Muted>You’ll be notified {due ? formatDate(due) : 'today'} at {formatTime(time)}.</Muted>}
+          <PickerField label="Time" mode="time" value={time} onChange={setTime} placeholder="No time" />
+          {time && <Muted>You’ll get a reminder {due ? formatDate(due) : 'today'} at {formatTime(time)}.</Muted>}
           {!time && due && <Muted>Without a time you’ll get a reminder at 9:00 AM on the due date.</Muted>}
         </>
       )}

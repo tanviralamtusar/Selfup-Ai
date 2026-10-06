@@ -52,6 +52,29 @@ export interface Habit {
   updated_at: string
 }
 
+export type GoalDifficulty = 'easy' | 'medium' | 'hard'
+export type GoalStatus = 'active' | 'completed' | 'failed'
+
+/** A goal with a strict deadline (web/src/lib/goals.service.ts). */
+export interface Goal {
+  id: string
+  user_id: string
+  title: string
+  description: string | null
+  target_value: number
+  current_value: number
+  unit: string | null
+  deadline: string
+  difficulty: GoalDifficulty
+  xp_reward: number
+  hp_penalty: number
+  status: GoalStatus
+  completed_at: string | null
+  failed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Todo {
   id: string
   user_id: string

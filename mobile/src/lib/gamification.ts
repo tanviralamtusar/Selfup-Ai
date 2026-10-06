@@ -28,6 +28,13 @@ export function habitHpPenalty(reset: ResetType) {
   return HABIT_HP_PENALTY[reset]
 }
 
+/** Mirrors GOAL_REWARDS in web/src/constants/gamification.ts. */
+export const GOAL_REWARDS = {
+  easy: { xp: 25, hpPenalty: 10 },
+  medium: { xp: 50, hpPenalty: 20 },
+  hard: { xp: 100, hpPenalty: 35 },
+} as const
+
 export const MONEY_XP = { transaction: 5, goalContribution: 8, goalCompleted: 25 } as const
 
 const RANKS = [

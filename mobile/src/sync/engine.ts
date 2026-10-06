@@ -40,6 +40,7 @@ export const SYNCED_TABLES = [
   'dailies', 'habits', 'todos', 'pomodoro_sessions',
   'money_accounts', 'money_categories', 'money_transactions',
   'money_budgets', 'money_recurring', 'money_goals',
+  'goals',
 ] as const
 
 const RETRY_MIN_MS = 2000
@@ -302,6 +303,7 @@ async function onSuccess(op: Op, json: any) {
     case 'txn.create': case 'txn.update':
     case 'recurring.create':
     case 'goal.create': case 'goal.update': case 'goal.contribute':
+    case 'goals.create': case 'goals.progress':
       if (op.tbl && data?.id) await putRecord(op.tbl, strip(data))
       break
     case 'budget.set':
@@ -400,6 +402,7 @@ async function pullAll() {
     ['money_budgets', (q) => q.eq('user_id', uid)],
     ['money_recurring', (q) => q.eq('user_id', uid)],
     ['money_goals', (q) => q.eq('user_id', uid)],
+    ['goals', (q) => q.eq('user_id', uid)],
   ]
   const results = await Promise.allSettled(specs.map(([table, build]) => selectAll(table, build)))
 

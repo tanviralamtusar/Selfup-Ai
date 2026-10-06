@@ -5,6 +5,7 @@ import { TaskEconomyService } from '@/lib/task-economy.service'
 import { GamificationService } from '@/lib/gamification.service'
 import { HP_DAMAGE, HP_RECOVERY } from '@/constants/gamification'
 import { idempotent } from '@/lib/idempotency'
+import { failExpiredGoals } from '@/lib/goals.service'
 import { daysBetween, todayIn, weekdayOf } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -244,6 +245,11 @@ async function handlePOST(req: NextRequest) {
     .eq('reset_type', 'daily')
     .eq('is_completed_this_cycle', true)
 
+  // Goals whose deadline has now passed fail with an HP penalty. Separate from
+  // the capped daily damage above: a missed goal is a bigger commitment.
+  const goals = await failExpiredGoals(db, user.id, today).catch(() => ({ failed: [], hpLost: 0 }))
+  hpLost += goals.hpLost
+
   return NextResponse.json({
     success: true,
     data: {
@@ -258,6 +264,7 @@ async function handlePOST(req: NextRequest) {
       hpLost,
       hpHealed,
       perfectDay: missedCount === 0 && dueThatDay.length > 0,
+      failedGoals: goals.failed.map((g) => g.title),
     },
   })
 }

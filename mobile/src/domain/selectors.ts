@@ -4,6 +4,8 @@ import { useRecords } from '@/db/records'
 import { dayOf, localDay, localDayName, monthKey, shiftMonth } from '@/lib/dates'
 import type {
   Daily,
+  Goal,
+  GoalStatus,
   Habit,
   MoneyAccount,
   MoneyBudget,
@@ -69,6 +71,37 @@ export function useOpenTodos(): Todo[] {
         const bo = b.due_date && b.due_date < today ? 0 : 1
         return ao - bo || (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2)
       })
+  }, [rows])
+}
+
+// ── Goals ────────────────────────────────────────────────────
+
+/**
+ * Status as the user should see it now. A goal past its deadline is failed
+ * even before the server has run the check (it does on the next check-in).
+ */
+export function goalStatus(g: Goal, today = localDay()): GoalStatus {
+  if (g.status === 'active' && g.deadline < today) return 'failed'
+  return g.status
+}
+
+/** Whole days from today until the deadline (0 = due today). */
+export function daysLeft(g: Goal, today = localDay()): number {
+  const [y1, m1, d1] = today.split('-').map(Number)
+  const [y2, m2, d2] = g.deadline.split('-').map(Number)
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000)
+}
+
+/** Active goals first (soonest deadline on top), then finished ones, newest first. */
+export function useGoals(): Goal[] {
+  const rows = useRecords<Goal>('goals')
+  return useMemo(() => {
+    const today = localDay()
+    const active = rows.filter((g) => goalStatus(g, today) === 'active').sort((a, b) => a.deadline.localeCompare(b.deadline))
+    const done = rows
+      .filter((g) => goalStatus(g, today) !== 'active')
+      .sort((a, b) => b.deadline.localeCompare(a.deadline))
+    return [...active, ...done]
   }, [rows])
 }
 

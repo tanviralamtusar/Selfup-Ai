@@ -225,10 +225,16 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     if (!valid) return
     // A to-do reminder needs a day; picking only a time means today.
     const dueDate = kind === 'todos' && time && !due ? localToday() : due
-    if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time })
-    else if (kind === 'goals' && deadline) await createDeadlineGoal({ title, target_value: targetNum, unit, deadline, difficulty: goalDifficulty })
-    else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate })
-    else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time })
+    try {
+      if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time })
+      else if (kind === 'goals' && deadline) await createDeadlineGoal({ title, target_value: targetNum, unit, deadline, difficulty: goalDifficulty })
+      else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate })
+      else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time })
+    } catch (e: any) {
+      // Without this a failed local write left the sheet open with no explanation.
+      Alert.alert('Couldn’t save', String(e?.message ?? e))
+      return
+    }
     close()
 
     if (time && (kind === 'dailies' || kind === 'todos') && !(await ensurePermission(true))) {

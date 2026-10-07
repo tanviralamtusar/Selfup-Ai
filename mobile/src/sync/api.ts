@@ -39,6 +39,18 @@ export async function apiRequest(
     const json = await res.json().catch(() => null)
     const error = (json && (json.error as string)) || `HTTP ${res.status} from ${method} ${path}`
 
+    // Every /api route answers in JSON. Anything else (a proxy's 404 page while
+    // the site is down or redeploying, a redirect to an HTML page) didn't come
+    // from the API, so it must not be read as success or as a rejection, both of
+    // which drop the queued change. Keep it and retry later.
+    if (json === null || typeof json !== 'object' || res.redirected) {
+      return {
+        kind: 'transient',
+        status: res.status,
+        error: `${API_URL}${path} didn't answer like the SelfUp API (HTTP ${res.status}${res.redirected ? `, redirected to ${res.url}` : ''}). Is the website up?`,
+      }
+    }
+
     if (res.ok) return { kind: 'ok', status: res.status, json }
     if (res.status === 401) return { kind: 'auth', status: 401, error }
     if (res.status >= 500 || res.status === 429 || res.status === 408) return { kind: 'transient', status: res.status, error }

@@ -49,6 +49,8 @@ From `web/`:
 
 From `mobile/`: `npx expo start` (dev, Expo Go), `npm run typecheck`, `npx expo lint`, `npx expo export --platform android` (full bundle check, no device needed). Releases: every push to `main` touching `mobile/` runs `.github/workflows/android-apk.yml`, which builds the APK and publishes it as the latest GitHub Release tagged `mobile-v<version>-b<run_number>`. Installed apps update from that release (`mobile/src/lib/updater.ts` parses the tag, so keep the format; the repo must stay public). Use `npx expo install` (not `npm install`) for new mobile packages so versions match the SDK.
 
+**App version rule:** every change to `mobile/` must bump the app version in the same commit. Bump `expo.version` in `mobile/app.json` (semver: patch for fixes, minor for features, major for breaking changes) and set `mobile/package.json` `version` to the same value. CI sets the build number (`versionCode`) automatically, so never edit it by hand. See `mobile/AGENTS.md`.
+
 There is no configured unit-test command yet. At minimum, run `npm run lint` and `npm run build` for code changes; manually exercise the affected route or API flow. Keep exploratory scripts in `web/scratch/` rather than application directories.
 
 ## Database Changes

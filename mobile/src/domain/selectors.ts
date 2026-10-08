@@ -52,6 +52,17 @@ export function useTodayDailies(): Daily[] {
   )
 }
 
+/** Not expired but not due today (weekly dailies on their off days), so they can still be seen, edited and deleted. */
+export function useOtherDailies(): Daily[] {
+  const rows = useRecords<Daily>('dailies')
+  return useMemo(() => {
+    const today = localDay()
+    return rows
+      .filter((d) => !isDueToday(d) && !(d.expires_on && d.expires_on < today))
+      .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2) || a.created_at.localeCompare(b.created_at))
+  }, [rows])
+}
+
 export function useHabits(): Habit[] {
   const rows = useRecords<Habit>('habits')
   return useMemo(

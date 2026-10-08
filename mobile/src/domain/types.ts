@@ -15,7 +15,10 @@ export interface Daily {
   source: string
   repeat_type: 'daily' | 'weekly'
   repeat_days: string[] | null
+  /** Time, or the START of the range when end_time is set. */
   scheduled_time: string | null
+  /** End of the time range; null means scheduled_time is a single time. */
+  end_time: string | null
   expires_on: string | null
   subtasks: { title: string; is_completed: boolean }[]
   require_all_subtasks: boolean
@@ -41,6 +44,8 @@ export interface Habit {
   difficulty: Difficulty
   is_indefinite: boolean
   end_date: string | null
+  scheduled_time: string | null
+  end_time: string | null
   current_streak: number
   longest_streak: number
   is_completed_this_cycle: boolean
@@ -85,6 +90,7 @@ export interface Todo {
   source: string
   due_date: string | null
   scheduled_time: string | null
+  end_time: string | null
   scheduled_start?: string | null
   scheduled_end?: string | null
   subtasks: { title: string; is_completed: boolean }[]

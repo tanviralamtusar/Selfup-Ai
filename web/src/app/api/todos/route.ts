@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateTaskXp } from '@/lib/task-economy.service'
 import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
+import { parseTimeRange } from '@/lib/task-time'
 import { getUserTimezone, todayIn } from '@/lib/user-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -79,6 +80,7 @@ async function handlePOST(req: NextRequest) {
     source = 'user',
     due_date,
     scheduled_time,
+    end_time,
     subtasks,
     require_all_subtasks = false,
   } = body
@@ -98,6 +100,9 @@ async function handlePOST(req: NextRequest) {
   // Auto-calculate XP
   const { xp_reward, xp_penalty } = calculateTaskXp('todo', priority, !!due_date)
 
+  const time = parseTimeRange(scheduled_time, end_time)
+  if (time.error) return NextResponse.json({ success: false, error: time.error }, { status: 400 })
+
   const db = getDb(req)
   const { data, error: dbErr } = await db
     .from('todos')
@@ -110,7 +115,8 @@ async function handlePOST(req: NextRequest) {
       category,
       source,
       due_date: due_date || null,
-      scheduled_time: scheduled_time || null,
+      scheduled_time: time.scheduled_time,
+      end_time: time.end_time,
       subtasks: subtasks || [],
       require_all_subtasks,
       xp_reward,

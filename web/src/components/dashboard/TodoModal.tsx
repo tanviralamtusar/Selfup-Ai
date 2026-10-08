@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Plus, Trash2, Calendar, Tag, Loader2, GripVertical, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Todo } from '@/lib/hooks/useTodos'
+import { TimeRangeField } from './TimeRangeField'
 
 const todoSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -15,6 +16,8 @@ const todoSchema = z.object({
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   category: z.string().optional(),
   due_date: z.string().optional().nullable(),
+  scheduled_time: z.string().optional(),
+  end_time: z.string().optional(),
   subtasks: z.array(z.object({
     title: z.string().min(1),
     is_completed: z.boolean()
@@ -32,7 +35,7 @@ interface TodoModalProps {
 }
 
 export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModalProps) {
-  const { register, handleSubmit, control, setValue, reset, formState: { errors, isSubmitting } } = useForm<TodoFormValues>({
+  const { register, handleSubmit, control, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<TodoFormValues>({
     resolver: zodResolver(todoSchema),
     defaultValues: {
       title: '',
@@ -40,6 +43,8 @@ export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModal
       priority: 'medium',
       category: 'general',
       due_date: '',
+      scheduled_time: '',
+      end_time: '',
       subtasks: []
     }
   })
@@ -58,6 +63,8 @@ export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModal
           priority: todo.priority,
           category: todo.category || 'general',
           due_date: todo.due_date ? todo.due_date.split('T')[0] : '',
+          scheduled_time: todo.scheduled_time?.slice(0, 5) || '',
+          end_time: todo.end_time?.slice(0, 5) || '',
           subtasks: todo.subtasks || []
         })
       } else {
@@ -67,6 +74,8 @@ export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModal
           priority: 'medium',
           category: 'general',
           due_date: '',
+          scheduled_time: '',
+          end_time: '',
           subtasks: []
         })
       }
@@ -126,6 +135,17 @@ export function TodoModal({ isOpen, onClose, todo, onSave, onDelete }: TodoModal
                   />
                   {errors.title && <p className="text-[10px] text-rose-400 pl-1">{errors.title.message}</p>}
                 </div>
+
+
+                {/* Time or time range */}
+                <TimeRangeField
+                  scheduledTime={watch('scheduled_time') || ''}
+                  endTime={watch('end_time') || ''}
+                  onChange={({ scheduled_time, end_time }) => {
+                    setValue('scheduled_time', scheduled_time, { shouldDirty: true })
+                    setValue('end_time', end_time, { shouldDirty: true })
+                  }}
+                />
 
                 {/* Notes */}
                 <div className="space-y-1.5">

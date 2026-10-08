@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Plus, Trash2, Calendar, Repeat, Tag, Loader2, GripVertical } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TimeRangeField } from './TimeRangeField'
 
 // @ts-ignore
 import { Daily } from '@/lib/hooks/useDailies'
@@ -16,6 +17,8 @@ const dailySchema = z.object({
   category: z.string().optional(),
   repeat_type: z.enum(['daily', 'weekly']),
   repeat_days: z.array(z.string()).optional(),
+  scheduled_time: z.string().optional(),
+  end_time: z.string().optional(),
   subtasks: z.array(z.object({
     title: z.string().min(1),
     is_completed: z.boolean()
@@ -52,6 +55,8 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
       category: 'general',
       repeat_type: 'daily',
       repeat_days: [],
+      scheduled_time: '',
+      end_time: '',
       subtasks: []
     }
   })
@@ -74,6 +79,8 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
           category: daily.category || 'general',
           repeat_type: daily.repeat_type,
           repeat_days: daily.repeat_days || [],
+          scheduled_time: daily.scheduled_time?.slice(0, 5) || '',
+          end_time: daily.end_time?.slice(0, 5) || '',
           subtasks: daily.subtasks || []
         })
       } else {
@@ -84,6 +91,8 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
           category: 'general',
           repeat_type: 'daily',
           repeat_days: [],
+          scheduled_time: '',
+          end_time: '',
           subtasks: []
         })
       }
@@ -165,6 +174,17 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
                     className="w-full bg-muted border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border focus:bg-muted transition-all font-medium resize-none"
                   />
                 </div>
+
+
+                {/* Time or time range */}
+                <TimeRangeField
+                  scheduledTime={watch('scheduled_time') || ''}
+                  endTime={watch('end_time') || ''}
+                  onChange={({ scheduled_time, end_time }) => {
+                    setValue('scheduled_time', scheduled_time, { shouldDirty: true })
+                    setValue('end_time', end_time, { shouldDirty: true })
+                  }}
+                />
 
                 {/* Checklist */}
                 <div className="space-y-2">

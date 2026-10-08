@@ -16,6 +16,7 @@ export interface Daily {
   repeat_type: 'daily' | 'weekly'
   repeat_days: string[] | null
   scheduled_time: string | null
+  end_time: string | null
   expires_on: string | null
   subtasks: Array<{ title: string; is_completed: boolean }>
   require_all_subtasks: boolean
@@ -34,6 +35,7 @@ interface CreateDailyInput {
   repeat_type?: 'daily' | 'weekly'
   repeat_days?: string[]
   scheduled_time?: string
+  end_time?: string
   expires_on?: string
   subtasks?: Array<{ title: string; is_completed: boolean }>
   require_all_subtasks?: boolean

@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateHpPenalty } from '@/lib/task-economy.service'
 import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
+import { parseTimeRange } from '@/lib/task-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -57,6 +58,8 @@ async function handlePOST(req: NextRequest) {
     difficulty = 'medium',
     is_indefinite = true,
     end_date,
+    scheduled_time,
+    end_time,
   } = body
 
   if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -76,6 +79,9 @@ async function handlePOST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'end_date required for finite habits' }, { status: 400 })
   }
 
+  const time = parseTimeRange(scheduled_time, end_time)
+  if (time.error) return NextResponse.json({ success: false, error: time.error }, { status: 400 })
+
   const hp_penalty = calculateHpPenalty(reset_type)
 
   const db = getDb(req)
@@ -94,6 +100,8 @@ async function handlePOST(req: NextRequest) {
       difficulty,
       is_indefinite,
       end_date: is_indefinite ? null : end_date,
+      scheduled_time: time.scheduled_time,
+      end_time: time.end_time,
       hp_penalty,
       xp_reward: difficulty === 'trivial' ? 5 : difficulty === 'easy' ? 10 : difficulty === 'medium' ? 15 : 20,
     })

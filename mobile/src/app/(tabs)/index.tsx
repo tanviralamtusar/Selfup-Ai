@@ -6,6 +6,7 @@ import { ProfileHeader } from '@/components/ProfileHeader'
 import { formatDate, formatTime, PickerField } from '@/components/PickerField'
 import { SwipeTabs } from '@/components/SwipeTabs'
 import { TaskRow } from '@/components/TaskRow'
+import { formatRange, TimeRangeField } from '@/components/TimeRangeField'
 import {
   addGoalProgress,
   completeDaily,
@@ -20,7 +21,7 @@ import {
   deleteTodo,
   logHabit,
 } from '@/domain/actions'
-import { goalStatus, isDailyDoneToday, isHabitDone, useGoals, useHabits, useOpenTodos, useTodayDailies } from '@/domain/selectors'
+import { goalStatus, isDailyDoneToday, isHabitDone, useGoals, useHabits, useOpenTodos, useOtherDailies, useTodayDailies } from '@/domain/selectors'
 import type { Goal, GoalDifficulty } from '@/domain/types'
 import { GOAL_REWARDS, type Difficulty, type Priority, type ResetType } from '@/lib/gamification'
 import { ensurePermission, parseTime } from '@/lib/notifications'
@@ -61,12 +62,19 @@ const GOAL_DIFFICULTIES = [
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
+/** "Sat, Sun" for a weekly daily's repeat days, in week order. */
+function dueDays(days: string[] | null): string {
+  const set = new Set(days ?? [])
+  return WEEKDAYS.filter((d) => set.has(d)).map((d) => d[0].toUpperCase() + d.slice(1)).join(', ')
+}
+
 const TABS: readonly Tab[] = ['dailies', 'habits', 'todos', 'goals']
 
 export default function Dashboard() {
   const [page, setPage] = useState(0)
   const [adding, setAdding] = useState(false)
   const dailies = useTodayDailies()
+  const otherDailies = useOtherDailies()
   const habits = useHabits()
   const todos = useOpenTodos()
   const goals = useGoals()
@@ -106,7 +114,7 @@ export default function Dashboard() {
                 subtitle={[
                   `+${d.xp_reward} XP`,
                   d.current_streak ? `🔥 ${d.current_streak}` : null,
-                  parseTime(d.scheduled_time) ? `⏰ ${formatTime(d.scheduled_time!.slice(0, 5))}` : null,
+                  parseTime(d.scheduled_time) ? `⏰ ${formatRange(d.scheduled_time, d.end_time)}` : null,
                 ].filter(Boolean).join(' · ')}
                 priority={d.priority}
                 done={isDailyDoneToday(d)}
@@ -115,6 +123,24 @@ export default function Dashboard() {
                 onDelete={() => deleteDaily(d.id)}
               />
             ))
+          )}
+          {otherDailies.length > 0 && (
+            <>
+              <Muted>Not today</Muted>
+              {otherDailies.map((d) => (
+                <TaskRow
+                  key={d.id}
+                  title={d.title}
+                  subtitle={dueDays(d.repeat_days)}
+                  priority={d.priority}
+                  done={false}
+                  inactive
+                  pending={pendingIds.has(d.id)}
+                  onComplete={() => {}}
+                  onDelete={() => deleteDaily(d.id)}
+                />
+              ))}
+            </>
           )}
           <Muted>Tap the circle to complete. Long-press to delete. Swipe for habits, to-dos and goals.</Muted>
         </Card>
@@ -128,7 +154,7 @@ export default function Dashboard() {
               <TaskRow
                 key={h.id}
                 title={h.title}
-                subtitle={`${h.reset_type} · +${h.xp_reward} XP${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}${h.end_date ? ` · until ${formatDate(h.end_date)}` : ''}`}
+                subtitle={`${h.reset_type} · +${h.xp_reward} XP${h.scheduled_time ? ` · ⏰ ${formatRange(h.scheduled_time, h.end_time)}` : ''}${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}${h.end_date ? ` · until ${formatDate(h.end_date)}` : ''}`}
                 done={isHabitDone(h)}
                 pending={pendingIds.has(h.id)}
                 onComplete={() => logHabit(h)}
@@ -150,7 +176,7 @@ export default function Dashboard() {
                 subtitle={[
                   `+${t.xp_reward} XP`,
                   t.due_date ? (t.due_date < today ? `overdue since ${formatDate(t.due_date)}` : `due ${formatDate(t.due_date)}`) : null,
-                  parseTime(t.scheduled_time) ? `⏰ ${formatTime(t.scheduled_time!.slice(0, 5))}` : null,
+                  parseTime(t.scheduled_time) ? `⏰ ${formatRange(t.scheduled_time, t.end_time)}` : null,
                 ].filter(Boolean).join(' · ')}
                 priority={t.priority}
                 done={t.is_completed}
@@ -197,6 +223,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
   const [days, setDays] = useState<string[]>(['mon', 'wed', 'fri'])
   const [due, setDue] = useState<string | null>(null)
   const [time, setTime] = useState<string | null>(null)
+  const [endTime, setEndTime] = useState<string | null>(null)
   const [endDate, setEndDate] = useState<string | null>(null)
   const [deadline, setDeadline] = useState<string | null>(null)
   const [target, setTarget] = useState('1')
@@ -208,12 +235,15 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     title.trim().length > 0 &&
     title.length <= (kind === 'goals' ? 120 : 100) &&
     (!weekly || days.length > 0) &&
-    (kind !== 'goals' || (deadline !== null && targetNum > 0))
+    (kind !== 'goals' || (deadline !== null && targetNum > 0)) &&
+    // A range must end after it starts.
+    (!endTime || (!!time && endTime > time))
 
   const close = () => {
     setTitle('')
     setDue(null)
     setTime(null)
+    setEndTime(null)
     setEndDate(null)
     setDeadline(null)
     setTarget('1')
@@ -226,10 +256,10 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     // A to-do reminder needs a day; picking only a time means today.
     const dueDate = kind === 'todos' && time && !due ? localToday() : due
     try {
-      if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time })
+      if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time, end_time: endTime })
       else if (kind === 'goals' && deadline) await createDeadlineGoal({ title, target_value: targetNum, unit, deadline, difficulty: goalDifficulty })
-      else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate })
-      else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time })
+      else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate, scheduled_time: time, end_time: endTime })
+      else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time, end_time: endTime })
     } catch (e: any) {
       // Without this a failed local write left the sheet open with no explanation.
       Alert.alert('Couldn’t save', String(e?.message ?? e))
@@ -237,7 +267,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     }
     close()
 
-    if (time && (kind === 'dailies' || kind === 'todos') && !(await ensurePermission(true))) {
+    if (time && kind !== 'goals' && !(await ensurePermission(true))) {
       Alert.alert('Notifications are off', 'Saved, but SelfUp can’t remind you. Turn on notifications for SelfUp in Android settings.', [
         { text: 'Not now', style: 'cancel' },
         { text: 'Open settings', onPress: () => Linking.openSettings() },
@@ -276,6 +306,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
           <Segmented label="Resets" options={RESETS} value={reset} onChange={setReset} />
           <PickerField label="End date" mode="date" value={endDate} onChange={setEndDate} placeholder="No end date (ongoing)" />
           {endDate && <Muted>Runs until {formatDate(endDate)}.</Muted>}
+          <TimeRangeField start={time} end={endTime} onChange={({ start, end }) => { setTime(start); setEndTime(end) }} />
         </>
       )}
 
@@ -300,16 +331,33 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
               ))}
             </View>
           )}
-          <PickerField label="Reminder" mode="time" value={time} onChange={setTime} placeholder="No reminder" />
-          {time && <Muted>You’ll be notified at {formatTime(time)} on each day it’s due, until you tick it off.</Muted>}
+          <TimeRangeField
+            label="Reminder"
+            start={time}
+            end={endTime}
+            onChange={({ start, end }) => { setTime(start); setEndTime(end) }}
+            placeholder="No reminder"
+          />
+          {time && (
+            <Muted>
+              {endTime
+                ? `You’ll be notified at ${formatTime(time)} and again at ${formatTime(endTime)} on each day it’s due, until you tick it off.`
+                : `You’ll be notified at ${formatTime(time)} on each day it’s due, until you tick it off.`}
+            </Muted>
+          )}
         </>
       )}
 
       {kind === 'todos' && (
         <>
           <PickerField label="Due date" mode="date" value={due} onChange={setDue} placeholder="No due date" />
-          <PickerField label="Time" mode="time" value={time} onChange={setTime} placeholder="No time" />
-          {time && <Muted>You’ll get a reminder {due ? formatDate(due) : 'today'} at {formatTime(time)}.</Muted>}
+          <TimeRangeField start={time} end={endTime} onChange={({ start, end }) => { setTime(start); setEndTime(end) }} />
+          {time && (
+            <Muted>
+              You’ll get a reminder {due ? formatDate(due) : 'today'} at {formatTime(time)}
+              {endTime ? `, and again at ${formatTime(endTime)} when it ends.` : '.'}
+            </Muted>
+          )}
           {!time && due && <Muted>Without a time you’ll get a reminder at 9:00 AM on the due date.</Muted>}
         </>
       )}

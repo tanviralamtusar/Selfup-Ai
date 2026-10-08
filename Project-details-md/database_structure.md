@@ -810,6 +810,25 @@ CREATE TABLE goals (
 
 Separate from the onboarding `user_goals`. Failing (deadline passed → `failed` + HP damage) happens in `failExpiredGoals()` (`lib/goals.service.ts`), called from `POST /api/dailies/cron` and `GET /api/goals`.
 
+### 20. Task time range (`add_task_time_range.sql`)
+
+```sql
+ALTER TABLE dailies ADD COLUMN end_time TIME;
+ALTER TABLE todos   ADD COLUMN end_time TIME;
+ALTER TABLE habits  ADD COLUMN scheduled_time TIME;  -- habits had no time before
+ALTER TABLE habits  ADD COLUMN end_time       TIME;
+-- each table: CHECK (end_time IS NULL OR (scheduled_time IS NOT NULL AND end_time > scheduled_time))
+```
+
+A task is scheduled either at a single time or over a range, using the same two
+columns: `scheduled_time` is the time (or the START of a range) and `end_time`
+is set only for a range. So `end_time IS NOT NULL` is what makes it a range,
+and a range always has a start — the CHECK constraint enforces both, as does
+`parseTimeRange()` in `lib/task-time.ts`, which every create/update route calls.
+Times are same-day (no overnight range) and read in the user's zone. The Android
+app rings a single time once, and a range at its start and again at its end
+(`mobile/src/lib/notifications.ts`).
+
 ### Tables in use but not yet documented here
 
 These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:

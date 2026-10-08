@@ -15,6 +15,7 @@ export interface Todo {
   source: string
   due_date: string | null
   scheduled_time: string | null
+  end_time: string | null
   subtasks: Array<{ title: string; is_completed: boolean }>
   require_all_subtasks: boolean
   is_completed: boolean
@@ -33,6 +34,7 @@ interface CreateTodoInput {
   category?: string
   due_date?: string
   scheduled_time?: string
+  end_time?: string
   subtasks?: Array<{ title: string; is_completed: boolean }>
   require_all_subtasks?: boolean
 }

@@ -47,8 +47,10 @@ export interface NewDaily {
   priority?: Priority
   repeat_type?: 'daily' | 'weekly'
   repeat_days?: string[]
-  /** Reminder time "HH:MM" (local), or null for none. */
+  /** Time "HH:MM" (local), or the start of the range; null for none. */
   scheduled_time?: string | null
+  /** End of the range "HH:MM"; null/omitted means a single time. */
+  end_time?: string | null
 }
 
 export async function createDaily(input: NewDaily) {
@@ -62,6 +64,7 @@ export async function createDaily(input: NewDaily) {
     repeat_type,
     repeat_days: repeat_type === 'weekly' ? input.repeat_days : undefined,
     scheduled_time: input.scheduled_time || undefined,
+    end_time: (input.scheduled_time && input.end_time) || undefined,
   }
   const row: Daily = {
     id,
@@ -74,6 +77,7 @@ export async function createDaily(input: NewDaily) {
     repeat_type,
     repeat_days: repeat_type === 'weekly' ? input.repeat_days ?? [] : null,
     scheduled_time: input.scheduled_time || null,
+    end_time: (input.scheduled_time && input.end_time) || null,
     expires_on: null,
     subtasks: [],
     require_all_subtasks: false,
@@ -116,6 +120,10 @@ export interface NewHabit {
   reset_type?: ResetType
   /** Last day the habit runs (YYYY-MM-DD); omit for an indefinite habit. */
   end_date?: string | null
+  /** Time "HH:MM" (local), or the start of the range; null for none. */
+  scheduled_time?: string | null
+  /** End of the range "HH:MM"; null/omitted means a single time. */
+  end_time?: string | null
 }
 
 export async function createHabit(input: NewHabit) {
@@ -123,7 +131,9 @@ export async function createHabit(input: NewHabit) {
   const difficulty = input.difficulty ?? 'medium'
   const reset_type = input.reset_type ?? 'daily'
   const end_date = input.end_date || null
-  const body = { id, title: input.title.trim(), difficulty, reset_type, is_indefinite: !end_date, end_date: end_date ?? undefined }
+  const scheduled_time = input.scheduled_time || null
+  const end_time = (scheduled_time && input.end_time) || null
+  const body = { id, title: input.title.trim(), difficulty, reset_type, is_indefinite: !end_date, end_date: end_date ?? undefined, scheduled_time: scheduled_time ?? undefined, end_time: end_time ?? undefined }
   const row: Habit = {
     id,
     user_id: getCurrentUserId(),
@@ -137,6 +147,8 @@ export async function createHabit(input: NewHabit) {
     difficulty,
     is_indefinite: !end_date,
     end_date,
+    scheduled_time,
+    end_time,
     current_streak: 0,
     longest_streak: 0,
     is_completed_this_cycle: false,
@@ -250,8 +262,10 @@ export interface NewTodo {
   title: string
   priority?: Priority
   due_date?: string | null
-  /** Reminder time "HH:MM" (local) on the due date, or null for none. */
+  /** Time "HH:MM" (local) on the due date, or the start of the range; null for none. */
   scheduled_time?: string | null
+  /** End of the range "HH:MM"; null/omitted means a single time. */
+  end_time?: string | null
 }
 
 export async function createTodo(input: NewTodo) {
@@ -259,7 +273,8 @@ export async function createTodo(input: NewTodo) {
   const priority = input.priority ?? 'medium'
   const due_date = input.due_date || null
   const scheduled_time = due_date ? input.scheduled_time || null : null
-  const body = { id, title: input.title.trim(), priority, due_date: due_date ?? undefined, scheduled_time: scheduled_time ?? undefined }
+  const end_time = (scheduled_time && input.end_time) || null
+  const body = { id, title: input.title.trim(), priority, due_date: due_date ?? undefined, scheduled_time: scheduled_time ?? undefined, end_time: end_time ?? undefined }
   const row: Todo = {
     id,
     user_id: getCurrentUserId(),
@@ -270,6 +285,7 @@ export async function createTodo(input: NewTodo) {
     source: 'user',
     due_date,
     scheduled_time,
+    end_time,
     subtasks: [],
     require_all_subtasks: false,
     is_completed: false,

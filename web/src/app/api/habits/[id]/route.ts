@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { calculateHpPenalty } from '@/lib/task-economy.service'
 import { idempotent } from '@/lib/idempotency'
+import { parseTimeRange } from '@/lib/task-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,7 +32,8 @@ async function handlePATCH(
   const allowedFields = [
     'title', 'description', 'category', 'reset_type',
     'is_indefinite', 'end_date', 'is_active',
-    'is_positive', 'is_negative', 'difficulty'
+    'is_positive', 'is_negative', 'difficulty',
+    'scheduled_time', 'end_time'
   ]
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const field of allowedFields) {
@@ -40,6 +42,20 @@ async function handlePATCH(
     }
   }
 
+
+  // scheduled_time / end_time must stay a valid pair, so validate whichever
+  // side the request didn't send against the stored row.
+  if (updates.scheduled_time !== undefined || updates.end_time !== undefined) {
+    const { data: current } = await db
+      .from('habits').select('scheduled_time, end_time').eq('id', id).eq('user_id', user.id).single()
+    const time = parseTimeRange(
+      updates.scheduled_time !== undefined ? updates.scheduled_time : current?.scheduled_time,
+      updates.end_time !== undefined ? updates.end_time : current?.end_time
+    )
+    if (time.error) return NextResponse.json({ success: false, error: time.error }, { status: 400 })
+    updates.scheduled_time = time.scheduled_time
+    updates.end_time = time.end_time
+  }
   // Recalculate HP penalty if reset_type changed
   if (updates.reset_type) {
     updates.hp_penalty = calculateHpPenalty(updates.reset_type as 'daily' | 'weekly' | 'monthly')

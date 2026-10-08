@@ -17,6 +17,9 @@ import type { Daily, PomodoroSession, Todo } from '@/domain/types'
  *                        (skipping today once it's done)
  *   to-do with a time  → once, at scheduled_start or due_date + scheduled_time
  *   to-do, date only   → 9:00 on the due date
+ *
+ * A task scheduled over a range (`end_time` set) rings twice, at the start
+ * and again at the end, so the end reminder marks the time running out.
  *   focus session      → when the timer ends
  */
 
@@ -94,6 +97,11 @@ function localDate(dateStr: string, h: number, m: number): Date {
   return new Date(y, mo - 1, d, h, m, 0, 0)
 }
 
+/** [9, 5] → "09:05", for the reminder text. */
+function fmt(t: [number, number]): string {
+  return `${String(t[0]).padStart(2, '0')}:${String(t[1]).padStart(2, '0')}`
+}
+
 function ymd(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -104,6 +112,7 @@ export function planReminders(dailies: Daily[], todos: Todo[], sessions: Pomodor
   for (const d of dailies) {
     const time = parseTime(d.scheduled_time)
     if (!time) continue
+    const end = parseTime(d.end_time)
     for (let i = 0; i < DAYS_AHEAD; i++) {
       const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, time[0], time[1])
       if (day <= now) continue
@@ -114,7 +123,17 @@ export function planReminders(dailies: Daily[], todos: Todo[], sessions: Pomodor
         id: `daily:${d.id}:${ymd(day)}`,
         at: day,
         title: `⏰ ${d.title}`,
-        body: `Daily · +${d.xp_reward} XP`,
+        body: end ? `Daily · until ${fmt(end)} · +${d.xp_reward} XP` : `Daily · +${d.xp_reward} XP`,
+        route: '/',
+      })
+      if (!end) continue
+      const endAt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), end[0], end[1])
+      if (endAt <= now) continue
+      out.push({
+        id: `daily:${d.id}:${ymd(day)}:end`,
+        at: endAt,
+        title: `⏳ ${d.title}`,
+        body: `Ends now · Daily · +${d.xp_reward} XP`,
         route: '/',
       })
     }
@@ -128,13 +147,22 @@ export function planReminders(dailies: Daily[], todos: Todo[], sessions: Pomodor
     else if (t.due_date && time) at = localDate(t.due_date, time[0], time[1])
     else if (t.due_date) at = localDate(t.due_date, DUE_DATE_HOUR, 0)
     if (!at || Number.isNaN(at.getTime()) || at <= now) continue
+    const end = time ? parseTime(t.end_time) : null
     out.push({
       id: `todo:${t.id}`,
       at,
       title: `📝 ${t.title}`,
-      body: time || t.scheduled_start ? `To-do · +${t.xp_reward} XP` : `Due today · +${t.xp_reward} XP`,
+      body: end
+        ? `To-do · until ${fmt(end)} · +${t.xp_reward} XP`
+        : time || t.scheduled_start ? `To-do · +${t.xp_reward} XP` : `Due today · +${t.xp_reward} XP`,
       route: '/',
     })
+    if (end && t.due_date) {
+      const endAt = localDate(t.due_date, end[0], end[1])
+      if (endAt > now) {
+        out.push({ id: `todo:${t.id}:end`, at: endAt, title: `⏳ ${t.title}`, body: `Ends now · To-do · +${t.xp_reward} XP`, route: '/' })
+      }
+    }
   }
 
   for (const s of sessions) {

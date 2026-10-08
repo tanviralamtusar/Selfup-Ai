@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent } from '@/lib/idempotency'
+import { parseTimeRange } from '@/lib/task-time'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -31,7 +32,7 @@ async function handlePATCH(
   // Only allow updating specific fields
   const allowedFields = [
     'title', 'description', 'priority', 'category', 'repeat_type',
-    'repeat_days', 'scheduled_time', 'expires_on', 'subtasks',
+    'repeat_days', 'scheduled_time', 'end_time', 'expires_on', 'subtasks',
     'require_all_subtasks'
   ]
   const updates: Record<string, unknown> = {}
@@ -41,6 +42,20 @@ async function handlePATCH(
     }
   }
 
+
+  // scheduled_time / end_time must stay a valid pair, so validate whichever
+  // side the request didn't send against the stored row.
+  if (updates.scheduled_time !== undefined || updates.end_time !== undefined) {
+    const { data: current } = await db
+      .from('dailies').select('scheduled_time, end_time').eq('id', id).eq('user_id', user.id).single()
+    const time = parseTimeRange(
+      updates.scheduled_time !== undefined ? updates.scheduled_time : current?.scheduled_time,
+      updates.end_time !== undefined ? updates.end_time : current?.end_time
+    )
+    if (time.error) return NextResponse.json({ success: false, error: time.error }, { status: 400 })
+    updates.scheduled_time = time.scheduled_time
+    updates.end_time = time.end_time
+  }
   // Recalculate XP if priority changed
   if (updates.priority) {
     const { calculateTaskXp } = await import('@/lib/task-economy.service')

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { cn, formatNumber } from '@/lib/utils'
 import { xpToNextLevel, getRank, getRankLetter, getHpState, type HpState } from '@/constants/gamification'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Fragment, useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import {
   PlusCircle,
@@ -212,7 +212,7 @@ export default function DashboardPage() {
 
   const fetchDailies = async () => {
     try {
-      const res = await fetch('/api/dailies', { headers: headers() })
+      const res = await fetch('/api/dailies?include=all', { headers: headers() })
       if (res.ok) {
         const json = await res.json()
         setDailies(json.data || [])
@@ -318,7 +318,8 @@ export default function DashboardPage() {
   }
 
   const handleCompleteDaily = async (daily: any) => {
-    if (daily.is_completed || completingDaily) return
+    // Dailies not due today are listed dimmed and can't be completed.
+    if (daily.is_completed || daily.due_today === false || completingDaily) return
     setCompletingDaily(daily.id)
     try {
       const res = await fetch(`/api/dailies/${daily.id}/complete`, { method: 'POST', headers: headers() })
@@ -620,24 +621,33 @@ export default function DashboardPage() {
                   <div className="p-5 rounded-lg border border-dashed border-border text-center">
                     <p className="text-sm text-muted-foreground">No active dailies</p>
                   </div>
-                ) : dailies.slice(0, 4).map(daily => (
+                ) : dailies.map((daily, i) => {
+                  const notDue = daily.due_today === false
+                  return (
+                  <Fragment key={daily.id}>
+                  {notDue && dailies[i - 1]?.due_today !== false && (
+                    <p className="pt-1 text-xs text-muted-foreground">Not today</p>
+                  )}
                   <div
-                    key={daily.id}
                     onClick={() => handleCompleteDaily(daily)}
+                    title={notDue ? 'Not due today' : undefined}
                     className={cn("flex items-center gap-3 p-2.5 rounded-lg border transition-colors group",
-                      daily.is_completed ? 'opacity-50 bg-muted border-border cursor-default' : 'bg-muted border-border hover:bg-secondary cursor-pointer')}
+                      notDue ? 'opacity-40 bg-muted border-border cursor-default'
+                        : daily.is_completed ? 'opacity-50 bg-muted border-border cursor-default' : 'bg-muted border-border hover:bg-secondary cursor-pointer')}
                   >
                     <div className={cn("w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0",
-                      daily.is_completed ? 'bg-[#5db8a0]/20 border-[#5db8a0]/40' : 'border-border group-hover:border-[#5db8a0]/40')}>
+                      daily.is_completed && !notDue ? 'bg-[#5db8a0]/20 border-[#5db8a0]/40' : notDue ? 'border-border border-dashed' : 'border-border group-hover:border-[#5db8a0]/40')}>
                       {completingDaily === daily.id
                         ? <Loader2 className="text-[#5db8a0] animate-spin" size={10} />
-                        : <Check className={cn("text-[#5db8a0]", daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-opacity')} size={12} strokeWidth={3} />}
+                        : !notDue && <Check className={cn("text-[#5db8a0]", daily.is_completed ? '' : 'opacity-0 group-hover:opacity-100 transition-opacity')} size={12} strokeWidth={3} />}
                     </div>
                     <div className="flex-1 overflow-hidden" onClick={e => { e.stopPropagation(); setEditingDaily(daily); setIsDailyModalOpen(true); }}>
-                      <p className={cn("text-sm font-medium truncate", daily.is_completed ? 'text-muted-foreground line-through' : 'text-foreground')}>{daily.title}</p>
+                      <p className={cn("text-sm font-medium truncate", daily.is_completed && !notDue ? 'text-muted-foreground line-through' : 'text-foreground')}>{daily.title}</p>
                     </div>
                   </div>
-                ))}
+                  </Fragment>
+                  )
+                })}
               </div>
             </div>
 

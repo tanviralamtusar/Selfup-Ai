@@ -12,6 +12,7 @@ export function TaskRow({
   onComplete,
   onDelete,
   pending,
+  inactive,
 }: {
   title: string
   subtitle?: string
@@ -21,6 +22,8 @@ export function TaskRow({
   onDelete: () => void
   /** Has a change that hasn't reached the server yet. */
   pending?: boolean
+  /** Not due today: dimmed, and the circle can't be tapped (long-press delete still works). */
+  inactive?: boolean
 }) {
   const confirmDelete = () =>
     Alert.alert('Delete?', `“${title}” will be deleted everywhere.`, [
@@ -31,17 +34,17 @@ export function TaskRow({
   return (
     <Pressable
       onLongPress={confirmDelete}
-      style={[styles.row, done && { opacity: 0.6 }]}
+      style={[styles.row, (done || inactive) && { opacity: inactive ? 0.4 : 0.6 }]}
       accessibilityHint="Long-press to delete">
       <Pressable
-        onPress={done ? undefined : onComplete}
-        disabled={done}
+        onPress={done || inactive ? undefined : onComplete}
+        disabled={done || inactive}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done }}
-        accessibilityLabel={done ? `${title}, done` : `Complete ${title}`}
+        accessibilityLabel={done ? `${title}, done` : inactive ? `${title}, not due today` : `Complete ${title}`}
         hitSlop={8}
         style={[styles.circle, { borderColor: priority ? priorityColor[priority] ?? colors.border : colors.primary }, done && styles.circleDone]}>
-        {done ? <Text style={styles.check}>✓</Text> : <Text style={styles.plus}>+</Text>}
+        {done ? <Text style={styles.check}>✓</Text> : inactive ? null : <Text style={styles.plus}>+</Text>}
       </Pressable>
       <View style={{ flex: 1 }}>
         <Text style={[styles.title, done && { textDecorationLine: 'line-through' }]} numberOfLines={2}>{title}</Text>

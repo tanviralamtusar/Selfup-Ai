@@ -18,6 +18,8 @@ export interface Habit {
   difficulty: 'trivial' | 'easy' | 'medium' | 'hard'
   is_indefinite: boolean
   end_date: string | null
+  scheduled_time: string | null
+  end_time: string | null
   current_streak: number
   longest_streak: number
   is_completed_this_cycle: boolean
@@ -39,6 +41,8 @@ interface CreateHabitInput {
   difficulty?: 'trivial' | 'easy' | 'medium' | 'hard'
   is_indefinite?: boolean
   end_date?: string
+  scheduled_time?: string
+  end_time?: string
 }
 
 // ── Hook ──

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 
 // @ts-ignore
 import { Habit } from '@/lib/hooks/useHabits'
+import { TimeRangeField } from './TimeRangeField'
 
 const habitSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -17,6 +18,8 @@ const habitSchema = z.object({
   difficulty: z.enum(['trivial', 'easy', 'medium', 'hard']),
   category: z.string().optional(),
   reset_type: z.enum(['daily', 'weekly', 'monthly']),
+  scheduled_time: z.string().optional(),
+  end_time: z.string().optional(),
 })
 
 type HabitFormValues = z.infer<typeof habitSchema>
@@ -42,6 +45,8 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
       difficulty: 'medium',
       category: 'general',
       reset_type: 'daily',
+      scheduled_time: '',
+      end_time: '',
     }
   })
 
@@ -60,6 +65,8 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
           difficulty: habit.difficulty || 'medium',
           category: habit.category || 'general',
           reset_type: habit.reset_type || 'daily',
+          scheduled_time: habit.scheduled_time?.slice(0, 5) || '',
+          end_time: habit.end_time?.slice(0, 5) || '',
         })
       } else {
         reset({
@@ -70,6 +77,8 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
           difficulty: 'medium',
           category: 'general',
           reset_type: 'daily',
+          scheduled_time: '',
+          end_time: '',
         })
       }
     }
@@ -145,6 +154,17 @@ export function HabitModal({ isOpen, onClose, habit, onSave, onDelete }: HabitMo
                   />
                   {errors.title && <p className="text-[10px] text-rose-400 pl-1">{errors.title.message}</p>}
                 </div>
+
+
+                {/* Time or time range */}
+                <TimeRangeField
+                  scheduledTime={watch('scheduled_time') || ''}
+                  endTime={watch('end_time') || ''}
+                  onChange={({ scheduled_time, end_time }) => {
+                    setValue('scheduled_time', scheduled_time, { shouldDirty: true })
+                    setValue('end_time', end_time, { shouldDirty: true })
+                  }}
+                />
 
                 {/* Notes */}
                 <div className="space-y-1.5">

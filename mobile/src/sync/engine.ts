@@ -303,7 +303,7 @@ async function onSuccess(op: Op, json: any) {
     case 'txn.create': case 'txn.update':
     case 'recurring.create':
     case 'goal.create': case 'goal.update': case 'goal.contribute':
-    case 'goals.create': case 'goals.progress':
+    case 'goals.create': case 'goals.update': case 'goals.progress':
       if (op.tbl && data?.id) await putRecord(op.tbl, strip(data))
       break
     case 'budget.set':

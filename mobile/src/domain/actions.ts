@@ -106,6 +106,29 @@ export async function completeDaily(daily: Daily) {
   )
 }
 
+/**
+ * Edit a daily. Only the fields given are sent, because the server's PATCH is a
+ * plain passthrough — sending a field means changing it. XP is re-derived here
+ * the same way the server does, so the row reads right before the op syncs.
+ */
+export async function updateDaily(id: string, input: NewDaily) {
+  const priority = input.priority ?? 'medium'
+  const repeat_type = input.repeat_type ?? 'daily'
+  const scheduled_time = input.scheduled_time || null
+  const end_time = (scheduled_time && input.end_time) || null
+  const patch = {
+    title: input.title.trim(),
+    priority,
+    repeat_type,
+    repeat_days: repeat_type === 'weekly' ? input.repeat_days ?? [] : null,
+    scheduled_time,
+    end_time,
+  }
+  await commitLocal(async (t) => { await patchRecord<Daily>('dailies', id, { ...patch, ...dailyXp(priority) }, t) }, {
+    kind: 'daily.update', tbl: 'dailies', entityId: id, method: 'PATCH', path: `/api/dailies/${id}`, body: patch,
+  })
+}
+
 export async function deleteDaily(id: string) {
   await commitLocal((t) => removeRecord('dailies', id, t), {
     kind: 'daily.delete', tbl: 'dailies', entityId: id, method: 'DELETE', path: `/api/dailies/${id}`,
@@ -183,6 +206,20 @@ export async function logHabit(habit: Habit) {
   )
 }
 
+/** Edit a habit (see {@link updateDaily} for why only these fields are sent). */
+export async function updateHabit(id: string, input: NewHabit) {
+  const difficulty = input.difficulty ?? 'medium'
+  const reset_type = input.reset_type ?? 'daily'
+  const end_date = input.end_date || null
+  const scheduled_time = input.scheduled_time || null
+  const end_time = (scheduled_time && input.end_time) || null
+  const patch = { title: input.title.trim(), difficulty, reset_type, is_indefinite: !end_date, end_date, scheduled_time, end_time }
+  await commitLocal(
+    async (t) => { await patchRecord<Habit>('habits', id, { ...patch, xp_reward: habitXp(difficulty), hp_penalty: habitHpPenalty(reset_type), updated_at: now() }, t) },
+    { kind: 'habit.update', tbl: 'habits', entityId: id, method: 'PATCH', path: `/api/habits/${id}`, body: patch }
+  )
+}
+
 export async function deleteHabit(id: string) {
   await commitLocal((t) => removeRecord('habits', id, t), {
     kind: 'habit.delete', tbl: 'habits', entityId: id, method: 'DELETE', path: `/api/habits/${id}`,
@@ -250,6 +287,25 @@ export async function addGoalProgress(goal: Goal, amount: number) {
   )
 }
 
+/**
+ * Edit an active goal's terms. Progress is untouched; changing the difficulty
+ * re-prices the reward and the penalty, as the server does.
+ */
+export async function updateDeadlineGoal(id: string, input: NewGoal) {
+  const reward = GOAL_REWARDS[input.difficulty]
+  const patch = {
+    title: input.title.trim(),
+    target_value: input.target_value,
+    unit: input.unit?.trim() || null,
+    deadline: input.deadline,
+    difficulty: input.difficulty,
+  }
+  await commitLocal(
+    async (t) => { await patchRecord<Goal>('goals', id, { ...patch, xp_reward: reward.xp, hp_penalty: reward.hpPenalty, updated_at: now() }, t) },
+    { kind: 'goals.update', tbl: 'goals', entityId: id, method: 'PATCH', path: `/api/goals/${id}`, body: patch }
+  )
+}
+
 export async function deleteDeadlineGoal(id: string) {
   await commitLocal((t) => removeRecord('goals', id, t), {
     kind: 'goals.delete', tbl: 'goals', entityId: id, method: 'DELETE', path: `/api/goals/${id}`,
@@ -308,6 +364,18 @@ export async function completeTodo(todo: Todo) {
       path: `/api/todos/${todo.id}/complete`, body: {}, xpHint: todo.xp_reward,
     }
   )
+}
+
+/** Edit a to-do (see {@link updateDaily} for why only these fields are sent). */
+export async function updateTodo(id: string, input: NewTodo) {
+  const priority = input.priority ?? 'medium'
+  const due_date = input.due_date || null
+  const scheduled_time = due_date ? input.scheduled_time || null : null
+  const end_time = (scheduled_time && input.end_time) || null
+  const patch = { title: input.title.trim(), priority, due_date, scheduled_time, end_time }
+  await commitLocal(async (t) => { await patchRecord<Todo>('todos', id, { ...patch, ...todoXp(priority, Boolean(due_date)) }, t) }, {
+    kind: 'todo.update', tbl: 'todos', entityId: id, method: 'PATCH', path: `/api/todos/${id}`, body: patch,
+  })
 }
 
 export async function deleteTodo(id: string) {

@@ -5,6 +5,9 @@ import { actionDate, idempotent } from '@/lib/idempotency'
 import { getUserTimezone, todayIn } from '@/lib/user-time'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { completeGoal, failExpiredGoals, type Goal } from '@/lib/goals.service'
+import { GOAL_REWARDS } from '@/constants/gamification'
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/
 
 const patchSchema = z.object({
   /** Add to current_value (negative to correct a mistake). */
@@ -16,12 +19,17 @@ const patchSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   /** Day the progress was made (offline clients); defaults to today. */
   date: z.string().optional(),
+  // ── Editing the goal's terms (all optional; progress is untouched) ──
+  target_value: z.coerce.number().positive().max(1_000_000).optional(),
+  unit: z.string().trim().max(30).nullish(),
+  deadline: z.string().regex(DATE, 'deadline must be YYYY-MM-DD').optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 })
 
 /**
- * PATCH /api/goals/[id] — record progress. Reaching the target completes the
- * goal and awards XP. The deadline is strict: once it has passed the goal is
- * failed (HP penalty) and no longer accepts progress.
+ * PATCH /api/goals/[id] — record progress or edit the goal's terms. Reaching
+ * the target completes the goal and awards XP. The deadline is strict: once it
+ * has passed the goal is failed (HP penalty) and no longer accepts progress.
  */
 async function handlePATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, db, res } = await authed(req)
@@ -53,6 +61,38 @@ async function handlePATCH(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: false, error: `This goal is already ${goal.status}` }, { status: 409 })
   }
 
+  // A new deadline has to leave the goal reachable, exactly like creating one.
+  if (body.deadline !== undefined && body.deadline < today) {
+    return NextResponse.json({ success: false, error: 'The deadline must be today or later' }, { status: 400 })
+  }
+
+  // Term edits land first, so progress in the same request is scored against
+  // the new target and any completion pays the new difficulty's reward.
+  const edits: Record<string, unknown> = {}
+  if (body.target_value !== undefined) edits.target_value = body.target_value
+  if (body.unit !== undefined) edits.unit = body.unit || null
+  if (body.deadline !== undefined) edits.deadline = body.deadline
+  if (body.difficulty !== undefined) {
+    const reward = GOAL_REWARDS[body.difficulty]
+    edits.difficulty = body.difficulty
+    edits.xp_reward = reward.xp
+    edits.hp_penalty = reward.hpPenalty
+  }
+  if (body.title) edits.title = body.title
+
+  if (Object.keys(edits).length > 0) {
+    const { data: edited, error: eErr } = await db
+      .from('goals')
+      .update({ ...edits, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .select()
+      .single()
+    if (eErr) return NextResponse.json({ success: false, error: eErr.message }, { status: 500 })
+    Object.assign(goal, edited, { target_value: num(edited.target_value), current_value: num(edited.current_value) })
+  }
+
   let current = goal.current_value
   if (body.complete) current = goal.target_value
   else if (body.current_value !== undefined) current = body.current_value
@@ -69,11 +109,9 @@ async function handlePATCH(req: NextRequest, { params }: { params: Promise<{ id:
     })
   }
 
-  const updates: Record<string, unknown> = { current_value: current, updated_at: new Date().toISOString() }
-  if (body.title) updates.title = body.title
   const { data, error } = await db
     .from('goals')
-    .update(updates)
+    .update({ current_value: current, updated_at: new Date().toISOString() })
     .eq('id', id)
     .eq('user_id', user.id)
     .eq('status', 'active')

@@ -13,7 +13,7 @@ export type OpKind =
   | 'budget.set' | 'budget.delete'
   | 'recurring.create' | 'recurring.delete' | 'recurring.post'
   | 'goal.create' | 'goal.update' | 'goal.delete' | 'goal.contribute'
-  | 'goals.create' | 'goals.progress' | 'goals.delete'
+  | 'goals.create' | 'goals.update' | 'goals.progress' | 'goals.delete'
 
 export interface OpInput {
   kind: OpKind

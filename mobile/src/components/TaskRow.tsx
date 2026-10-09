@@ -1,15 +1,17 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { Muted } from '@/ui/primitives'
 import { colors, priorityColor, radius, space } from '@/ui/theme'
 
-/** One habit / daily / to-do line: tap the circle to complete, long-press to delete. */
+/** One habit / daily / to-do line: tap the circle to complete, the pencil to edit, long-press to delete. */
 export function TaskRow({
   title,
   subtitle,
   done,
   priority,
   onComplete,
+  onEdit,
   onDelete,
   pending,
   inactive,
@@ -19,10 +21,12 @@ export function TaskRow({
   done: boolean
   priority?: string
   onComplete: () => void
+  /** Opens the edit sheet. Omit to hide the pencil. */
+  onEdit?: () => void
   onDelete: () => void
   /** Has a change that hasn't reached the server yet. */
   pending?: boolean
-  /** Not due today: dimmed, and the circle can't be tapped (long-press delete still works). */
+  /** Not due today: dimmed, and the circle can't be tapped (the pencil and long-press delete still work). */
   inactive?: boolean
 }) {
   const confirmDelete = () =>
@@ -35,7 +39,7 @@ export function TaskRow({
     <Pressable
       onLongPress={confirmDelete}
       style={[styles.row, (done || inactive) && { opacity: inactive ? 0.4 : 0.6 }]}
-      accessibilityHint="Long-press to delete">
+      accessibilityHint={onEdit ? 'Tap the pencil to edit, long-press to delete' : 'Long-press to delete'}>
       <Pressable
         onPress={done || inactive ? undefined : onComplete}
         disabled={done || inactive}
@@ -51,6 +55,11 @@ export function TaskRow({
         {subtitle ? <Muted>{subtitle}</Muted> : null}
       </View>
       {pending ? <View style={styles.pendingDot} accessibilityLabel="Waiting to sync" /> : null}
+      {onEdit ? (
+        <Pressable onPress={onEdit} hitSlop={10} accessibilityRole="button" accessibilityLabel={`Edit ${title}`} style={styles.edit}>
+          <Ionicons name="pencil" size={16} color={colors.textMuted} />
+        </Pressable>
+      ) : null}
     </Pressable>
   )
 }
@@ -63,4 +72,5 @@ const styles = StyleSheet.create({
   plus: { color: colors.text, fontSize: 18, fontWeight: '600', marginTop: -2 },
   title: { color: colors.text, fontSize: 15 },
   pendingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.warning },
+  edit: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
 })

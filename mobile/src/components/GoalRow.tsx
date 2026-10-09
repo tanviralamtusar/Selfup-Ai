@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { formatDate } from '@/components/PickerField'
@@ -11,12 +12,13 @@ const FREE_DELETE_MS = 60 * 60 * 1000
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, ''))
 
-/** One deadline goal: progress, time left and what's at stake. Long-press to delete. */
+/** One deadline goal: progress, time left and what's at stake. Pencil to edit, long-press to delete. */
 export function GoalRow({
   goal,
   pending,
   onProgress,
   onLog,
+  onEdit,
   onDelete,
 }: {
   goal: Goal
@@ -25,6 +27,8 @@ export function GoalRow({
   onProgress: () => void
   /** Open the custom-amount sheet. */
   onLog: () => void
+  /** Open the edit sheet. Omit to hide the pencil (a finished goal can't be edited). */
+  onEdit?: () => void
   onDelete: () => void
 }) {
   const status = goalStatus(goal)
@@ -58,12 +62,20 @@ export function GoalRow({
   const barColor = status === 'completed' ? colors.success : status === 'failed' ? colors.danger : urgent ? colors.warning : colors.primary
 
   return (
-    <Pressable onLongPress={confirmDelete} style={[styles.row, status !== 'active' && { opacity: 0.65 }]} accessibilityHint="Long-press to delete">
+    <Pressable
+      onLongPress={confirmDelete}
+      style={[styles.row, status !== 'active' && { opacity: 0.65 }]}
+      accessibilityHint={onEdit ? 'Tap the pencil to edit, long-press to delete' : 'Long-press to delete'}>
       <Row style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Text style={[styles.title, status === 'completed' && { textDecorationLine: 'line-through' }]} numberOfLines={2}>
           {status === 'completed' ? '✅ ' : status === 'failed' ? '❌ ' : ''}{goal.title}
         </Text>
         {pending ? <View style={styles.pendingDot} accessibilityLabel="Waiting to sync" /> : null}
+        {onEdit ? (
+          <Pressable onPress={onEdit} hitSlop={10} accessibilityRole="button" accessibilityLabel={`Edit ${goal.title}`} style={styles.edit}>
+            <Ionicons name="pencil" size={16} color={colors.textMuted} />
+          </Pressable>
+        ) : null}
       </Row>
 
       {!isCheck && (
@@ -96,4 +108,5 @@ const styles = StyleSheet.create({
   row: { gap: space.xs, padding: space.md, borderRadius: radius.sm, backgroundColor: colors.cardRaised },
   title: { flex: 1, color: colors.text, fontSize: 15, fontWeight: '600' },
   pendingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.warning, marginTop: 6 },
+  edit: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center', marginTop: -2 },
 })

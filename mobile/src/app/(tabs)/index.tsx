@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Alert, Linking, View } from 'react-native'
 
 import { GoalRow } from '@/components/GoalRow'
@@ -20,9 +20,13 @@ import {
   deleteHabit,
   deleteTodo,
   logHabit,
+  updateDaily,
+  updateDeadlineGoal,
+  updateHabit,
+  updateTodo,
 } from '@/domain/actions'
 import { goalStatus, isDailyDoneToday, isHabitDone, useGoals, useHabits, useOpenTodos, useOtherDailies, useTodayDailies } from '@/domain/selectors'
-import type { Goal, GoalDifficulty } from '@/domain/types'
+import type { Daily, Goal, GoalDifficulty, Habit, Todo } from '@/domain/types'
 import { GOAL_REWARDS, type Difficulty, type Priority, type ResetType } from '@/lib/gamification'
 import { ensurePermission, parseTime } from '@/lib/notifications'
 import { localDay } from '@/lib/dates'
@@ -70,9 +74,21 @@ function dueDays(days: string[] | null): string {
 
 const TABS: readonly Tab[] = ['dailies', 'habits', 'todos', 'goals']
 
+/** What the add/edit sheet is working on: a new item of `kind`, or an existing row. */
+type SheetTarget =
+  | { kind: 'dailies'; record?: Daily }
+  | { kind: 'habits'; record?: Habit }
+  | { kind: 'todos'; record?: Todo }
+  | { kind: 'goals'; record?: Goal }
+
 export default function Dashboard() {
   const [page, setPage] = useState(0)
-  const [adding, setAdding] = useState(false)
+  // `visible` is kept separate from the target so the sheet slides out instead
+  // of vanishing; `n` remounts it on every open, so fields start from the row.
+  const [sheet, setSheet] = useState<{ target: SheetTarget; visible: boolean; n: number } | null>(null)
+  const opens = useRef(0)
+  const openSheet = (target: SheetTarget) => setSheet({ target, visible: true, n: ++opens.current })
+  const closeSheet = () => setSheet((s) => (s ? { ...s, visible: false } : null))
   const dailies = useTodayDailies()
   const otherDailies = useOtherDailies()
   const habits = useHabits()
@@ -87,7 +103,7 @@ export default function Dashboard() {
   const doneHabits = habits.filter(isHabitDone).length
   const activeGoals = goals.filter((g) => goalStatus(g) === 'active').length
   const today = localDay()
-  const addButton = <Button label="+ Add" small onPress={() => setAdding(true)} />
+  const addButton = <Button label="+ Add" small onPress={() => openSheet({ kind: tab })} />
 
   return (
     <Screen onRefresh={() => requestSync()} refreshing={syncing}>
@@ -120,6 +136,7 @@ export default function Dashboard() {
                 done={isDailyDoneToday(d)}
                 pending={pendingIds.has(d.id)}
                 onComplete={() => completeDaily(d)}
+                onEdit={() => openSheet({ kind: 'dailies', record: d })}
                 onDelete={() => deleteDaily(d.id)}
               />
             ))
@@ -137,12 +154,13 @@ export default function Dashboard() {
                   inactive
                   pending={pendingIds.has(d.id)}
                   onComplete={() => {}}
+                  onEdit={() => openSheet({ kind: 'dailies', record: d })}
                   onDelete={() => deleteDaily(d.id)}
                 />
               ))}
             </>
           )}
-          <Muted>Tap the circle to complete. Long-press to delete. Swipe for habits, to-dos and goals.</Muted>
+          <Muted>Tap the circle to complete, the pencil to edit. Long-press to delete. Swipe for habits, to-dos and goals.</Muted>
         </Card>
 
         <Card>
@@ -158,6 +176,7 @@ export default function Dashboard() {
                 done={isHabitDone(h)}
                 pending={pendingIds.has(h.id)}
                 onComplete={() => logHabit(h)}
+                onEdit={() => openSheet({ kind: 'habits', record: h })}
                 onDelete={() => deleteHabit(h.id)}
               />
             ))
@@ -182,6 +201,7 @@ export default function Dashboard() {
                 done={t.is_completed}
                 pending={pendingIds.has(t.id)}
                 onComplete={() => completeTodo(t)}
+                onEdit={() => openSheet({ kind: 'todos', record: t })}
                 onDelete={() => deleteTodo(t.id)}
               />
             ))
@@ -200,6 +220,8 @@ export default function Dashboard() {
                 pending={pendingIds.has(g.id)}
                 onProgress={() => addGoalProgress(g, 1)}
                 onLog={() => setLogging(g)}
+                // Only an active goal can be re-stated; the server rejects the rest.
+                onEdit={goalStatus(g) === 'active' ? () => openSheet({ kind: 'goals', record: g }) : undefined}
                 onDelete={() => deleteDeadlineGoal(g.id)}
               />
             ))
@@ -208,27 +230,45 @@ export default function Dashboard() {
         </Card>
       </SwipeTabs>
 
-      <AddSheet kind={tab} visible={adding} onClose={() => setAdding(false)} />
+      {sheet && <TaskSheet key={sheet.n} target={sheet.target} visible={sheet.visible} onClose={closeSheet} />}
       <LogGoalSheet goal={logging} onClose={() => setLogging(null)} />
     </Screen>
   )
 }
 
-function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onClose: () => void }) {
-  const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState<Priority>('medium')
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
-  const [reset, setReset] = useState<ResetType>('daily')
-  const [weekly, setWeekly] = useState(false)
-  const [days, setDays] = useState<string[]>(['mon', 'wed', 'fri'])
-  const [due, setDue] = useState<string | null>(null)
-  const [time, setTime] = useState<string | null>(null)
-  const [endTime, setEndTime] = useState<string | null>(null)
-  const [endDate, setEndDate] = useState<string | null>(null)
-  const [deadline, setDeadline] = useState<string | null>(null)
-  const [target, setTarget] = useState('1')
-  const [unit, setUnit] = useState('')
-  const [goalDifficulty, setGoalDifficulty] = useState<GoalDifficulty>('medium')
+/** Postgres TIME values come back as "HH:MM:SS"; the pickers work in "HH:MM". */
+const hhmm = (v: string | null | undefined) => (v ? v.slice(0, 5) : null)
+
+const SHEET_TITLES: Record<Tab, [create: string, edit: string]> = {
+  dailies: ['New daily', 'Edit daily'],
+  habits: ['New habit', 'Edit habit'],
+  todos: ['New to-do', 'Edit to-do'],
+  goals: ['New goal', 'Edit goal'],
+}
+
+/** Create or edit one daily / habit / to-do / goal. Remounted per open, so the fields seed from `target`. */
+function TaskSheet({ target: t, visible, onClose }: { target: SheetTarget; visible: boolean; onClose: () => void }) {
+  const kind = t.kind
+  const editing = t.record
+  const daily = t.kind === 'dailies' ? t.record : undefined
+  const habit = t.kind === 'habits' ? t.record : undefined
+  const todo = t.kind === 'todos' ? t.record : undefined
+  const goal = t.kind === 'goals' ? t.record : undefined
+
+  const [title, setTitle] = useState(editing?.title ?? '')
+  const [priority, setPriority] = useState<Priority>((daily?.priority ?? todo?.priority ?? 'medium') as Priority)
+  const [difficulty, setDifficulty] = useState<Difficulty>((habit?.difficulty ?? 'medium') as Difficulty)
+  const [reset, setReset] = useState<ResetType>((habit?.reset_type ?? 'daily') as ResetType)
+  const [weekly, setWeekly] = useState(daily?.repeat_type === 'weekly')
+  const [days, setDays] = useState<string[]>(daily?.repeat_days?.length ? daily.repeat_days : ['mon', 'wed', 'fri'])
+  const [due, setDue] = useState<string | null>(todo?.due_date ?? null)
+  const [time, setTime] = useState<string | null>(hhmm(daily?.scheduled_time ?? habit?.scheduled_time ?? todo?.scheduled_time))
+  const [endTime, setEndTime] = useState<string | null>(hhmm(daily?.end_time ?? habit?.end_time ?? todo?.end_time))
+  const [endDate, setEndDate] = useState<string | null>(habit?.end_date ?? null)
+  const [deadline, setDeadline] = useState<string | null>(goal?.deadline ?? null)
+  const [target, setTarget] = useState(goal ? String(Number(goal.target_value)) : '1')
+  const [unit, setUnit] = useState(goal?.unit ?? '')
+  const [goalDifficulty, setGoalDifficulty] = useState<GoalDifficulty>(goal?.difficulty ?? 'medium')
 
   const targetNum = Number(target.replace(/,/g, ''))
   const valid =
@@ -239,24 +279,16 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
     // A range must end after it starts.
     (!endTime || (!!time && endTime > time))
 
-  const close = () => {
-    setTitle('')
-    setDue(null)
-    setTime(null)
-    setEndTime(null)
-    setEndDate(null)
-    setDeadline(null)
-    setTarget('1')
-    setUnit('')
-    onClose()
-  }
-
   const save = async () => {
     if (!valid) return
     // A to-do reminder needs a day; picking only a time means today.
     const dueDate = kind === 'todos' && time && !due ? localToday() : due
     try {
-      if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time, end_time: endTime })
+      if (daily) await updateDaily(daily.id, { title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time, end_time: endTime })
+      else if (habit) await updateHabit(habit.id, { title, difficulty, reset_type: reset, end_date: endDate, scheduled_time: time, end_time: endTime })
+      else if (todo) await updateTodo(todo.id, { title, priority, due_date: dueDate, scheduled_time: time, end_time: endTime })
+      else if (goal && deadline) await updateDeadlineGoal(goal.id, { title, target_value: targetNum, unit, deadline, difficulty: goalDifficulty })
+      else if (kind === 'dailies') await createDaily({ title, priority, repeat_type: weekly ? 'weekly' : 'daily', repeat_days: days, scheduled_time: time, end_time: endTime })
       else if (kind === 'goals' && deadline) await createDeadlineGoal({ title, target_value: targetNum, unit, deadline, difficulty: goalDifficulty })
       else if (kind === 'habits') await createHabit({ title, difficulty, reset_type: reset, end_date: endDate, scheduled_time: time, end_time: endTime })
       else await createTodo({ title, priority, due_date: dueDate, scheduled_time: time, end_time: endTime })
@@ -265,7 +297,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
       Alert.alert('Couldn’t save', String(e?.message ?? e))
       return
     }
-    close()
+    onClose()
 
     if (time && kind !== 'goals' && !(await ensurePermission(true))) {
       Alert.alert('Notifications are off', 'Saved, but SelfUp can’t remind you. Turn on notifications for SelfUp in Android settings.', [
@@ -276,7 +308,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
   }
 
   return (
-    <Sheet visible={visible} title={kind === 'dailies' ? 'New daily' : kind === 'habits' ? 'New habit' : kind === 'goals' ? 'New goal' : 'New to-do'} onClose={close}>
+    <Sheet visible={visible} title={SHEET_TITLES[kind][editing ? 1 : 0]} onClose={onClose}>
       <Input label="Title" value={title} onChangeText={setTitle} maxLength={kind === 'todos' ? 200 : kind === 'goals' ? 120 : 100} autoFocus />
 
       {kind === 'goals' && (
@@ -289,6 +321,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
               <Input label="Unit (optional)" value={unit} onChangeText={setUnit} maxLength={30} placeholder="books, km…" />
             </View>
           </View>
+          {goal && <Muted>Progress stays at {Number(goal.current_value)}; only the terms below change.</Muted>}
           <PickerField label="Deadline" mode="date" value={deadline} onChange={setDeadline} placeholder="Pick the last day" clearable={false} />
           <Segmented label="Difficulty" options={GOAL_DIFFICULTIES} value={goalDifficulty} onChange={setGoalDifficulty} />
           <Muted>
@@ -362,7 +395,7 @@ function AddSheet({ kind, visible, onClose }: { kind: Tab; visible: boolean; onC
         </>
       )}
 
-      <Button label="Save" onPress={save} disabled={!valid} />
+      <Button label={editing ? 'Save changes' : 'Save'} onPress={save} disabled={!valid} />
       <Muted>Saved on this phone instantly; syncs to the website when you’re online.</Muted>
     </Sheet>
   )

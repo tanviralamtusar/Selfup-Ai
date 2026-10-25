@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { HabitsView } from '@/components/time/HabitsView'
 import { ScheduleView } from '@/components/time/ScheduleView'
 import { TimeDashboard } from '@/components/time/TimeDashboard'
+import { HoursCalculator } from '@/components/time/HoursCalculator'
 
 type TimerState = 'idle' | 'active' | 'break' | 'paused'
 type Priority = 'low' | 'medium' | 'high' | 'critical'
@@ -110,7 +111,7 @@ export default function TimePage() {
   const { session } = useAuthStore()
 
   // ── Timer State ──
-  const [activeTab, setActiveTab] = useState<'board' | 'focus' | 'habits' | 'schedule'>('board')
+  const [activeTab, setActiveTab] = useState<'board' | 'focus' | 'habits' | 'schedule' | 'hours'>('board')
   const [timerState, setTimerState] = useState<TimerState>('idle')
   const [workMinutes, setWorkMinutes] = useState(25)
   const [breakMinutes, setBreakMinutes] = useState(5)
@@ -149,7 +150,7 @@ export default function TimePage() {
 
   useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get('tab')
-    if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus' || tabParam === 'board') {
+    if (tabParam === 'habits' || tabParam === 'schedule' || tabParam === 'focus' || tabParam === 'board' || tabParam === 'hours') {
       setActiveTab(tabParam as any)
     }
   }, [])
@@ -306,7 +307,7 @@ export default function TimePage() {
       </div>
 
       <div className="flex border-b border-border mb-6 overflow-x-auto">
-        {(['board', 'focus', 'habits', 'schedule'] as const).map(tab => (
+        {(['board', 'focus', 'habits', 'schedule', 'hours'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -612,6 +613,7 @@ export default function TimePage() {
 
       {activeTab === 'habits' && <HabitsView />}
       {activeTab === 'schedule' && <ScheduleView />}
+      {activeTab === 'hours' && <HoursCalculator />}
     </div>
   )
 }

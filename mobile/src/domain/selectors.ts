@@ -41,6 +41,11 @@ export function isHabitDone(h: Habit): boolean {
   return h.reset_type !== 'daily' || dayOf(h.completed_at) === localDay()
 }
 
+/** Marked missed (−) today and not done since. */
+export function isHabitMissedToday(h: Habit): boolean {
+  return !isHabitDone(h) && h.missed_on === localDay()
+}
+
 export function useTodayDailies(): Daily[] {
   const rows = useRecords<Daily>('dailies')
   return useMemo(

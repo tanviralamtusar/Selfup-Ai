@@ -20,12 +20,13 @@ import {
   deleteHabit,
   deleteTodo,
   logHabit,
+  missHabit,
   updateDaily,
   updateDeadlineGoal,
   updateHabit,
   updateTodo,
 } from '@/domain/actions'
-import { goalStatus, isDailyDoneToday, isHabitDone, useGoals, useHabits, useOpenTodos, useOtherDailies, useTodayDailies } from '@/domain/selectors'
+import { goalStatus, isDailyDoneToday, isHabitDone, isHabitMissedToday, useGoals, useHabits, useOpenTodos, useOtherDailies, useTodayDailies } from '@/domain/selectors'
 import type { Daily, Goal, GoalDifficulty, Habit, Todo } from '@/domain/types'
 import { GOAL_REWARDS, type Difficulty, type Priority, type ResetType } from '@/lib/gamification'
 import { ensurePermission, parseTime } from '@/lib/notifications'
@@ -160,7 +161,7 @@ export default function Dashboard() {
               ))}
             </>
           )}
-          <Muted>Tap the circle to complete, the pencil to edit. Long-press to delete. Swipe for habits, to-dos and goals.</Muted>
+          <Muted>Tap the circle to complete (habits: + did it, − didn&apos;t), the pencil to edit. Long-press to delete. Swipe for habits, to-dos and goals.</Muted>
         </Card>
 
         <Card>
@@ -172,10 +173,12 @@ export default function Dashboard() {
               <TaskRow
                 key={h.id}
                 title={h.title}
-                subtitle={`${h.reset_type} · +${h.xp_reward} XP${h.scheduled_time ? ` · ⏰ ${formatRange(h.scheduled_time, h.end_time)}` : ''}${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}${h.end_date ? ` · until ${formatDate(h.end_date)}` : ''}`}
+                subtitle={`${isHabitMissedToday(h) ? `missed today · −${h.hp_penalty} HP · ` : ''}${h.reset_type} · +${h.xp_reward} XP${h.scheduled_time ? ` · ⏰ ${formatRange(h.scheduled_time, h.end_time)}` : ''}${h.current_streak ? ` · 🔥 ${h.current_streak}` : ''}${h.end_date ? ` · until ${formatDate(h.end_date)}` : ''}`}
                 done={isHabitDone(h)}
                 pending={pendingIds.has(h.id)}
                 onComplete={() => logHabit(h)}
+                onMiss={() => missHabit(h)}
+                missed={isHabitMissedToday(h)}
                 onEdit={() => openSheet({ kind: 'habits', record: h })}
                 onDelete={() => deleteHabit(h.id)}
               />

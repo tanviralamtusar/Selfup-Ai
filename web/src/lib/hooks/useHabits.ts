@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react'
 import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
+import { localDateStr } from '@/lib/utils'
 
 // ── Types ──
 
@@ -24,6 +25,8 @@ export interface Habit {
   longest_streak: number
   is_completed_this_cycle: boolean
   completed_at: string | null
+  /** User-local day the habit was last marked missed (− button). */
+  missed_on?: string | null
   xp_reward: number
   hp_penalty: number
   is_active: boolean
@@ -43,6 +46,11 @@ interface CreateHabitInput {
   end_date?: string
   scheduled_time?: string
   end_time?: string
+}
+
+/** Marked missed (−) today and not done since. */
+export function isHabitMissedToday(h: Pick<Habit, 'is_completed_this_cycle' | 'missed_on'>): boolean {
+  return !h.is_completed_this_cycle && h.missed_on === localDateStr()
 }
 
 // ── Hook ──
@@ -153,6 +161,36 @@ export const useHabits = () => {
     }
   }, [session, headers])
 
+  // Miss habit (the − button): HP damage, streak reset, once per day
+  const missHabit = useCallback(async (id: string) => {
+    if (!session?.access_token) return null
+
+    const before = habits.find(h => h.id === id)
+    const today = localDateStr()
+    setHabits(prev => prev.map(h => h.id === id ? { ...h, missed_on: today, current_streak: 0 } : h))
+
+    try {
+      const res = await fetch(`/api/habits/${id}/miss`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ date: today }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        if (before) setHabits(prev => prev.map(h => h.id === id ? before : h))
+        throw new Error(json.error || 'Failed to mark habit missed')
+      }
+
+      const hp = json.data?.hp_lost || 0
+      toast.error(hp > 0 ? `Habit missed. -${hp} HP` : 'Habit missed')
+      return json.data
+    } catch (err: any) {
+      console.error('[useHabits] miss error:', err)
+      toast.error(err.message)
+      return null
+    }
+  }, [session, headers, habits])
+
   // Update habit
   const updateHabit = useCallback(async (id: string, updates: Partial<CreateHabitInput>) => {
     if (!session?.access_token) return null
@@ -221,6 +259,7 @@ export const useHabits = () => {
     fetchHabits,
     createHabit,
     completeHabit,
+    missHabit,
     updateHabit,
     deleteHabit,
   }

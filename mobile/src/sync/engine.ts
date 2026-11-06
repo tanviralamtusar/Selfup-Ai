@@ -333,7 +333,7 @@ async function onSuccess(op: Op, json: any) {
 
 async function onRejected(op: Op, httpStatus: number, error: string) {
   // Already done on the server (e.g. completed on the website meanwhile) — that's the state we wanted.
-  if (httpStatus === 409 && (op.kind === 'daily.complete' || op.kind === 'todo.complete' || op.kind === 'habit.log')) return
+  if (httpStatus === 409 && (op.kind === 'daily.complete' || op.kind === 'todo.complete' || op.kind === 'habit.log' || op.kind === 'habit.miss')) return
   // Deleting something that's already gone is a success too.
   if (httpStatus === 404 && op.kind.endsWith('.delete')) return
 

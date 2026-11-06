@@ -206,6 +206,19 @@ export async function logHabit(habit: Habit) {
   )
 }
 
+/** The habit's − button: didn't do it today. The server deals the HP penalty; the streak resets. */
+export async function missHabit(habit: Habit) {
+  await commitLocal(
+    async (t) => {
+      await patchRecord<Habit>('habits', habit.id, { missed_on: localDay(), current_streak: 0 }, t)
+    },
+    {
+      kind: 'habit.miss', tbl: 'habits', entityId: habit.id, method: 'POST',
+      path: `/api/habits/${habit.id}/miss`, body: { date: localDay() },
+    }
+  )
+}
+
 /** Edit a habit (see {@link updateDaily} for why only these fields are sent). */
 export async function updateHabit(id: string, input: NewHabit) {
   const difficulty = input.difficulty ?? 'medium'

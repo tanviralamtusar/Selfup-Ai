@@ -829,6 +829,18 @@ Times are same-day (no overnight range) and read in the user's zone. The Android
 app rings a single time once, and a range at its start and again at its end
 (`mobile/src/lib/notifications.ts`).
 
+### 21. Habit missed button (`add_habit_missed_on.sql`)
+
+```sql
+ALTER TABLE habits ADD COLUMN missed_on DATE;  -- user-local day the − button was last pressed
+```
+
+Habits have a + button (`POST /api/habits/[id]/log`: XP, streak +1) and a −
+button (`POST /api/habits/[id]/miss`: HP damage of `hp_penalty`, streak reset to
+0). The miss route sets `missed_on` with a conditional update, so a habit can be
+marked missed once per day; it is refused (409) when the habit is already done
+this cycle. A + later the same day still scores, and the habit then shows as done.
+
 ### Tables in use but not yet documented here
 
 These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:

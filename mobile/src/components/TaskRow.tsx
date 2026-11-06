@@ -4,7 +4,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Muted } from '@/ui/primitives'
 import { colors, priorityColor, radius, space } from '@/ui/theme'
 
-/** One habit / daily / to-do line: tap the circle to complete, the pencil to edit, long-press to delete. */
+/** One habit / daily / to-do line: tap the circle to complete (or − to mark a habit missed), the pencil to edit, long-press to delete. */
 export function TaskRow({
   title,
   subtitle,
@@ -15,6 +15,8 @@ export function TaskRow({
   onDelete,
   pending,
   inactive,
+  onMiss,
+  missed,
 }: {
   title: string
   subtitle?: string
@@ -28,6 +30,10 @@ export function TaskRow({
   pending?: boolean
   /** Not due today: dimmed, and the circle can't be tapped (the pencil and long-press delete still work). */
   inactive?: boolean
+  /** Habits: shows a − button next to the + for "didn't do it". */
+  onMiss?: () => void
+  /** Marked missed today: the − is filled and locked; + still works if it gets done after all. */
+  missed?: boolean
 }) {
   const confirmDelete = () =>
     Alert.alert('Delete?', `“${title}” will be deleted everywhere.`, [
@@ -50,6 +56,18 @@ export function TaskRow({
         style={[styles.circle, { borderColor: priority ? priorityColor[priority] ?? colors.border : colors.primary }, done && styles.circleDone]}>
         {done ? <Text style={styles.check}>✓</Text> : inactive ? null : <Text style={styles.plus}>+</Text>}
       </Pressable>
+      {onMiss ? (
+        <Pressable
+          onPress={done || missed || inactive ? undefined : onMiss}
+          disabled={done || missed || inactive}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: done || missed || inactive, selected: missed }}
+          accessibilityLabel={missed ? `${title}, missed today` : `Missed ${title}`}
+          hitSlop={8}
+          style={[styles.circle, { borderColor: colors.danger }, missed && styles.circleMissed, done && { opacity: 0.3 }]}>
+          <Text style={[styles.plus, missed && { color: '#000' }]}>−</Text>
+        </Pressable>
+      ) : null}
       <View style={{ flex: 1 }}>
         <Text style={[styles.title, done && { textDecorationLine: 'line-through' }]} numberOfLines={2}>{title}</Text>
         {subtitle ? <Muted>{subtitle}</Muted> : null}
@@ -68,6 +86,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm, paddingHorizontal: space.sm, borderRadius: radius.sm, backgroundColor: colors.cardRaised, minHeight: 52 },
   circle: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   circleDone: { backgroundColor: colors.success, borderColor: colors.success },
+  circleMissed: { backgroundColor: colors.danger, borderColor: colors.danger },
   check: { color: '#000', fontWeight: '800' },
   plus: { color: colors.text, fontSize: 18, fontWeight: '600', marginTop: -2 },
   title: { color: colors.text, fontSize: 15 },

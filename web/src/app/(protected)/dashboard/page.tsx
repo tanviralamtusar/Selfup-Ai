@@ -3,7 +3,8 @@
 import { useAuthStore } from '@/store/authStore'
 import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
-import { cn, formatNumber } from '@/lib/utils'
+import { cn, formatNumber, localDateStr } from '@/lib/utils'
+import { isHabitMissedToday } from '@/lib/hooks/useHabits'
 import { xpToNextLevel, getRank, getRankLetter, getHpState, type HpState } from '@/constants/gamification'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Fragment, useState, useEffect, useCallback, useMemo } from 'react'
@@ -14,6 +15,7 @@ import {
   CheckCircle,
   Trophy,
   Plus,
+  Minus,
   Check,
   ArrowRight,
   User,
@@ -48,7 +50,9 @@ interface Habit {
   category: string
   current_streak: number
   is_completed_this_cycle: boolean
+  missed_on?: string | null
   xp_reward: number
+  hp_penalty?: number
   is_positive?: boolean
   is_negative?: boolean
   difficulty?: 'trivial' | 'easy' | 'medium' | 'hard'
@@ -372,6 +376,28 @@ export default function DashboardPage() {
     finally { setLoggingHabit(null) }
   }
 
+  const handleMissHabit = async (habitId: string) => {
+    setLoggingHabit(habitId)
+    try {
+      const res = await fetch(`/api/habits/${habitId}/miss`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ date: localDateStr() }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        const hp = data.data?.hp_lost || 0
+        toast.error(hp > 0 ? `-${hp} HP — Habit missed` : 'Habit missed')
+        fetchHabits()
+      } else if (res.status === 409) {
+        toast.info(data.alreadyDone ? 'Already logged this cycle!' : 'Already marked missed today')
+      } else {
+        toast.error(data.error || 'Failed to mark habit missed')
+      }
+    } catch { toast.error('Failed to mark habit missed') }
+    finally { setLoggingHabit(null) }
+  }
+
   const handleBuyFreeze = async () => {
     try {
       const res = await fetch('/api/user/streak-freeze', { method: 'POST', headers: headers() })
@@ -582,26 +608,44 @@ export default function DashboardPage() {
                     <p className="text-sm text-muted-foreground">No active habits</p>
                     <Link href={ROUTES.TIME} className="text-xs text-primary mt-1 block hover:underline">+ New Habit</Link>
                   </div>
-                ) : habits.slice(0, 4).map(habit => (
+                ) : habits.slice(0, 4).map(habit => {
+                  const missed = isHabitMissedToday(habit)
+                  const busy = loggingHabit === habit.id
+                  return (
                   <div
                     key={habit.id}
-                    className={cn("flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors", habit.is_completed_this_cycle ? 'opacity-50 bg-muted border-border' : 'bg-muted border-border hover:bg-secondary')}
+                    className={cn("flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors", habit.is_completed_this_cycle ? 'opacity-50 bg-muted border-border' : missed ? 'bg-red-500/5 border-red-500/20' : 'bg-muted border-border hover:bg-secondary')}
                     onClick={() => { setEditingHabit(habit); setIsHabitModalOpen(true); }}
                   >
                     <button
                       onClick={e => { e.stopPropagation(); !habit.is_completed_this_cycle && handleLogHabit(habit.id); }}
-                      disabled={habit.is_completed_this_cycle || loggingHabit === habit.id}
+                      disabled={habit.is_completed_this_cycle || busy}
+                      aria-label={habit.is_completed_this_cycle ? `${habit.title}, done` : `Did ${habit.title}`}
+                      title="Did it (+XP)"
                       className={cn("w-8 h-8 flex items-center justify-center rounded-lg border transition-colors shrink-0",
                         habit.is_completed_this_cycle ? 'bg-primary/10 border-primary/30 text-primary' : 'border-border hover:bg-primary/10 hover:border-primary/30 hover:text-primary text-muted-foreground')}
                     >
-                      {loggingHabit === habit.id ? <Loader2 size={13} className="animate-spin" /> : habit.is_completed_this_cycle ? <Check size={13} /> : <Plus size={13} />}
+                      {busy ? <Loader2 size={13} className="animate-spin" /> : habit.is_completed_this_cycle ? <Check size={13} /> : <Plus size={13} />}
                     </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{habit.title}</p>
-                      <p className="text-xs text-muted-foreground">+{habit.xp_reward || 10} XP</p>
+                      <p className={cn("text-xs", missed ? 'text-red-400' : 'text-muted-foreground')}>
+                        {missed ? `Missed today · -${habit.hp_penalty ?? 5} HP` : `+${habit.xp_reward || 10} XP`}
+                      </p>
                     </div>
+                    <button
+                      onClick={e => { e.stopPropagation(); handleMissHabit(habit.id); }}
+                      disabled={habit.is_completed_this_cycle || missed || busy}
+                      aria-label={missed ? `${habit.title}, missed today` : `Missed ${habit.title}`}
+                      title={`Didn't do it (-${habit.hp_penalty ?? 5} HP)`}
+                      className={cn("w-8 h-8 flex items-center justify-center rounded-lg border transition-colors shrink-0",
+                        missed ? 'bg-red-500/15 border-red-500/30 text-red-400' : habit.is_completed_this_cycle ? 'border-border text-muted-foreground/30' : 'border-border hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 text-muted-foreground')}
+                    >
+                      <Minus size={13} />
+                    </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 

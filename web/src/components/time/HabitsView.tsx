@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, ChevronRight, Flame, Loader2, Plus, Sparkles, Trophy, MoreVertical, Edit2, Trash2, Zap as ZapIcon } from 'lucide-react'
+import { CheckCircle2, ChevronRight, Flame, Loader2, Minus, Plus, Sparkles, Trophy, MoreVertical, Edit2, Trash2, Zap as ZapIcon } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 import { cn, localDateStr } from '@/lib/utils'
 import { HabitHeatmap } from './HabitHeatmap'
+import { isHabitMissedToday } from '@/lib/hooks/useHabits'
 
 interface Habit {
   id: string
@@ -20,6 +21,7 @@ interface Habit {
   current_streak: number
   best_streak: number
   is_completed_this_cycle: boolean
+  missed_on?: string | null
   xp_reward: number
   hp_penalty: number
   habit_logs?: { completed_at: string }[]
@@ -132,6 +134,29 @@ export function HabitsView() {
             habit_logs: [...(h.habit_logs || []), { completed_at: localDateStr() }]
           } : h
         ))
+      }
+    } catch { toast.error('Failed to update habit') }
+  }
+
+  const handleMissHabit = async (habit: Habit) => {
+    if (habit.is_completed_this_cycle || isHabitMissedToday(habit)) return
+    const today = localDateStr()
+    try {
+      const res = await fetch(`/api/habits/${habit.id}/miss`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ date: today }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        const hp = data.data?.hp_lost || 0
+        toast.error(hp > 0 ? `-${hp} HP` : 'Habit missed')
+        if (checkingInId === habit.id) setCheckingInId(null)
+        setHabits(prev => prev.map(h =>
+          h.id === habit.id ? { ...h, missed_on: today, current_streak: 0 } : h
+        ))
+      } else {
+        toast.error(data.error || 'Failed to mark habit missed')
       }
     } catch { toast.error('Failed to update habit') }
   }
@@ -410,6 +435,24 @@ export function HabitsView() {
                       ? <CheckCircle2 size={22} />
                       : <Plus size={22} strokeWidth={2.5} />
                     }
+                  </button>
+
+                  {/* − didn't do it */}
+                  <button
+                    onClick={() => handleMissHabit(habit)}
+                    disabled={habit.is_completed_this_cycle || isHabitMissedToday(habit)}
+                    aria-label={isHabitMissedToday(habit) ? `${habit.title}, missed today` : `Missed ${habit.title}`}
+                    title={`Didn't do it (-${habit.hp_penalty} HP)`}
+                    className={cn(
+                      "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all",
+                      isHabitMissedToday(habit)
+                        ? "bg-rose-500 text-white cursor-default"
+                        : habit.is_completed_this_cycle
+                        ? "bg-muted text-muted-foreground/30 cursor-default"
+                        : "bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500 hover:text-white hover:scale-110 active:scale-95"
+                    )}
+                  >
+                    <Minus size={22} strokeWidth={2.5} />
                   </button>
 
                   {/* Info */}

@@ -50,6 +50,8 @@ export interface Habit {
   longest_streak: number
   is_completed_this_cycle: boolean
   completed_at: string | null
+  /** Phone-local day the habit was last marked missed (− button); null = never. */
+  missed_on?: string | null
   xp_reward: number
   hp_penalty: number
   is_active: boolean

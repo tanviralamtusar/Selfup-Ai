@@ -4,7 +4,7 @@ import { db, emit, withWriteLock, writeTransaction, type Executor } from '@/db/d
 
 export type OpKind =
   | 'daily.create' | 'daily.update' | 'daily.delete' | 'daily.complete'
-  | 'habit.create' | 'habit.update' | 'habit.delete' | 'habit.log'
+  | 'habit.create' | 'habit.update' | 'habit.delete' | 'habit.log' | 'habit.miss'
   | 'todo.create' | 'todo.update' | 'todo.delete' | 'todo.complete'
   | 'pomodoro.start' | 'pomodoro.finish'
   | 'account.create' | 'account.update' | 'account.delete'

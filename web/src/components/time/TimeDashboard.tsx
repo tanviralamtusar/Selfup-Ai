@@ -23,10 +23,11 @@ import {
   Timer,
   ChevronDown,
   ChevronUp,
+  Minus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useDailies, type Daily } from '@/lib/hooks/useDailies'
-import { useHabits, type Habit } from '@/lib/hooks/useHabits'
+import { useHabits, isHabitMissedToday, type Habit } from '@/lib/hooks/useHabits'
 import { useTodos, type Todo } from '@/lib/hooks/useTodos'
 import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
@@ -205,14 +206,16 @@ function DailyItem({ daily, onComplete, onDelete, onEdit }: {
 
 // ── Habit Item ──
 
-function HabitItem({ habit, onComplete, onDelete, onEdit }: {
+function HabitItem({ habit, onComplete, onMiss, onDelete, onEdit }: {
   habit: Habit
   onComplete: (id: string) => void
+  onMiss: (id: string) => void
   onDelete: (id: string) => void
   onEdit: (habit: Habit) => void
 }) {
   const resetConfig = RESET_TYPE_CONFIG[habit.reset_type]
   const icon = CATEGORY_ICONS[habit.category] || '📋'
+  const missed = isHabitMissedToday(habit)
 
   return (
     <motion.div
@@ -227,20 +230,39 @@ function HabitItem({ habit, onComplete, onDelete, onEdit }: {
           : 'bg-card border-border hover:bg-secondary hover:border-border'
       )}
     >
-      {/* Completion */}
-      <button
-        onClick={() => !habit.is_completed_this_cycle && onComplete(habit.id)}
-        disabled={habit.is_completed_this_cycle}
-        className={cn(
-          'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
-          habit.is_completed_this_cycle
-            ? 'bg-emerald-500 border-emerald-500'
-            : 'border-border hover:bg-muted'
-        )}
-        aria-label={habit.is_completed_this_cycle ? 'Completed this cycle' : `Complete ${habit.title}`}
-      >
-        {habit.is_completed_this_cycle && <Check size={12} className="text-foreground" />}
-      </button>
+      {/* + did it / − didn't */}
+      <div className="flex flex-shrink-0 items-center gap-1">
+        <button
+          onClick={() => !habit.is_completed_this_cycle && onComplete(habit.id)}
+          disabled={habit.is_completed_this_cycle}
+          className={cn(
+            'w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all',
+            habit.is_completed_this_cycle
+              ? 'bg-emerald-500 border-emerald-500'
+              : 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/15'
+          )}
+          aria-label={habit.is_completed_this_cycle ? 'Completed this cycle' : `Did ${habit.title}`}
+          title="Did it (+XP)"
+        >
+          {habit.is_completed_this_cycle ? <Check size={12} className="text-foreground" /> : <Plus size={13} />}
+        </button>
+        <button
+          onClick={() => !habit.is_completed_this_cycle && !missed && onMiss(habit.id)}
+          disabled={habit.is_completed_this_cycle || missed}
+          className={cn(
+            'w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all',
+            missed
+              ? 'bg-red-500 border-red-500 text-white'
+              : habit.is_completed_this_cycle
+                ? 'border-border text-muted-foreground/30'
+                : 'border-red-500/40 text-red-400 hover:bg-red-500/15'
+          )}
+          aria-label={missed ? 'Missed today' : `Missed ${habit.title}`}
+          title={`Didn't do it (-${habit.hp_penalty} HP)`}
+        >
+          <Minus size={13} />
+        </button>
+      </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit(habit)}>
@@ -434,7 +456,7 @@ export function TimeDashboard() {
   const {
     habits, loading: habitsLoading, completedCount: habitsCompleted,
     totalCount: habitsTotal, totalStreak,
-    createHabit, completeHabit, deleteHabit, updateHabit
+    createHabit, completeHabit, missHabit, deleteHabit, updateHabit
   } = useHabits()
 
   const {
@@ -637,6 +659,7 @@ export function TimeDashboard() {
                   key={habit.id}
                   habit={habit}
                   onComplete={completeHabit}
+                  onMiss={missHabit}
                   onDelete={deleteHabit}
                   onEdit={(h) => { setEditingHabit(h); setIsHabitModalOpen(true); }}
                 />

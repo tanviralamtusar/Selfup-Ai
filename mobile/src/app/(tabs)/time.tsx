@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
+import { HoursCard } from '@/components/HoursCard'
 import { TaskRow } from '@/components/TaskRow'
 import { completeTodo, deleteTodo, finishPomodoro, startPomodoro } from '@/domain/actions'
 import { useOpenTodos } from '@/domain/selectors'
@@ -63,6 +64,8 @@ export default function Time() {
   return (
     <Screen onRefresh={() => requestSync()} refreshing={syncing}>
       <H1>Time</H1>
+
+      <HoursCard />
 
       <Card>
         <H2>Focus timer</H2>

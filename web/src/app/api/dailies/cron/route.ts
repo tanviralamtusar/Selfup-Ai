@@ -7,6 +7,7 @@ import { HP_DAMAGE, HP_RECOVERY } from '@/constants/gamification'
 import { idempotent } from '@/lib/idempotency'
 import { failExpiredGoals } from '@/lib/goals.service'
 import { daysBetween, todayIn, weekdayOf } from '@/lib/user-time'
+import { isPausedOn } from '@/lib/daily-pause'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,6 +25,8 @@ function getDb(req: NextRequest) {
  */
 function isScheduledOn(daily: any, day: string, tz: string): boolean {
   if (daily.expires_on && daily.expires_on < day) return false
+  // Paused that day — not due, so no penalty and the streak is left alone.
+  if (isPausedOn(daily, day, tz)) return false
   // Created after that day ended (in the user's zone) — it wasn't due yet.
   if (daily.created_at && todayIn(tz, new Date(daily.created_at)) > day) return false
   if (daily.repeat_type === 'weekly' && daily.repeat_days) {

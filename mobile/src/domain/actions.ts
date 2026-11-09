@@ -129,6 +129,25 @@ export async function updateDaily(id: string, input: NewDaily) {
   })
 }
 
+/**
+ * Pause a daily from today, until `until` (the day it resumes, YYYY-MM-DD) or,
+ * with null, until it's resumed by hand. While paused it isn't due, the
+ * check-in skips it (no penalty, streak kept) and it sends no reminders.
+ */
+export async function pauseDaily(id: string, until: string | null) {
+  const patch = { paused_at: now(), paused_until: until }
+  await commitLocal(async (t) => { await patchRecord<Daily>('dailies', id, patch, t) }, {
+    kind: 'daily.update', tbl: 'dailies', entityId: id, method: 'PATCH', path: `/api/dailies/${id}`, body: patch,
+  })
+}
+
+export async function resumeDaily(id: string) {
+  const patch = { paused_at: null, paused_until: null }
+  await commitLocal(async (t) => { await patchRecord<Daily>('dailies', id, patch, t) }, {
+    kind: 'daily.update', tbl: 'dailies', entityId: id, method: 'PATCH', path: `/api/dailies/${id}`, body: patch,
+  })
+}
+
 export async function deleteDaily(id: string) {
   await commitLocal((t) => removeRecord('dailies', id, t), {
     kind: 'daily.delete', tbl: 'dailies', entityId: id, method: 'DELETE', path: `/api/dailies/${id}`,

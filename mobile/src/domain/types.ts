@@ -20,6 +20,10 @@ export interface Daily {
   /** End of the time range; null means scheduled_time is a single time. */
   end_time: string | null
   expires_on: string | null
+  /** When the pause started; null/absent = not paused. */
+  paused_at?: string | null
+  /** Day it resumes (YYYY-MM-DD); null = paused until resumed by hand. */
+  paused_until?: string | null
   subtasks: { title: string; is_completed: boolean }[]
   require_all_subtasks: boolean
   is_completed: boolean

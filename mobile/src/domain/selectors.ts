@@ -18,10 +18,21 @@ import type {
 
 const PRIORITY_ORDER: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
 
-/** Mirrors GET /api/dailies: active today (not expired; weekly only on its days), in the phone's zone. */
+/**
+ * Paused on `day` (YYYY-MM-DD, phone-local)? Mirrors web/src/lib/daily-pause.ts:
+ * paused from the day `paused_at` falls on, until (not including) `paused_until`.
+ */
+export function isPausedOn(d: Daily, day: string): boolean {
+  if (!d.paused_at) return false
+  if (dayOf(d.paused_at) > day) return false
+  return !d.paused_until || day < d.paused_until
+}
+
+/** Mirrors GET /api/dailies: active today (not paused or expired; weekly only on its days), in the phone's zone. */
 export function isDueToday(d: Daily, now = new Date()): boolean {
   const today = localDay(now)
   if (d.expires_on && d.expires_on < today) return false
+  if (isPausedOn(d, today)) return false
   if (d.repeat_type === 'weekly' && d.repeat_days) return d.repeat_days.includes(localDayName(now))
   return true
 }
@@ -63,7 +74,18 @@ export function useOtherDailies(): Daily[] {
   return useMemo(() => {
     const today = localDay()
     return rows
-      .filter((d) => !isDueToday(d) && !(d.expires_on && d.expires_on < today))
+      .filter((d) => !isDueToday(d) && !isPausedOn(d, today) && !(d.expires_on && d.expires_on < today))
+      .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2) || a.created_at.localeCompare(b.created_at))
+  }, [rows])
+}
+
+/** Paused today (and not expired), so they can be resumed, edited and deleted. */
+export function usePausedDailies(): Daily[] {
+  const rows = useRecords<Daily>('dailies')
+  return useMemo(() => {
+    const today = localDay()
+    return rows
+      .filter((d) => isPausedOn(d, today) && !(d.expires_on && d.expires_on < today))
       .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2) || a.created_at.localeCompare(b.created_at))
   }, [rows])
 }

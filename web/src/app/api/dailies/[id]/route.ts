@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent } from '@/lib/idempotency'
 import { parseTimeRange } from '@/lib/task-time'
+import { parsePauseUpdate } from '@/lib/daily-pause'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -41,6 +42,11 @@ async function handlePATCH(
       updates[field] = body[field]
     }
   }
+
+  // Pause / resume: { paused_at: ISO | null, paused_until?: 'YYYY-MM-DD' | null }
+  const pause = parsePauseUpdate(body)
+  if (pause.error) return NextResponse.json({ success: false, error: pause.error }, { status: 400 })
+  Object.assign(updates, pause.updates)
 
 
   // scheduled_time / end_time must stay a valid pair, so validate whichever

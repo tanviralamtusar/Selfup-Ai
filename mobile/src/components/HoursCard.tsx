@@ -9,16 +9,20 @@ import {
   DEFAULT_SLEEP,
   clockLabel,
   computeDay,
+  dayWindow,
   formatHours,
+  markOf,
   remainingToday,
   sanitizeHours,
-  wakingWindow,
+  timeToHours,
+  type SleepMarks,
   type SleepSettings,
 } from '@/lib/availableHours'
 import { Body, Button, Card, H2, Muted, Row, Segmented } from '@/ui/primitives'
 import { colors, radius, space } from '@/ui/theme'
 
-// Phone-only sleep settings, kept in the local kv table (not synced). The
+// Phone-only sleep settings, kept in the local kv table (not synced): which
+// dailies mark wake-up / bedtime, and the fallback for days without them. The
 // rest of the day's committed time comes from the dailies' time ranges.
 const KV_KEY = 'available_hours.v2'
 
@@ -56,7 +60,7 @@ function HoursInput({ value, onChange, label }: { value: number; onChange: (v: n
 
 /** Free hours in a day: waking hours minus the time blocked out by dailies' time ranges. */
 export function HoursCard() {
-  const sleep = useKv<SleepSettings>(KV_KEY) ?? DEFAULT_SLEEP
+  const sleep: SleepSettings & SleepMarks = useKv<SleepSettings & SleepMarks>(KV_KEY) ?? DEFAULT_SLEEP
   const dailies = useRecords<Daily>('dailies')
   const [dayIndex, setDayIndex] = useState('0')
   const [editing, setEditing] = useState(false)
@@ -67,23 +71,43 @@ export function HoursCard() {
     return () => clearInterval(t)
   }, [])
 
-  const save = (next: SleepSettings) => void setKv(KV_KEY, next)
+  const save = (next: SleepSettings & SleepMarks) => void setKv(KV_KEY, next)
+
+  // Dailies with a time that can mark wake-up or bedtime.
+  const timed = useMemo(
+    () => dailies.filter((d) => d.scheduled_time).sort((a, b) => (a.scheduled_time ?? '').localeCompare(b.scheduled_time ?? '')),
+    [dailies]
+  )
+  const toggleMark = (id: string, mark: 'wake' | 'bed') => {
+    // The first explicit choice freezes the title guesses into real choices.
+    const wakeIds = sleep.wakeIds ?? timed.filter((d) => markOf(d, sleep) === 'wake').map((d) => d.id)
+    const bedIds = sleep.bedIds ?? timed.filter((d) => markOf(d, sleep) === 'bed').map((d) => d.id)
+    const on = (mark === 'wake' ? wakeIds : bedIds).includes(id)
+    save({
+      ...sleep,
+      wakeIds: mark === 'wake' ? (on ? wakeIds.filter((x) => x !== id) : [...wakeIds, id]) : wakeIds.filter((x) => x !== id),
+      bedIds: mark === 'bed' ? (on ? bedIds.filter((x) => x !== id) : [...bedIds, id]) : bedIds.filter((x) => x !== id),
+    })
+  }
 
   const todayKey = now.toDateString()
   const days = useMemo(() => {
     return nextSevenDays(now).map((date) => {
       const due = dailies.filter((d) => isDueToday(d, date))
-      return { date, untimed: due.filter((d) => !d.end_time).length, ...computeDay(due, sleep) }
+      const win = dayWindow(due, sleep, sleep)
+      // Wake / bed markers set the window; they aren't "dailies without a range".
+      const untimed = due.filter((d) => !d.end_time && !(markOf(d, sleep) && timeToHours(d.scheduled_time) !== null)).length
+      return { date, win, untimed, ...computeDay(due, win) }
     })
     // Recompute when the date changes, not every minute.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dailies, sleep.sleepHours, sleep.bedtimeHour, todayKey])
+  }, [dailies, sleep.sleepHours, sleep.bedtimeHour, sleep.wakeIds, sleep.bedIds, todayKey])
 
   const dayOptions = days.map((d, i) => ({ value: String(i), label: i === 0 ? 'Today' : DAY_SHORT[d.date.getDay()] }))
   const day = days[Number(dayIndex)] ?? days[0]
-  const leftToday = remainingToday(days[0].blocks, sleep, now)
+  const leftToday = remainingToday(days[0].blocks, days[0].win, now)
   const weekly = days.reduce((s, d) => s + d.available, 0)
-  const { wake, bed } = wakingWindow(sleep)
+  const { wake, bed, wakeFrom, bedFrom } = day.win
   const span = bed - wake
   const dayName = Number(dayIndex) === 0 ? 'today' : day.date.toLocaleDateString(undefined, { weekday: 'long' })
 
@@ -126,8 +150,16 @@ export function HoursCard() {
             ))}
         </View>
         <Row style={{ justifyContent: 'space-between', marginTop: 2 }}>
-          <Muted>{clockLabel(wake)} wake</Muted>
-          <Muted>bed {clockLabel(bed)}</Muted>
+          <Muted>
+            {clockLabel(wake)} wake{wakeFrom ? ' ·' : ''}
+          </Muted>
+          <Muted>
+            {bedFrom ? '· ' : ''}bed {clockLabel(bed)}
+          </Muted>
+        </Row>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Muted style={{ flexShrink: 1 }}>{wakeFrom ? `from “${wakeFrom}”` : 'usual'}</Muted>
+          <Muted style={{ flexShrink: 1, textAlign: "right" }}>{bedFrom ? `from “${bedFrom}”` : 'usual'}</Muted>
         </Row>
       </View>
 
@@ -163,6 +195,31 @@ export function HoursCard() {
 
       {editing && (
         <View style={{ gap: space.sm }}>
+          <Body>Wake-up and bedtime dailies</Body>
+          <Muted>
+            Mark the dailies that set when you wake up and go to bed. Each day uses the ones due that day, so weekly dailies can give
+            different times on different days. Their start time is used.
+          </Muted>
+          {timed.length === 0 ? (
+            <Muted>No dailies with a time yet. Add e.g. “Wake up” at 6:00 and “Sleep” at 23:00.</Muted>
+          ) : (
+            timed.map((d) => {
+              const mark = markOf(d, sleep)
+              return (
+                <Row key={d.id} style={{ justifyContent: 'space-between' }}>
+                  <View style={{ flexShrink: 1 }}>
+                    <Body numberOfLines={1}>{d.title || 'Untitled'}</Body>
+                    <Muted>{clockLabel(timeToHours(d.scheduled_time) ?? 0)}</Muted>
+                  </View>
+                  <Row>
+                    <Button small label="Wake" variant={mark === 'wake' ? 'primary' : 'ghost'} onPress={() => toggleMark(d.id, 'wake')} />
+                    <Button small label="Bed" variant={mark === 'bed' ? 'primary' : 'ghost'} onPress={() => toggleMark(d.id, 'bed')} />
+                  </Row>
+                </Row>
+              )
+            })
+          )}
+          <Muted>On days without them:</Muted>
           <Row style={{ justifyContent: 'space-between' }}>
             <Body>Sleep (hours per night)</Body>
             <HoursInput

@@ -4,7 +4,7 @@ import { AppState, Platform } from 'react-native'
 import { subscribe } from '@/db/database'
 import { getKv, setKv } from '@/db/kv'
 import { listRecords } from '@/db/records'
-import { isDailyDoneToday } from '@/domain/selectors'
+import { isDailyDoneToday, isPausedOn } from '@/domain/selectors'
 import type { Daily, PomodoroSession, Todo } from '@/domain/types'
 
 /**
@@ -118,6 +118,7 @@ export function planReminders(dailies: Daily[], todos: Todo[], sessions: Pomodor
       if (day <= now) continue
       if (d.expires_on && ymd(day) > d.expires_on) break
       if (d.repeat_type === 'weekly' && d.repeat_days && !d.repeat_days.includes(WEEKDAYS[day.getDay()])) continue
+      if (isPausedOn(d, ymd(day))) continue
       if (i === 0 && isDailyDoneToday(d)) continue
       out.push({
         id: `daily:${d.id}:${ymd(day)}`,

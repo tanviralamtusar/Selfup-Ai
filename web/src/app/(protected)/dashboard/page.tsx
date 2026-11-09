@@ -22,7 +22,8 @@ import {
   Flame,
   Loader2,
   Activity,
-  Zap
+  Zap,
+  Pause
 } from 'lucide-react'
 import { LevelUpModal } from '@/components/gamification/LevelUpModal'
 import { StreakCard } from '@/components/gamification/StreakCard'
@@ -33,6 +34,12 @@ import { DailyModal } from '@/components/dashboard/DailyModal'
 import { HabitModal } from '@/components/dashboard/HabitModal'
 import { TodoModal } from '@/components/dashboard/TodoModal'
 import { useRealtimeRefresh } from '@/lib/hooks/useRealtimeRefresh'
+
+/** '2026-11-15' → 'Nov 15', read as a calendar day (no time zone shift). */
+function formatPauseDate(ymd: string): string {
+  const [y, m, d] = ymd.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
 
 const containerAnim = {
   hidden: { opacity: 0 },
@@ -245,6 +252,23 @@ export default function DashboardPage() {
       } else {
         const err = await res.json()
         toast.error(err.error || 'Failed to save daily')
+      }
+    } catch { toast.error('Network error') }
+  }
+
+  /** Pause (until = resume day, or null for "until I resume it") or resume (pause = false). */
+  const handlePauseDaily = async (id: string, pause: boolean, until: string | null) => {
+    try {
+      const body = pause ? { paused_at: new Date().toISOString(), paused_until: until } : { paused_at: null }
+      const res = await fetch(`/api/dailies/${id}`, { method: 'PATCH', headers: headers(), body: JSON.stringify(body) })
+      if (res.ok) {
+        fetchDailies()
+        toast.success(pause ? 'Daily paused' : 'Daily resumed')
+        setIsDailyModalOpen(false)
+        setEditingDaily(null)
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to update daily')
       }
     } catch { toast.error('Network error') }
   }
@@ -669,12 +693,15 @@ export default function DashboardPage() {
                   const notDue = daily.due_today === false
                   return (
                   <Fragment key={daily.id}>
-                  {notDue && dailies[i - 1]?.due_today !== false && (
+                  {notDue && !daily.paused && dailies[i - 1]?.due_today !== false && (
                     <p className="pt-1 text-xs text-muted-foreground">Not today</p>
+                  )}
+                  {daily.paused && !dailies[i - 1]?.paused && (
+                    <p className="pt-1 text-xs text-muted-foreground flex items-center gap-1"><Pause size={10} /> Paused</p>
                   )}
                   <div
                     onClick={() => handleCompleteDaily(daily)}
-                    title={notDue ? 'Not due today' : undefined}
+                    title={daily.paused ? 'Paused. Open it to resume.' : notDue ? 'Not due today' : undefined}
                     className={cn("flex items-center gap-3 p-2.5 rounded-lg border transition-colors group",
                       notDue ? 'opacity-40 bg-muted border-border cursor-default'
                         : daily.is_completed ? 'opacity-50 bg-muted border-border cursor-default' : 'bg-muted border-border hover:bg-secondary cursor-pointer')}
@@ -687,6 +714,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex-1 overflow-hidden" onClick={e => { e.stopPropagation(); setEditingDaily(daily); setIsDailyModalOpen(true); }}>
                       <p className={cn("text-sm font-medium truncate", daily.is_completed && !notDue ? 'text-muted-foreground line-through' : 'text-foreground')}>{daily.title}</p>
+                      {daily.paused && (
+                        <p className="text-[10px] text-muted-foreground">{daily.paused_until ? `Resumes ${formatPauseDate(daily.paused_until)}` : 'Paused until you resume it'}</p>
+                      )}
                     </div>
                   </div>
                   </Fragment>
@@ -776,7 +806,7 @@ export default function DashboardPage() {
       <LevelUpModal isOpen={showLevelUp} onClose={() => setShowLevelUp(false)} newLevel={levelUpData.newLevel} totalXp={levelUpData.totalXp} coinsReward={levelUpData.coinsRewarded} />
       <AiCoinWalletModal isOpen={showWalletModal} onClose={() => setShowWalletModal(false)} />
       <StreakHistory isOpen={showStreakHistory} onClose={() => setShowStreakHistory(false)} currentStreak={profile?.streak_overall ?? 0} bestStreak={profile?.streak_best ?? 0} freezeCount={profile?.streak_freeze_count ?? 0} lastDate={profile?.streak_last_date} />
-      <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} />
+      <DailyModal isOpen={isDailyModalOpen} onClose={() => { setIsDailyModalOpen(false); setEditingDaily(null); }} daily={editingDaily} onSave={handleSaveDaily} onDelete={editingDaily ? handleDeleteDaily : undefined} onPause={editingDaily ? handlePauseDaily : undefined} />
       <HabitModal isOpen={isHabitModalOpen} onClose={() => { setIsHabitModalOpen(false); setEditingHabit(null); }} habit={editingHabit} onSave={handleSaveHabit} onDelete={editingHabit ? handleDeleteHabit : undefined} />
       <TodoModal isOpen={isTodoModalOpen} onClose={() => { setIsTodoModalOpen(false); setEditingTodo(null); }} todo={editingTodo} onSave={handleSaveTask} onDelete={editingTodo ? handleDeleteTask : undefined} />
     </motion.div>

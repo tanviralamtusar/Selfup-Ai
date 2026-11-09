@@ -841,6 +841,20 @@ button (`POST /api/habits/[id]/miss`: HP damage of `hp_penalty`, streak reset to
 marked missed once per day; it is refused (409) when the habit is already done
 this cycle. A + later the same day still scores, and the habit then shows as done.
 
+### 22. Pause a daily (`add_daily_pause.sql`)
+
+```sql
+ALTER TABLE dailies ADD COLUMN paused_at    TIMESTAMPTZ;  -- NULL = not paused; paused from this day (user's zone) on
+ALTER TABLE dailies ADD COLUMN paused_until DATE;         -- day it resumes; NULL = until resumed by hand
+```
+
+Set via `PATCH /api/dailies/[id]` (`{ paused_at, paused_until }`; `paused_at: null`
+resumes and clears both). While paused (`isPausedOn()` in `lib/daily-pause.ts`,
+mirrored in `mobile/src/domain/selectors.ts`) a daily is not due: `GET /api/dailies`
+leaves it out (`?include=all` lists it last with `paused: true`), the new-day
+check-in skips it (no XP/HP penalty, streak untouched), `complete` returns 409, and
+the Android app schedules no reminders for it.
+
 ### Tables in use but not yet documented here
 
 These tables are queried by the code but have no column-level entry in this file. The live Supabase schema is authoritative; document each one when you next touch it:

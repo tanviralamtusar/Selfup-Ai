@@ -3,7 +3,8 @@ import { verifyAuth } from '@/lib/api-auth'
 import { createClient } from '@supabase/supabase-js'
 import { TaskEconomyService } from '@/lib/task-economy.service'
 import { idempotent, actionDate } from '@/lib/idempotency'
-import { getUserTimezone } from '@/lib/user-time'
+import { getUserTimezone, todayIn } from '@/lib/user-time'
+import { isPausedOn } from '@/lib/daily-pause'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -45,6 +46,11 @@ async function handlePOST(
     return NextResponse.json({ success: false, error: 'Already completed today' }, { status: 409 })
   }
 
+  const tz = await getUserTimezone(db, user.id)
+  if (isPausedOn(daily, todayIn(tz), tz)) {
+    return NextResponse.json({ success: false, error: 'This daily is paused' }, { status: 409 })
+  }
+
   // Check subtask requirement
   if (daily.require_all_subtasks && Array.isArray(daily.subtasks) && daily.subtasks.length > 0) {
     const allComplete = daily.subtasks.every((s: { is_completed: boolean }) => s.is_completed)
@@ -74,7 +80,7 @@ async function handlePOST(
   // Offline clients replay with the day the user actually ticked it.
   const economy = new TaskEconomyService(db)
   const body = await req.json().catch(() => ({}))
-  const day = actionDate(body.date, await getUserTimezone(db, user.id))
+  const day = actionDate(body.date, tz)
   const sourceId = `${daily.id}:${day}`
 
   const xpResult = await economy.awardXp(

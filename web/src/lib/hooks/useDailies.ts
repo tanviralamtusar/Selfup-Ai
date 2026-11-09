@@ -24,6 +24,12 @@ export interface Daily {
   completed_at: string | null
   xp_reward: number
   xp_penalty: number
+  /** When the pause started; null = not paused. */
+  paused_at?: string | null
+  /** Day it resumes; null = paused until resumed by hand. */
+  paused_until?: string | null
+  /** Paused today — set by GET /api/dailies?include=all. */
+  paused?: boolean
   created_at: string
 }
 

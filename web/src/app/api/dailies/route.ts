@@ -5,6 +5,7 @@ import { calculateTaskXp } from '@/lib/task-economy.service'
 import { getUserTimezone, todayIn, weekdayOf } from '@/lib/user-time'
 import { idempotent, clientId, existingOnDuplicate } from '@/lib/idempotency'
 import { parseTimeRange } from '@/lib/task-time'
+import { isPausedOn } from '@/lib/daily-pause'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -20,7 +21,7 @@ function getDb(req: NextRequest) {
  * GET /api/dailies — fetch all active dailies for today
  * Filters weekly dailies by repeat_days to only show today's active ones.
  * `?include=all` also returns non-expired dailies that aren't due today, after
- * the due ones; every row then carries `due_today`.
+ * the due ones, then paused ones last; every row then carries `due_today` and `paused`.
  */
 export async function GET(req: NextRequest) {
   const { user, error } = await verifyAuth(req)
@@ -28,7 +29,8 @@ export async function GET(req: NextRequest) {
 
   const db = getDb(req)
   // "Today" in the user's own zone, so dailies roll over at their midnight.
-  const today = todayIn(await getUserTimezone(db, user.id))
+  const tz = await getUserTimezone(db, user.id)
+  const today = todayIn(tz)
   const todayDay = weekdayOf(today)
 
   const { data, error: dbErr } = await db
@@ -43,9 +45,11 @@ export async function GET(req: NextRequest) {
   // Expired dailies are never shown
   const current = (data || []).filter((d: any) => !(d.expires_on && d.expires_on < today))
 
-  // Weekly dailies are only due on their repeat days; daily repeat is always due
+  // Paused dailies are never due. Weekly dailies are only due on their repeat
+  // days; daily repeat is always due.
+  const paused = (d: any) => isPausedOn(d, today, tz)
   const isDue = (d: any) =>
-    !(d.repeat_type === 'weekly' && d.repeat_days) || d.repeat_days.includes(todayDay)
+    !paused(d) && (!(d.repeat_type === 'weekly' && d.repeat_days) || d.repeat_days.includes(todayDay))
 
   // Sort by priority order: critical, high, medium, low
   const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
@@ -55,12 +59,14 @@ export async function GET(req: NextRequest) {
   const activeDailies = current.filter(isDue).sort(byPriority)
 
   if (req.nextUrl.searchParams.get('include') === 'all') {
-    const others = current.filter((d: any) => !isDue(d)).sort(byPriority)
+    const others = current.filter((d: any) => !isDue(d) && !paused(d)).sort(byPriority)
+    const pausedOnes = current.filter(paused).sort(byPriority)
     return NextResponse.json({
       success: true,
       data: [
-        ...activeDailies.map((d: any) => ({ ...d, due_today: true })),
-        ...others.map((d: any) => ({ ...d, due_today: false })),
+        ...activeDailies.map((d: any) => ({ ...d, due_today: true, paused: false })),
+        ...others.map((d: any) => ({ ...d, due_today: false, paused: false })),
+        ...pausedOnes.map((d: any) => ({ ...d, due_today: false, paused: true })),
       ],
     })
   }

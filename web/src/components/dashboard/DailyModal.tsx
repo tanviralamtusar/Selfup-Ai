@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { X, Plus, Trash2, Calendar, Repeat, Tag, Loader2, GripVertical } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { X, Plus, Trash2, Calendar, Repeat, Tag, Loader2, GripVertical, Pause, Play } from 'lucide-react'
+import { cn, localDateStr } from '@/lib/utils'
 import { TimeRangeField } from './TimeRangeField'
 
-// @ts-ignore
-import { Daily } from '@/lib/hooks/useDailies'
+import type { Daily } from '@/lib/hooks/useDailies'
 
 const dailySchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -33,6 +32,8 @@ interface DailyModalProps {
   daily?: Daily | null
   onSave: (data: any) => Promise<any>
   onDelete?: (id: string) => Promise<any>
+  /** Pause (until = resume day, null = until resumed) or resume (pause = false). */
+  onPause?: (id: string, pause: boolean, until: string | null) => Promise<any>
 }
 
 const DAYS = [
@@ -45,7 +46,19 @@ const DAYS = [
   { id: 'sat', label: 'Sa' },
 ]
 
-export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyModalProps) {
+export function DailyModal({ isOpen, onClose, daily, onSave, onDelete, onPause }: DailyModalProps) {
+  const [resumeOn, setResumeOn] = useState('')
+  const [pausing, setPausing] = useState(false)
+  const isPaused = daily ? (daily.paused ?? !!daily.paused_at) : false
+  const tomorrow = localDateStr(-1)
+
+  const togglePause = async () => {
+    if (!daily || !onPause) return
+    setPausing(true)
+    try { await onPause(daily.id, !isPaused, isPaused ? null : resumeOn || null) }
+    finally { setPausing(false) }
+  }
+
   const { register, handleSubmit, control, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<DailyFormValues>({
     resolver: zodResolver(dailySchema),
     defaultValues: {
@@ -71,6 +84,7 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
 
   useEffect(() => {
     if (isOpen) {
+      setResumeOn('')
       if (daily) {
         reset({
           title: daily.title,
@@ -320,6 +334,42 @@ export function DailyModal({ isOpen, onClose, daily, onSave, onDelete }: DailyMo
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* Pause */}
+                {daily && onPause && (
+                  <div className="space-y-2 rounded-lg border border-border bg-muted p-3">
+                    <label className="text-[10px] text-primary/60 flex items-center gap-1.5"><Pause size={12} /> Pause</label>
+                    {isPaused ? (
+                      <p className="text-xs text-muted-foreground">
+                        Paused{daily.paused_until ? `, resumes on ${daily.paused_until}` : ' until you resume it'}. It isn&apos;t due and won&apos;t cost XP or HP; its streak is kept.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-muted-foreground">Take a break (a trip, being sick). While paused it isn&apos;t due, missing it costs nothing and the streak is kept.</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Resume on</span>
+                          <input
+                            type="date"
+                            min={tomorrow}
+                            value={resumeOn}
+                            onChange={e => setResumeOn(e.target.value)}
+                            className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground"
+                          />
+                          {!resumeOn && <span className="text-[10px] text-muted-foreground">(empty = until I resume it)</span>}
+                        </div>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={togglePause}
+                      disabled={pausing || (!!resumeOn && resumeOn < tomorrow)}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border hover:bg-secondary transition-colors disabled:opacity-50"
+                    >
+                      {pausing ? <Loader2 size={12} className="animate-spin" /> : isPaused ? <Play size={12} /> : <Pause size={12} />}
+                      {isPaused ? 'Resume now' : 'Pause daily'}
+                    </button>
+                  </div>
+                )}
 
               </div>
 

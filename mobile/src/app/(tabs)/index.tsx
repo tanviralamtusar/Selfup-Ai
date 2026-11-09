@@ -20,13 +20,15 @@ import {
   deleteHabit,
   deleteTodo,
   logHabit,
+  pauseDaily,
+  resumeDaily,
   missHabit,
   updateDaily,
   updateDeadlineGoal,
   updateHabit,
   updateTodo,
 } from '@/domain/actions'
-import { goalStatus, isDailyDoneToday, isHabitDone, isHabitMissedToday, useGoals, useHabits, useOpenTodos, useOtherDailies, useTodayDailies } from '@/domain/selectors'
+import { goalStatus, isDailyDoneToday, isHabitDone, isHabitMissedToday, isPausedOn, useGoals, useHabits, useOpenTodos, useOtherDailies, usePausedDailies, useTodayDailies } from '@/domain/selectors'
 import type { Daily, Goal, GoalDifficulty, Habit, Todo } from '@/domain/types'
 import { GOAL_REWARDS, type Difficulty, type Priority, type ResetType } from '@/lib/gamification'
 import { ensurePermission, parseTime } from '@/lib/notifications'
@@ -92,6 +94,7 @@ export default function Dashboard() {
   const closeSheet = () => setSheet((s) => (s ? { ...s, visible: false } : null))
   const dailies = useTodayDailies()
   const otherDailies = useOtherDailies()
+  const pausedDailies = usePausedDailies()
   const habits = useHabits()
   const todos = useOpenTodos()
   const goals = useGoals()
@@ -150,6 +153,25 @@ export default function Dashboard() {
                   key={d.id}
                   title={d.title}
                   subtitle={dueDays(d.repeat_days)}
+                  priority={d.priority}
+                  done={false}
+                  inactive
+                  pending={pendingIds.has(d.id)}
+                  onComplete={() => {}}
+                  onEdit={() => openSheet({ kind: 'dailies', record: d })}
+                  onDelete={() => deleteDaily(d.id)}
+                />
+              ))}
+            </>
+          )}
+          {pausedDailies.length > 0 && (
+            <>
+              <Muted>Paused</Muted>
+              {pausedDailies.map((d) => (
+                <TaskRow
+                  key={d.id}
+                  title={d.title}
+                  subtitle={d.paused_until ? `⏸ Resumes ${formatDate(d.paused_until)}` : '⏸ Paused until you resume it'}
                   priority={d.priority}
                   done={false}
                   inactive
@@ -272,6 +294,20 @@ function TaskSheet({ target: t, visible, onClose }: { target: SheetTarget; visib
   const [target, setTarget] = useState(goal ? String(Number(goal.target_value)) : '1')
   const [unit, setUnit] = useState(goal?.unit ?? '')
   const [goalDifficulty, setGoalDifficulty] = useState<GoalDifficulty>(goal?.difficulty ?? 'medium')
+  const [resumeOn, setResumeOn] = useState<string | null>(null)
+  const dailyPaused = daily ? isPausedOn(daily, localDay()) : false
+
+  const togglePause = async () => {
+    if (!daily) return
+    try {
+      if (dailyPaused) await resumeDaily(daily.id)
+      else await pauseDaily(daily.id, resumeOn)
+    } catch (e: any) {
+      Alert.alert('Couldn’t save', String(e?.message ?? e))
+      return
+    }
+    onClose()
+  }
 
   const targetNum = Number(target.replace(/,/g, ''))
   const valid =
@@ -399,6 +435,28 @@ function TaskSheet({ target: t, visible, onClose }: { target: SheetTarget; visib
       )}
 
       <Button label={editing ? 'Save changes' : 'Save'} onPress={save} disabled={!valid} />
+
+      {daily && (
+        <>
+          {dailyPaused ? (
+            <Muted>
+              Paused{daily.paused_until ? `, resumes ${formatDate(daily.paused_until)}` : ' until you resume it'}. It isn’t due, missing it
+              costs nothing, and the streak is kept.
+            </Muted>
+          ) : (
+            <>
+              <PickerField label="Pause until" mode="date" value={resumeOn} onChange={setResumeOn} placeholder="Until I resume it" />
+              <Muted>Taking a break? While paused it isn’t due, missing it costs nothing, and the streak is kept.{resumeOn ? ` It comes back on ${formatDate(resumeOn)}.` : ''}</Muted>
+            </>
+          )}
+          <Button
+            label={dailyPaused ? '▶ Resume now' : '⏸ Pause daily'}
+            variant="ghost"
+            onPress={togglePause}
+            disabled={!dailyPaused && !!resumeOn && resumeOn <= localDay()}
+          />
+        </>
+      )}
       <Muted>Saved on this phone instantly; syncs to the website when you’re online.</Muted>
     </Sheet>
   )

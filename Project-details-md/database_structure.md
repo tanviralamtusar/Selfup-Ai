@@ -944,3 +944,12 @@ $$ LANGUAGE plpgsql;
 
 -- Apply to all tables with updated_at
 ```
+
+# OAuth MCP hook (2026-11-27)
+
+`web/scripts/migrations/20261127_mcp_oauth_audience.sql` adds the private function
+`private.selfup_oauth_access_token_hook(jsonb)`. It retains direct login claims
+and adds the canonical SelfUp MCP resource audience to OAuth tokens. Only
+`supabase_auth_admin` receives execution permission. Enable it separately in
+Authentication > Hooks after merging any pre-existing token hook. No new tables
+or columns are added. See [mcp.md](mcp.md) for verification SQL and setup.

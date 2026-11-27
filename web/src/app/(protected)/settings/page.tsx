@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Settings, User, Bell, Shield, Sparkles, Check,
@@ -137,6 +138,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-4xl  font-headline   text-foreground">Selfup Settings</h1>
           <p className="text-primary/60 text-sm font-medium ">Adjust your profile and AI settings.</p>
+          <Link href="/settings/connections" className="text-sm text-primary underline">Manage connected apps</Link>
         </div>
       </div>
 

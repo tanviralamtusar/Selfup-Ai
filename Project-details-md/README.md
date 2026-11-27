@@ -8,6 +8,8 @@ For the current repo map and gotchas, start with [`../AGENTS.md`](../AGENTS.md).
 
 ## Reference — reflects the code
 
+OAuth MCP setup and tool inventory: [mcp.md](mcp.md) (2026-11-27).
+
 | Doc | Status | Notes |
 | --- | --- | --- |
 | [api.md](api.md) | ✅ 2026-10-04 | Inventory of every `/api` route handler |

@@ -149,3 +149,16 @@ See [money.md](money.md) for details.
 | GET | `/api/style` (placeholder stub) |
 | GET, POST | `/api/style/outfits` · `/api/style/moodboard` · `/api/style/recommendations` |
 | GET | `/api/notifications` |
+
+# OAuth MCP (2026-11-27)
+
+- `POST /api/mcp`: stateless Streamable HTTP MCP; requires a Supabase OAuth token
+  with the exact resource audience. Existing API JSON envelopes do not apply to
+  this protocol endpoint, which uses MCP JSON-RPC.
+- `GET/DELETE /api/mcp`: OAuth challenge when unauthenticated, otherwise 405.
+- `OPTIONS /api/mcp`: preflight for explicitly permitted browser origins.
+- `GET /.well-known/oauth-protected-resource` and
+  `GET /.well-known/oauth-protected-resource/api/mcp`: public OAuth discovery.
+- `/oauth/consent`: browser sign-in/consent; `/settings/connections`: revocation UI.
+
+See [mcp.md](mcp.md) for configuration, security boundaries and tools.

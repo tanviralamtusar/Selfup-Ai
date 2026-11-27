@@ -54,3 +54,12 @@ SUPABASE_SERVICE_ROLE_KEY="..."
 GOOGLE_AI_API_KEY="..."
 YOUTUBE_API_KEY=""
 ```
+
+# OAuth MCP (2026-11-27)
+
+`NEXT_PUBLIC_APP_URL` is required for the canonical MCP resource audience and
+metadata URLs; it must match the resource URL configured in the OAuth token hook.
+`MCP_ALLOWED_ORIGINS` optionally adds comma-separated browser origins to the app
+origin for `/api/mcp`. Native/server clients without Origin need no entry.
+No additional OAuth secret is stored in the app: Supabase manages OAuth clients,
+PKCE and refresh tokens. See [mcp.md](mcp.md).

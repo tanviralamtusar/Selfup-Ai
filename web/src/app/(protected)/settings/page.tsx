@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   Settings, User, Bell, Shield, Sparkles, Check,
-  Loader2, ChevronRight, Eye, EyeOff, Brain, Zap
+  Loader2, ChevronRight, Eye, EyeOff, Brain, Zap, Plug
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
@@ -138,7 +138,6 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-4xl  font-headline   text-foreground">Selfup Settings</h1>
           <p className="text-primary/60 text-sm font-medium ">Adjust your profile and AI settings.</p>
-          <Link href="/settings/connections" className="text-sm text-primary underline">Manage connected apps</Link>
         </div>
       </div>
 
@@ -168,6 +167,14 @@ export default function SettingsPage() {
               </button>
             )
           })}
+          <Link href="/settings/connections" className="relative z-10 flex w-full items-center gap-3 rounded-xl border border-transparent px-4 py-3.5 text-left text-primary/60 transition-colors hover:bg-muted hover:text-primary">
+            <Plug size={16} aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs">MCP & CONNECTED APPS</p>
+              <p className="text-[10px] text-muted-foreground">Connect your AI tools</p>
+            </div>
+            <ChevronRight size={12} aria-hidden="true" />
+          </Link>
         </div>
 
         {/* Content */}

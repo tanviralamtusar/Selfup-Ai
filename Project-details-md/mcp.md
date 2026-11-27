@@ -1,5 +1,10 @@
 # SelfUp MCP with OAuth
 
+In the website, open **Settings > MCP & Connected Apps** to copy the canonical
+server URL, see OAuth connection steps, and manage existing connections. The setup
+card stays visible if OAuth grant loading fails. OAuth still requires the
+administrator configuration below.
+
 Added 2026-11-27. The Next.js app hosts a stateless Streamable HTTP MCP server at
 `https://selfup.botbhai.net/api/mcp`. No separate server process or Redis is needed.
 

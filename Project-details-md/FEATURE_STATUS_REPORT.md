@@ -295,3 +295,10 @@ What changed since the April snapshot below. Built on `fitness-v2`, which is now
 ---
 
 **Total Estimated Time to MVP (from here):** 4-6 more days of focused development
+
+## 2026-11-27: OAuth MCP integration
+
+Added `/api/mcp` with read/manage tools for tasks, habits, dailies, money
+transactions and focus time, plus OAuth consent and connected-app revocation.
+Requires enabling the Supabase OAuth server and audience hook before live use;
+see [mcp.md](mcp.md). Existing API handlers retain XP and sync behavior.

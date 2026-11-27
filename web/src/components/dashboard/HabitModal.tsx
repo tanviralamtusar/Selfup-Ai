@@ -6,8 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Plus, Minus, Trash2, Tag, Loader2, Info, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// @ts-ignore
-import { Habit } from '@/lib/hooks/useHabits'
+import type { Habit } from '@/lib/hooks/useHabits'
 import { TimeRangeField } from './TimeRangeField'
 
 const habitSchema = z.object({
